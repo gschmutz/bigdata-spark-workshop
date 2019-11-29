@@ -97,7 +97,7 @@ services:
     hostname: namenode
     volumes:
       - ./container-volume/namenode:/hadoop/dfs/name
-      - ./data-transfer:/tmp/data-transfer
+      - ./data-transfer:/data-transfer
     ports:
       - "9870:9870"
     environment:
