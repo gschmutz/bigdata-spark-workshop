@@ -40,7 +40,7 @@ sudo sysctl -w vm.max_map_count=262144
 cd /home/ubuntu 
 git clone https://github.com/gschmutz/hadoop-workshop.git
 chown -R ubuntu:ubuntu hadoop-workshop
-cd hadoop-workshop/01-environment/docker
+cd hadoop-workshop/01-environment/docker-minio
 
 # Startup Environment
 sudo -E docker-compose up -d
