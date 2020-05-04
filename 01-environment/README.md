@@ -1,4 +1,4 @@
-# Hadoop Platform on Docker
+# Data Platform on Docker
 
 ## Provisioning environment
 The environment for this course is completely based on docker containers. 
@@ -17,29 +17,30 @@ You have the following options to start the environment:
 These steps are necessary after the starting the docker environment. 
 
 ### Add entry to local /etc/hosts File
-To simplify working with the Analytics Platform and for the links below to work, add the following entry to your local `/etc/hosts` file. 
+To simplify working with the Data Platform and for the links below to work, add the following entry to your local `/etc/hosts` file. 
 
 ```
-40.91.195.92	analyticsplatform
+40.91.195.92	dataplatform
 ```
 
 Replace the IP address by the PUBLIC IP of the docker host. 
 
-## Services accessible on Analyticsplatform Platform
+## Services accessible on Data Platform
 The following service are available as part of the platform:
 
 Product | Type | Service | Url | Url (local)
 ------|------| --------| ----- | ----------
-Hue | Development | Hue | <http://analyticsplatform:28888> | <http://localhost:28888>
-Zepplin | Development | Zeppelin | <http://analyticsplatform:38081> | <http://localhost:38081>
-Jupyter | Development | Jupyter | <http://analyticsplatform:38888> | <http://localhost:38888>
-Streamsets Data Collector | Development | Streamsets | <http://analyticsplatform:18630> | <http://localhost:18630/>
-Spark UI | Management  | Spark | <http://analyticsplatform:8080> | <http://localhost:8080>
-Spark History Server UI | Management | Spark | <http://analyticsplatform:18080> | <http://localhost:18080>
-Namenode UI | Management  | Haoop HDFS | <http://analyticsplatform:50070> | <http://localhost:50070>
-Datanode-1 UI | Management  | Haoop HDFS | <http://analyticsplatform:50075>| <http://localhost:50075>
-Datanode-2 UI | Management  | Haoop HDFS | <http://analyticsplatform:50076>| <http://localhost:50076>
-Kafka Manager | Management | Kafka | <http://analyticsplatform:29000>| <http://localhost:29000>
-Kafka HQ | Management | Kafka | <http://analyticsplatform:28042>| <http://localhost:28042>
-Minio UI | Management | Minio | <http://analyticsplatform:9000>| <http://localhost:9000>
+Zepplin | Development | Zeppelin | <http://dataplatform:28080> | <http://localhost:28080>
+Jupyter | Development | Jupyter | <http://dataplatform:28888> | <http://localhost:28888>
+Nifi | Development | Nifi | <http://dataplatform:18080> | <http://localhost:18080/>
+Streamsets Data Collector | Development | Streamsets | <http://dataplatform:18630> | <http://localhost:18630/>
+Streamsets Transformer | Development | Streamsets Transformer | <http://dataplatform:19630> | <http://localhost:19630/>
+Spark UI | Management  | Spark | <http://dataplatform:8080> | <http://localhost:8080>
+Spark History Server UI | Management | Spark | <http://dataplatform:28117> | <http://localhost:28117>
+Presto | BigData SQL | Presto | <http://dataplatform:28081>| <http://localhost:28081>
+Dremio | BigData SQL | Dremio | <http://dataplatform:9047>| <http://localhost:9047>
+CMAK | Management | Kafka | <http://dataplatform:28104>| <http://localhost:28104>
+AKHQ | Management | Kafka | <http://dataplatform:28107>| <http://localhost:28107>
+Minio UI | Management | Minio | <http://dataplatform:9000>| <http://localhost:9000>
+Airflow | Management | Airflow UI | <http://dataplatform:28139>| <http://localhost:28139>
 
