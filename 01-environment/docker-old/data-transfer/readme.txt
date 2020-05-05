@@ -1,1 +1,0 @@
-Place files you want to have transferred into the Namenode here.

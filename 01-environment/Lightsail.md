@@ -40,8 +40,19 @@ sudo sysctl -w vm.max_map_count=262144
 cd /home/ubuntu 
 git clone https://github.com/gschmutz/hadoop-workshop.git
 chown -R ubuntu:ubuntu hadoop-workshop
+
 cd hadoop-workshop/01-environment/docker-minio
 
+# Get sample flight data
+cd data-transfer
+mkdir -p flight-data
+cd flight-data
+wget https://gschmutz-datasets.s3.eu-central-1.amazonaws.com/datasets/flight-data.zip
+unzip flight-data.zip
+rm flight-data.zip
+rm -R __MACOSX/
+
+cd hadoop-workshop/01-environment/docker-minio
 # Startup Environment
 sudo -E docker-compose up -d
 ```
