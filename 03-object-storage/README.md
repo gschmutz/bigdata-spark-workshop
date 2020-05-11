@@ -2,9 +2,10 @@
 
 In this workshop we will work with Object Storage for persistence, which can either be [MinIO](https://min.io/) as shown in the workshop, [Amazon S3](https://aws.amazon.com/s3/) or any other cloud Object Storage solution. We will use object storage as a drop-in replacement for Hadoop HDFS.
 
-We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
+We assume that the **Data platform** described [here](../01-environment) is running and accessible.
 
-In this workshop, we will use the flight-data available in the data-transfer folder of the environment. The files prepared here will be used later by the other workshops. 
+In this workshop, we will use the flight-data available in the data-transfer folder of the environment. 
+The files prepared in this workshop will be used later by the other workshops. 
 
 ## Volume Map data for Minio container
 
@@ -41,10 +42,13 @@ docker exec -ti awscli s3cmd -h
 
 This can also be found on the [S3cmd usage page](https://s3tools.org/usage).
 
-### Using MinIO UI
+### Using MinIO Browser
 
-In a browser window, navigate to <http://dataplatform:9000> and you should see login screen. Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button.  
-The MinIO homepage should now appear.
+In a browser window, navigate to <http://dataplatform:9000> and you should see login screen. 
+
+Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button.  
+
+The MinIO Browser homepage should now appear.
  
 ![Alt Image Text](./images/minio-home.png "Minio Homepage")
 
@@ -93,7 +97,7 @@ or you could also use `s3cmd ls` to list all buckets.
 docker exec -ti awscli s3cmd ls s3://
 ```
 
-### Upload the files to the bucket
+### Upload the Airport and Plane-Data CSV files to the new bucket
 
 To upload a file we are going to use the `s3cmd put` command. First for the `airports.csv`
 
@@ -134,7 +138,78 @@ bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
 2020-05-04 21:01    428558   s3://flight-bucket/raw-data/planes/plane-data.csv
 ```
 
-We can see the same in the MinioUI.  
+We can see the same in the MinIO Browser.  
 
 ![Alt Image Text](./images/minio-list-objects.png "Minio list objects")
 
+
+### Upload the different Carriers JSON file to the new bucket
+
+To upload a file we are going to use the `s3cmd put` command. First for the `carriers.json`
+
+```
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw-data/carriers/carriers.json
+```
+
+Check again in the MinIO Browser that the object has been uploaded.
+
+### Upload the different Flights data CSV files to the new bucket
+
+Next let's upload some flights data files, all documenting flights in April and May of 2008
+
+```
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw-data/flights/
+```
+
+All these objects are no available in the flight-bucket under the `raw-data/flights` path.
+
+![Alt Image Text](./images/minio-flights.png "Minio list objects")
+
+### Upload the Flight Handbook PDF file to the new bucket
+
+Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` we should have a `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
+
+```
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw-data/pdf/
+```
+
+You can see by the output that a multi-part upload has been performed:
+
+```
+$ docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw-data/pdf/
+WARNING: pilot_handbook.pdf: Owner username not known. Storing UID=1000 instead.
+WARNING: pilot_handbook.pdf: Owner groupname not known. Storing GID=1000 instead.
+WARNING: Module python-magic is not available. Guessing MIME types based on file extensions.
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 1 of 4, 15MB] [1 of 1]
+ 15728640 of 15728640   100% in    0s    77.98 MB/s  done
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 2 of 4, 15MB] [1 of 1]
+ 15728640 of 15728640   100% in    0s    73.09 MB/s  done
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 3 of 4, 15MB] [1 of 1]
+ 15728640 of 15728640   100% in    0s    80.48 MB/s  done
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 4 of 4, 8MB] [1 of 1]
+ 8702870 of 8702870   100% in    0s    66.63 MB/s  done
+```
+
+The file has been upload which you can again check in the Minio browser.
+
+The Minio browser also allows you to get a sharable link for this object. Click on the 3 dots right to the object name and then click on the first icon:
+
+![Alt Image Text](./images/minio-share-link.png "Minio list objects")
+
+A pop-up window will appear from where you can copy the link by clicking on the **Copy Link** button:
+
+![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
+
+Copy the link into a Web-browser window and you should get the PDF rendered as shown in the image below
+
+![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
+
+We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over their URLs. 
