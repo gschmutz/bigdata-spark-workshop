@@ -6,7 +6,7 @@ version: '3.0'
 services:
   #  ================================== Zookeeper ========================================== #}
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:5.4.0
+    image: confluentinc/cp-zookeeper:5.5.0
     container_name: zookeeper-1
     hostname: zookeeper-1
     ports:
@@ -17,10 +17,12 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Kafka ========================================== #}
   kafka-1:
-    image: confluentinc/cp-kafka:5.4.0
+    image: confluentinc/cp-kafka:5.5.0
     container_name: kafka-1
     hostname: kafka-1
     depends_on:
@@ -28,6 +30,7 @@ services:
     ports:
       - 9092:9092
       - 29092:29092
+      - 9992:9992
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_BROKER_RACK: r1
@@ -40,13 +43,15 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_DELETE_TOPIC_ENABLE: 'False'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
-      KAFKA_JMX_PORT: 9094
-      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9094
+      KAFKA_JMX_PORT: 9992
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9992
       KAFKA_JMX_HOSTNAME: kafka-1
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Schema Registry ========================================== #}
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:5.4.0
+    image: confluentinc/cp-schema-registry:5.5.0
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
@@ -63,6 +68,8 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,OPTIONS
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Schema Registry UI ========================================== #}
   schema-registry-ui:
@@ -78,6 +85,8 @@ services:
       - 28102:8000
     environment:
       SCHEMAREGISTRY_URL: http://${PUBLIC_IP}:8081
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Cluster Manager for Apache Kafka (CMAK) ========================================== #}
   cmak:
@@ -94,6 +103,8 @@ services:
     environment:
       ZK_HOSTS: zookeeper-1:2181
       APPLICATION_SECRET: abc123!
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Apache Kafka HQ (AKHQ) ========================================== #}
   akhq:
@@ -117,6 +128,8 @@ services:
                 url: "http://kafka-connect-1:8083"
     depends_on:
       - kafka-1
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
@@ -134,11 +147,18 @@ services:
       CORE_CONF_fs_s3a_path_style_access: 'true'
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       INIT_DAEMON_STEP: setup_spark
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
 #      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
     volumes:
-      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
-      - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-1:
     image: trivadis/apache-spark-worker:2.4.5-hadoop2.8
@@ -158,10 +178,17 @@ services:
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
     volumes:
-      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
-      - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-2:
     image: trivadis/apache-spark-worker:2.4.5-hadoop2.8
@@ -181,10 +208,17 @@ services:
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
     volumes:
-      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
-      - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-history:
     image: trivadis/apache-spark-worker:2.4.5-hadoop2.8
@@ -200,8 +234,17 @@ services:
       - 18080
     ports:
       - 28117:18080
+    environment:
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
     volumes:
-      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
+      - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   #  ================================== Apache Livy ========================================== #
@@ -216,14 +259,22 @@ services:
       com.mdps.service.restapi.url: http://${PUBLIC_IP}:8998/
     env_file:
       - ./conf/hadoop.env
+    environment:
+      SPARK_MASTER: spark://spark-master:7077
+      DEPLOY_MODE: client
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
     volumes:
+      - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
-      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
     ports:
       - 8998:8998
-    environment:
-      - SPARK_MASTER=spark://spark-master:7077
-      - DEPLOY_MODE=client
     restart: always
   #  ================================== Apache Hive Metastore ========================================== #
   hive-metastore:
@@ -234,17 +285,21 @@ services:
       - 9083:9083
     env_file:
       - ./conf/hadoop.env
-    command: /opt/hive/bin/hive --service metastore
     environment:
       CORE_CONF_fs_defaultFS: file:///tmp
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       SERVICE_PRECONDITION: hive-metastore-db:5432
+    volumes:
+      - ./data-transfer:/data-transfer
+    command: /opt/hive/bin/hive --service metastore
     restart: unless-stopped
   hive-metastore-db:
     image: trivadis/apache-hive-metastore-postgresql:3.1.0-postgres9.5.3
     container_name: hive-metastore-db
     hostname: hive-metastore-db
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== StreamSets DataCollector ========================================== #}
   streamsets-1:
@@ -303,6 +358,8 @@ services:
       com.mdps.service.webui.url: http://${PUBLIC_IP}:18080/nifi
     ports:
       - 18080:8080
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Node-RED ========================================== #}
   airflow:
@@ -329,9 +386,9 @@ services:
       - AIRFLOW_PASSWORD=abc123!
       - AIRFLOW_USERNAME=airflow
     volumes:
+      - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/bitnami/airflow/dags:Z
       - ./plugins/airflow/:/opt/bitnami/airflow/plugins:Z
-      - ./data-transfer:/data-transfer
     restart: unless-stopped
   airflow-scheduler:
     image: bitnami/airflow-scheduler:latest
@@ -350,9 +407,9 @@ services:
       - AIRFLOW_PASSWORD=abc123!
       - AIRFLOW_USERNAME=airflow
     volumes:
+      - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/bitnami/airflow/dags:Z
       - ./plugins/airflow/:/opt/bitnami/airflow/plugins:Z
-      - ./data-transfer:/data-transfer
     restart: unless-stopped
   airflow-db:
     image: bitnami/postgresql:10
@@ -363,8 +420,8 @@ services:
       - POSTGRESQL_USERNAME=bn_airflow
       - POSTGRESQL_PASSWORD=abc123!
       - ALLOW_EMPTY_PASSWORD=yes
-#    volumes:
-#      - ./container-volume/airflow/db:/bitnami/postgresql:Z
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #}
   zeppelin:
@@ -383,6 +440,14 @@ services:
     environment:
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
       ZEPPELIN_ADDR: 0.0.0.0
       ZEPPELIN_PORT: '8080'
       ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT: 120000
@@ -398,12 +463,11 @@ services:
       # enableV4 to make it work with AWS Frankfurt region
       SPARK_SUBMIT_OPTIONS: --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4
     volumes:
-      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
+      - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./conf/s3cfg:/root/.s3cfg
       - ./conf/zeppelin/shiro.ini:/opt/zeppelin/conf/shiro.ini
       - ./conf/zeppelin/interpreter-setting.json:/opt/zeppelin/interpreter/spark/interpreter-setting.json
-      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Jupyter ========================================== #}
   jupyter:
@@ -420,12 +484,14 @@ services:
       JUPYTER_TOKEN: abc123!
       GRANT_SUDO: 'true'
       TINI_SUBREAPER: 'true'
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Presto ========================================== #}
-  presto:
-    hostname: presto
+  presto-1:
     image: starburstdata/presto:latest
-    container_name: presto
+    hostname: presto-1
+    container_name: presto-1
     labels:
       com.mdps.service.webui.name: Presto UI
       com.mdps.service.webui.url: http://${PUBLIC_IP}:28081
@@ -436,10 +502,10 @@ services:
       - ./conf/presto/minio.properties:/usr/lib/presto/etc/catalog/minio.properties
     restart: unless-stopped
   #  ================================== Presto ========================================== #}
-  dremio:
-    hostname: dremio
+  dremio-1:
     image: dremio/dremio-oss:latest
-    container_name: dremio
+    container_name: dremio-1
+    hostname: dremio-1
     labels:
       com.mdps.service.webui.name: Dremio UI
       com.mdps.service.webui.url: http://${PUBLIC_IP}:9047
@@ -447,6 +513,8 @@ services:
       - 9047:9047
       - 31010:31010
       - 45678:45678
+    volumes:
+      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Minio ========================================== #}
   minio:
@@ -461,6 +529,8 @@ services:
     environment:
       MINIO_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
       MINIO_SECRET_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+    volumes:
+      - ./data-transfer:/data-transfer
     command: server /data
     restart: unless-stopped
   #  ================================== Awscli ========================================== #}
@@ -468,12 +538,12 @@ services:
     image: xueshanf/awscli:latest
     container_name: awscli
     hostname: awscli
-    volumes:
-      - ./conf/s3cfg:/root/.s3cfg
-      - ./data-transfer:/data-transfer
-#      - './minio/config:/root/.minio'
     environment:
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./conf/s3cfg:/root/.s3cfg
+#      - './minio/config:/root/.minio'
     command: tail -f /dev/null
     restart: unless-stopped

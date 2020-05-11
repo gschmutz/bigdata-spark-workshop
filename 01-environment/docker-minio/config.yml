@@ -4,7 +4,8 @@
       platys:
         platform-name: 'bigdata-platform'
         stack-image-name: 'trivadis/platys-modern-data-platform'
-        stack-image-version: '1.4.0'
+        stack-image-version: '1.5.0'
+        structure: 'flat'
 
       # ===== Apache Zookeeper ========
       ZOOKEEPER_enable: true
@@ -124,8 +125,8 @@
 
       # ===== Jupyter ========
       JUPYTER_enable: true
-      # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'all_spark'
-      JUPYTER_edition: 'all_spark'
+      # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'all-spark'
+      JUPYTER_edition: 'all-spark'
       JUPYTER_volume_map_data: false
 
       # ===== Visualization ========
