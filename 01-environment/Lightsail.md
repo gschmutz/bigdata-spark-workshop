@@ -38,10 +38,10 @@ sudo sysctl -w vm.max_map_count=262144
 
 # Get the project
 cd /home/ubuntu 
-git clone https://github.com/gschmutz/hadoop-workshop.git
-chown -R ubuntu:ubuntu hadoop-workshop
+git clone https://github.com/gschmutz/hadoop-spark-workshop.git
+chown -R ubuntu:ubuntu hadoop-spark-workshop
 
-cd hadoop-workshop/01-environment/docker-minio
+cd hadoop-spark-workshop/01-environment/docker-minio
 
 # Get sample flight data
 cd data-transfer
@@ -52,7 +52,7 @@ unzip flight-data.zip
 rm flight-data.zip
 rm -R __MACOSX/
 
-cd hadoop-workshop/01-environment/docker-minio
+cd hadoop-spark-workshop/01-environment/docker-minio
 # Startup Environment
 sudo -E docker-compose up -d
 ```

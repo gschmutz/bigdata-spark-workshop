@@ -28,9 +28,9 @@ Now let's checkout the NoSQL Workshop project from GitHub:
 ```
 # Get the project
 cd /home/bigdata
-sudo rm -R hadoop-workshop/
-git clone https://github.com/gschmutz/hadoop-workshop.git
-cd hadoop-workshop/01-environment/docker
+sudo rm -R hadoop-spark-workshop/
+git clone https://github.com/gschmutz/hadoop-spark-workshop.git
+cd hadoop-spark-workshop/01-environment/docker
 ```
 
 ## Start Environment
