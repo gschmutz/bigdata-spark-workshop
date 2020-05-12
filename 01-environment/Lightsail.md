@@ -48,7 +48,7 @@ cd data-transfer
 mkdir -p flight-data
 cd flight-data
 wget https://gschmutz-datasets.s3.eu-central-1.amazonaws.com/datasets/flight-data.zip
-apt-get install unzip
+sudo apt-get install unzip
 unzip -o flight-data.zip
 rm flight-data.zip
 rm -R __MACOSX/
