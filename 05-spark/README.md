@@ -1,4 +1,4 @@
-# Data Manipulation with Spark
+# Data Reading and Writing using Spark RDD and DataFrames
 
 ## Introduction
 
@@ -12,11 +12,11 @@ The same data as in the [Hive Workshop](../04-hive/README.md) will be used.
 
 [Apache Spark](https://spark.apache.org/) is a fast, in-memory data processing engine with elegant and expressive development APIs in Scala, Java, and Python that allow data workers to efficiently execute machine learning algorithms that require fast iterative access to datasets. Spark on Apache Hadoop YARN enables deep integration with Hadoop and other YARN enabled workloads in the enterprise.
 
-You can run batch application such as MapReduce types jobs or iterative algorithms that build upon each other. You can also run interactive queries and process streaming data with your application. Spark also provides a number of libraries which you can easily use to expand beyond the basic Spark capabilities such as Machine Learning algorithms, SQL, streaming, and graph processing. Spark runs on Hadoop clusters such as Hadoop YARN or Apache Mesos, or even in a Standalone Mode with its own scheduler.
+You can run batch application such as MapReduce types jobs or iterative algorithms that build upon each other. You can also run interactive queries and process streaming data with your application. Spark also provides a number of libraries which you can easily use to expand beyond the basic Spark capabilities such as Machine Learning algorithms, SQL, streaming, and graph processing. Spark runs on Hadoop clusters such as Hadoop YARN or Kubernetes, or even in a Standalone Mode with its own scheduler.
 
 There are various ways for accessing Spark
 
- * **PySpark** - accessing Hive from the commandline
+ * **PySpark** - accessing Hive from the command line
  * **Apache Zeppelin** - a browser based GUI for working with various tools of the Big Data ecosystem
  * **Jupyter** - a browser based GUI for working with a Python and Spark
 
@@ -95,7 +95,7 @@ You should be brought forward to an empty notebook with an empty paragraph. Agai
 
 ![Alt Image Text](./images/zeppelin-spark-execute-cell.png "Zeppelin Execute Shell")
 
-By default the Spark Zeppelin interpreter will be using the Scala API. To switch to the Python API, use the following directive `%spark.pyspark` at the beginning of the cell. This will be the new default for the interpreter
+By default the Spark Zeppelin interpreter will be using the Scala API. To switch to the Python API, use the following directive `%pyspark` at the beginning of the cell. This will be the new default for the interpreter
 
 ![Alt Image Text](./images/zeppelin-spark-execute-python.png "Zeppelin Execute Shell")
 
@@ -454,12 +454,25 @@ You should see the five files inside the `flights` folder
 
 ![Alt Image Text](./images/zeppelin-sh-ls.png "Zeppelin Show Files")
 
-Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
+The CSV files in this case do not contain a header line, therefore we can not use the same technique as before with the airports and derive the schema from the header. 
+
+We first have to manually define a schema. One way is to use a DSL as shown in the next code block. 
+
+```
+%pyspark
+flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOfWeek` INTEGER, `depTime` INTEGER, `crsDepTime` INTEGER, `arrTime` INTEGER, `crsArrTime` INTEGER, `uniqueCarrier` STRING, `flightNum` STRING, `tailNum` STRING, `actualElapsedTime` INTEGER,
+                   `crsElapsedTime` INTEGER, `airTime` INTEGER, `arrDelay` INTEGER,`depDelay` INTEGER,`origin` STRING, `dest` STRING, `distance` INTEGER, `taxiIn` INTEGER, `taxiOut` INTEGER, `cancelled` STRING, `cancellationCode` STRING, `diverted` STRING, 
+                   `carrierDelay` STRING, `weatherDelay` STRING, `nasDelay` STRING, `securityDelay` STRING, `lateAircraftDelay` STRING"""
+```
+
+Now we can import the flights data into a DataFrame using this schema and show the first 5 rows. 
+
+We use  to use the header line for naming the columns and specify to infer the schema. We specify `schema=fligthSchema` to use the schema from above.  
 
 ```
 %pyspark
 flightsRawDF = spark.read.csv("s3a://flight-bucket/raw-data/flights", 
-    	sep=",", inferSchema="true", header="true")
+    	sep=",", inferSchema="false", header="false", schema=flightSchema)
 flightsRawDF.show(5)
 ```
 	
@@ -467,7 +480,7 @@ The output will show the header line followed by the 5 data lines.
 
 ![Alt Image Text](./images/zeppelin-show-flights-raw.png "Zeppelin Welcome Screen")
 
-Now let’s display the schema, which has been derived from the data:
+Let’s also see the schema, which is not very surprising
 
 ```	
 %pyspark
@@ -478,471 +491,84 @@ The result should be a rather large schema only shown here partially. You can se
 
 ```
 root
-	|-- driverid: string (nullable = true)
-	|-- truckid: string (nullable = true)
-	|-- model: string (nullable = true)
-	|-- jun13_miles: integer (nullable = true)
-	|-- jun13_gas: integer (nullable = true)
-	|-- may13_miles: integer (nullable = true)
-	|-- may13_gas: integer (nullable = true)
-	|-- apr13_miles: integer (nullable = true)
-	|-- apr13_gas: integer (nullable = true)
-	...
-	...
+ |-- year: integer (nullable = true)
+ |-- month: integer (nullable = true)
+ |-- dayOfMonth: integer (nullable = true)
+ |-- dayOfWeek: integer (nullable = true)
+ |-- depTime: integer (nullable = true)
+ |-- crsDepTime: integer (nullable = true)
+ |-- arrTime: integer (nullable = true)
+ |-- crsArrTime: integer (nullable = true)
+ |-- uniqueCarrier: string (nullable = true)
+ |-- flightNum: string (nullable = true)
+ |-- tailNum: string (nullable = true)
+ |-- actualElapsedTime: integer (nullable = true)
+ |-- crsElapsedTime: integer (nullable = true)
+ |-- airTime: integer (nullable = true)
+ |-- arrDelay: integer (nullable = true)
+ |-- depDelay: integer (nullable = true)
+ |-- origin: string (nullable = true)
+ |-- dest: string (nullable = true)
+ |-- distance: integer (nullable = true)
+ |-- taxiIn: integer (nullable = true)
+ |-- taxiOut: integer (nullable = true)
+ |-- cancelled: string (nullable = true)
+ |-- cancellationCode: string (nullable = true)
+ |-- diverted: string (nullable = true)
+ |-- carrierDelay: string (nullable = true)
+ |-- weatherDelay: string (nullable = true)
+ |-- nasDelay: string (nullable = true)
+ |-- securityDelay: string (nullable = true)
+ |-- lateAircraftDelay: string (nullable = true)
 ```
 	
-Next let’s ask for the total number of rows in the dataset. Should return 100. 
+Next let’s ask for the total number of rows in the dataset. Should return **50'000**. 
 
 ```
 %pyspark
-trucksRawDF.count()
+flightsRawDF.count()
 ```
 	
-You can also transform data easily into another format, just by writing the DataFrame out to a new file. Let’s create a JSON representation of the data. We will write it to a refined folder. 
+You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
+
+Let’s create a JSON representation of the data. We will write it to a refined folder. 
+
+For HDFS:
 
 ```
 %pyspark
-trucksRawDF.write.json("hdfs://namenode:9000/user/hue/truckdata/truck.json")
+flightsRawDF.write.json("hdfs://namenode:9000/user/hue/refined-data/flights")
 ```
 	
-Should you want to execute it a 2nd time, then you first have to delete the folder truck-json, otherwise the 2nd execution will throw an error. You can directly execute the remove from within Zeppelin, using the `%sh` directive. 
+For MinIO:
+
+```
+%pyspark
+flightsRawDF.write.json("s3a://flight-bucket/refined-data/flights")
+```
+	
+	
+Should you want to execute it a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution will throw an error. 
+
+You can directly execute the remove from within Zeppelin, using the `%sh` directive. 
+
+For HDFS:
 
 ```
 %sh
-hadoop fs -rm -R hdfs://namenode:9000/user/hue/truckdata/truck.json
+hadoop fs -rm -R hdfs://namenode:9000/user/hue/refined-data/flights
 ```
 	
-By now we have imported the truck data and made it available as the `trucksRawDF` Data Frame. We will use that data frame again later. 
+For MinIO:
+
+```
+%sh
+s3cmd rm -r s3://flight-bucket/refined-data/flights
+```
+	
+By now we have imported the airports and flights data and made it available as a Data Frame. 
 
 Additionally we have also stored the data to a file in json format. 
-
-### Working with the data using Spark SQL
-
-Now we also have the geolocation available in the DataFrame. Let’s work with it using SQL. 
-
-Add some markdown to start the new section
-
-```
-%md ## Let's use some SQL to work with the data
-```
-
-To use the data in a SQL statement, we can register the DataFrame as a temporary view. 
-
-```
-%pyspark
-trucksRawDF.createOrReplaceTempView("trucks")
-geolocationRawDF.createOrReplaceTempView("geolocation")
-```
-
-Temporary views in Spark SQL are session-scoped and will disappear if the session that creates it terminates. If you want to have a temporary view that is shared among all sessions and keep alive until the Spark application terminates, you can create a global temporary view. So instead of the above, you could also do
-
-```
-%pyspark
-trucksRawDF.createGlobalTempView("trucks")
-geolocationRawDF.createGlobalTempView("geolocation")
-```
-
-Global temporary view is tied to a system preserved database `global_temp`, and we must use the qualified name to refer it, e.g. SELECT * FROM `global_temp.geolocation`.
-
-
-We can always ask for the table registered by executing the show tables SQL command.
-
-```
-%pyspark
-spark.sql("show tables").show()
-```
-
-With the tables in place, we can execute SQL directly from a cell, by using the `%sql` directive. 
-
-```
-%sql
-SELECT * FROM trucks
-```
-
-When executing such a cell, the output is shown in the nice grid view as shown in the screenshot below. 
-
-![Alt Image Text](./images/zeppelin-sql-select.png "Zeppelin Welcome Screen")
-
-This is very helpful for testing various versions of a SQL statement, until you are sure about the result. It's not just easier to work and refine the SQL statement, is also much easier to interpret the result, compared to the method of using `show()` on the data frame.
-
-```
-%pyspark 
-spark.sql("SELECT * FROM trucks").show()
-```
-
-Play with some different statements on `geolocation`. Let's start with just showing the data
-
-```
-%sql
-SELECT * FROM geolocation
-```
-
-With the result of the `geolocation` table, you will also get an error message saying that the output has been truncated to 1000 rows. 
-
-You can also control this behaviour using the `LIMIT` clause of SQL
-
-```
-%sql
-SELECT * FROM geolocation
-LIMIT 10
-```
-
-To restrict on a given column value, just use the `WHERE` clause of SQL
-
-```
-%sql
-SELECT * FROM geolocation WHERE event != 'normal'
-```
-
-Of course you can also to some more complex operations, i.e using `GROUP BY` with an aggregation operator (`COUNT` in this case):
-
-```
-%sql
-SELECT driverid, COUNT(*) FROM geolocation 
-WHERE event != 'normal'
-GROUP BY driverid
-ORDER BY COUNT(*) DESC
-LIMIT 5
-```
-
-We have seen that we can register a DataFrame as a table and then use these tables directly in SQL. But the result of the SQL is “only” shown on the notebook. 
-
-If we want to make use of SQL inside Spark, we can use the result of a SQL query to populate a new DataFrame. We can just take a statement we have previously tested using the `%sql` directive and execute it with a `spark.sql()` command. Using triple double-quotes allows us to specify the SQL over multiple lines, which allow a copy-paste from the version tested above.
-
-```
-%pyspark
-unsafeDrivingDF = spark.sql("""
-	                SELECT driverid, COUNT(*) occurance 
-	                FROM geolocation WHERE event != 'normal'
-	                GROUP BY driverid
-	                ORDER BY COUNT(*) DESC
-	                        """)
-unsafeDrivingDF.show()
-```
-
-Again register the result as a temporary view named `unsafe_driving`
-
-```
-%pyspark
-unsafeDrivingDF.createOrReplaceTempView("unsafe_driving")
-```
-
-### Transform the data using Spark SQL
-
-Now let’s use that technique to do some restructuring (transformation) of the data. 
-
-Again let’s name that section of the notebook, using some markdown. 
-
-```
-%md ## Restructure the Trucks data
-```
-
-We will use the same statement as with the Hive workshop to unpivot the data, so that the different values by month are no longer in one result line per driver but on separate result lines. 
-
-Similar to the Hive workshop, we can use the `stack` function, together with the `LATERAL VIEW` command, which are both available in Spark SQL as well. For more info see [LATERAL VIEW](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+LateralView) and [stack function](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+LateralView).
-
-Let’s again first just test it using the `%sql` directive. 
-
-```
-%sql
-SELECT truckid, driverid, rdate, miles, gas, miles / gas mpg 
-FROM trucks 
-LATERAL VIEW stack(54, 
-				'jun13',jun13_miles,jun13_gas,
-				'may13',may13_miles,may13_gas,
-				'apr13',apr13_miles,apr13_gas,
-				'mar13',mar13_miles,mar13_gas,
-				'feb13',feb13_miles,feb13_gas,
-				'jan13',jan13_miles,jan13_gas,
-				'dec12',dec12_miles,dec12_gas,
-				'nov12',nov12_miles,nov12_gas,
-				'oct12',oct12_miles,oct12_gas,
-				'sep12',sep12_miles,sep12_gas,
-				'aug12',aug12_miles,aug12_gas,
-				'jul12',jul12_miles,jul12_gas,
-				'jun12',jun12_miles,jun12_gas,
-				'may12',may12_miles,may12_gas,
-				'apr12',apr12_miles,apr12_gas,
-				'mar12',mar12_miles,mar12_gas,
-				'feb12',feb12_miles,feb12_gas,
-				'jan12',jan12_miles,jan12_gas,
-				'dec11',dec11_miles,dec11_gas,
-				'nov11',nov11_miles,nov11_gas,
-				'oct11',oct11_miles,oct11_gas,
-				'sep11',sep11_miles,sep11_gas,
-				'aug11',aug11_miles,aug11_gas,
-				'jul11',jul11_miles,jul11_gas,
-				'jun11',jun11_miles,jun11_gas,
-				'may11',may11_miles,may11_gas,
-				'apr11',apr11_miles,apr11_gas,
-				'mar11',mar11_miles,mar11_gas,
-				'feb11',feb11_miles,feb11_gas,
-				'jan11',jan11_miles,jan11_gas,
-				'dec10',dec10_miles,dec10_gas,
-				'nov10',nov10_miles,nov10_gas,
-				'oct10',oct10_miles,oct10_gas,
-				'sep10',sep10_miles,sep10_gas,
-				'aug10',aug10_miles,aug10_gas,
-				'jul10',jul10_miles,jul10_gas,
-				'jun10',jun10_miles,jun10_gas,
-				'may10',may10_miles,may10_gas,
-				'apr10',apr10_miles,apr10_gas,
-				'mar10',mar10_miles,mar10_gas,
-				'feb10',feb10_miles,feb10_gas,
-				'jan10',jan10_miles,jan10_gas,
-				'dec09',dec09_miles,dec09_gas,
-				'nov09',nov09_miles,nov09_gas,
-				'oct09',oct09_miles,oct09_gas,
-				'sep09',sep09_miles,sep09_gas,
-				'aug09',aug09_miles,aug09_gas,
-				'jul09',jul09_miles,jul09_gas,
-				'jun09',jun09_miles,jun09_gas,
-				'may09',may09_miles,may09_gas,
-				'apr09',apr09_miles,apr09_gas,
-				'mar09',mar09_miles,mar09_gas,
-				'feb09',feb09_miles,feb09_gas,
-				'jan09',jan09_miles,jan09_gas ) dummyalias AS rdate, miles, gas
-```
-
-Once we are sure that it is working correctly, we can populate a new DataFrame with the results of the SQL query.
-
-```
-%pyspark
-truckMileageDF = spark.sql("""
-SELECT truckid, driverid, rdate, miles, gas, miles / gas mpg 
-FROM trucks 
-LATERAL VIEW stack(54, 
-				'jun13',jun13_miles,jun13_gas,
-				'may13',may13_miles,may13_gas,
-				'apr13',apr13_miles,apr13_gas,
-				'mar13',mar13_miles,mar13_gas,
-				'feb13',feb13_miles,feb13_gas,
-				'jan13',jan13_miles,jan13_gas,
-				'dec12',dec12_miles,dec12_gas,
-				'nov12',nov12_miles,nov12_gas,
-				'oct12',oct12_miles,oct12_gas,
-				'sep12',sep12_miles,sep12_gas,
-				'aug12',aug12_miles,aug12_gas,
-				'jul12',jul12_miles,jul12_gas,
-				'jun12',jun12_miles,jun12_gas,
-				'may12',may12_miles,may12_gas,
-				'apr12',apr12_miles,apr12_gas,
-				'mar12',mar12_miles,mar12_gas,
-				'feb12',feb12_miles,feb12_gas,
-				'jan12',jan12_miles,jan12_gas,
-				'dec11',dec11_miles,dec11_gas,
-				'nov11',nov11_miles,nov11_gas,
-				'oct11',oct11_miles,oct11_gas,
-				'sep11',sep11_miles,sep11_gas,
-				'aug11',aug11_miles,aug11_gas,
-				'jul11',jul11_miles,jul11_gas,
-				'jun11',jun11_miles,jun11_gas,
-				'may11',may11_miles,may11_gas,
-				'apr11',apr11_miles,apr11_gas,
-				'mar11',mar11_miles,mar11_gas,
-				'feb11',feb11_miles,feb11_gas,
-				'jan11',jan11_miles,jan11_gas,
-				'dec10',dec10_miles,dec10_gas,
-				'nov10',nov10_miles,nov10_gas,
-				'oct10',oct10_miles,oct10_gas,
-				'sep10',sep10_miles,sep10_gas,
-				'aug10',aug10_miles,aug10_gas,
-				'jul10',jul10_miles,jul10_gas,
-				'jun10',jun10_miles,jun10_gas,
-				'may10',may10_miles,may10_gas,
-				'apr10',apr10_miles,apr10_gas,
-				'mar10',mar10_miles,mar10_gas,
-				'feb10',feb10_miles,feb10_gas,
-				'jan10',jan10_miles,jan10_gas,
-				'dec09',dec09_miles,dec09_gas,
-				'nov09',nov09_miles,nov09_gas,
-				'oct09',oct09_miles,oct09_gas,
-				'sep09',sep09_miles,sep09_gas,
-				'aug09',aug09_miles,aug09_gas,
-				'jul09',jul09_miles,jul09_gas,
-				'jun09',jun09_miles,jun09_gas,
-				'may09',may09_miles,may09_gas,
-				'apr09',apr09_miles,apr09_gas,
-				'mar09',mar09_miles,mar09_gas,
-				'feb09',feb09_miles,feb09_gas,
-				'jan09',jan09_miles,jan09_gas ) dummyalias AS rdate, miles, gas
-	""")
-```
-
-With such a large SQL statement, the tripple-quotes are really helpful!
-
-Let’s print the schema of the new DataFrame.
-
-```
-%pyspark
-truckMileageDF.printSchema()
-```
-
-We can also work on the DataFrame in a fluent-API style, for example to only show data of a given driver. This is just the programmatic version as an alternative for using SQL.
-
-```
-%pyspark
-truckMileageDF.filter(truckMileageDF.driverid=="A3").show(10)
-```
-
-We have successfully transformed the truck data and made it available as a DataFrame in memory. If we want to persist it so that it is available for other consumers as well, we can write it to HDFS. 
-
-### Write the result data to HDFS
-
-Again let’s name that section of the notebook, using some markdown. 
-
-```
-%md ## Persist result data in HDFS
-```
-
-Let’s write the `truckMileageDF` DataFrame to HDFS. We could again use CSV or JSON to do that. 
-
-But there are more efficient serialisation formats, such as **Parquet**, **ORC** or **Avro**. These have a lot of advantages if the file is later processed further.  
-
-#### Using JSON
-
-First we will see how we can save the result as a **JSON** formatted file. 
-
-```
-%pyspark
-truckMileageDF.write.json('hdfs://namenode:9000/user/hue/truckdata/truckmileage-json')
-```
-
-and then check that the file has been written using the `hadoop fs` command
-
-```
-%sh
-hadoop fs -ls -h hdfs://namenode:9000/user/hue/truckdata/truckmileage-parquet
-```	
-
-#### Using Parquet
-
-Next let's save the result to a **Parquet** formatted file. We use a similar statement as above when we wrote JSON, just using the `parquet()` method instead.
-
-```
-%pyspark
-truckMileageDF.write.parquet('hdfs://namenode:9000/user/hue/truckdata/truckmileage-parquet')
-```
-
-Let's see it has worked with another `hadoop fs` command
-
-```
-%sh
-hadoop fs -ls -h hdfs://namenode:9000/user/hue/truckdata/truckmileage-parquet
-```	
-	
-#### Using Apache ORC
-
-To use an **ORC** formatted file, we use a similar statement as above but instead of the `parquet()` method we use the generic `format()` together with the `save()` method.
-
-```
-%pyspark
-truckMileageDF.write.format("orc").save('hdfs://namenode:9000/user/hue/truckdata/truckmileage-orc')
-```
-
-Again let's see it it has worked with the `hadoop fs` command
-
-```
-%sh
-hadoop fs -ls -h hdfs://namenode:9000/user/hue/truckdata/truckmileage-orc
-```	
-
-#### Using Apache Avro
-
-We can also tryout the **Avro** format in a similar way
-
-```
-%pyspark
-truckMileageDF.write.format("avro").save('hdfs://namenode:9000/user/hue/truckdata/truckmileage-avro')
-```
-
-Before executing, you also have to add the dependency `org.apache.spark:spark-avro_2.11:2.4.3` to the Spark interpreter.
-
-Unfortunately that **does not currently** work due to [SPARK-26675](https://issues.apache.org/jira/browse/SPARK-26675?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel).
-
-### Simple Analytics on the data using Spark SQL
-
-Now let’s do some simple analytics on the data, both using SQL and the fluent-API. 
-
-Again start with a new section my using some markdown. 
-
-```
-%md ## Apply some analytics on the data
-```
-
-Now register the truck mileage DataFrame as a table 
-
-```
-%pyspark
-truckMileageDF.createOrReplaceTempView("truck_mileage")
-```	
-
-Calculate and display the average value of mpg by truck. Let’s first do it with SQL
-
-```
-%sql
-SELECT truckid, avg(mpg) avgmpg
-FROM truck_mileage
-GROUP BY truckid
-```
-
-We can do the same in a programmatic way using the fluent API
-
-```
-%pyspark
-avgMpgByTruck = truckMileageDF.groupBy("truckId").agg({"mpg":"avg"})
-avgMpgByTruck.show()
-```
-
-Let’s calculate the total miles per driver, first testing the SQL statement using the %sql directive.
-
-```
-%sql
-SELECT driverid, sum(miles) totmiles
-FROM truck_mileage
-GROUP BY driverid
-```
-
-Then create a DataFrame with the result and register a table at the same time.
-
-```
-%pyspark
-spark.sql("""
-	       SELECT driverid, sum(miles) totmiles
-	       FROM truck_mileage
-	       GROUP BY driverid
-	       """).createOrReplaceTempView("driver_milage")
-```
-
-Let’s display all the views we have now available.
-
-```
-%pyspark
-spark.sql("show tables").show()
-```
-
-Next let’s join the `unsafe_driving` view with the `driver_mileage` to see the number of occurrences and the total miles driven by the driver.
-
-```
-%sql
-SELECT a.driverid,a.occurance,b.totmiles 
-FROM unsafe_driving a
-LEFT JOIN driver_milage b 
-ON (a.driverid=b.driverid)
-```
-
-By extending the SQL statement from above (using it as an inline view), we can calculate a risk factor by driver. 
-
-```
-%sql
-SELECT driverid, occurance, totmiles, totmiles/occurance riskfactor 
-FROM (
-	SELECT a.driverid,a.occurance,b.totmiles 
-	FROM unsafe_driving a
-	LEFT JOIN driver_milage b 
-	ON (a.driverid=b.driverid)
-)
-```
 
 
 
