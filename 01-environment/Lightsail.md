@@ -48,11 +48,12 @@ cd data-transfer
 mkdir -p flight-data
 cd flight-data
 wget https://gschmutz-datasets.s3.eu-central-1.amazonaws.com/datasets/flight-data.zip
+apt-get install unzip
 unzip -o flight-data.zip
 rm flight-data.zip
 rm -R __MACOSX/
 
-cd hadoop-spark-workshop/01-environment/docker-minio
+cd /home/ubuntu/hadoop-spark-workshop/01-environment/docker-minio
 # Startup Environment
 sudo -E docker-compose up -d
 ```
