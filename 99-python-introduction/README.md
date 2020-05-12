@@ -69,7 +69,7 @@ To leave the Python shell, enter `quit()` on the `>>>`command prompt.
 
 ### Using Apache Zeppelin
 
-In a browser window navigate to <http://analyticsplatform:38081> and you should see the Apache Zeppelin homepage
+In a browser window navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage
 
 ![Alt Image Text](./images/zeppelin-homescreen.png "Open Hdfs Files View")
 
@@ -79,7 +79,7 @@ To create a new notebook, click on the **Create new note** link. To import an ex
 
 ### Using Jupyter
 
-In a browser window navigate to <http://analyticsplatform:38888>. 
+In a browser window navigate to <http://dataplatform:28888>. 
 Enter `abc123` into the **Password or token** field and click **Log in**. 
 
 You should be forwarded to the Jupyter homepage. 
