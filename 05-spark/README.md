@@ -22,14 +22,6 @@ There are various ways for accessing Spark
 
 There is also the option to use **Thrift Server** to execute Spark SQL from any tool supporting SQL. But this is not covered in this workshop.
 
-Before we can use the Spark environment, we need create a folder in HDFS, where the Spark logfiles will be stored 
-
-```
-docker exec -ti namenode hadoop fs -mkdir -p /var/log/spark/logs
-```
-
-This way can they can also be accessed by the Spark Historyserver.
-
 ### Using the Python API through PySpark
 
 The [PySpark API](https://spark.apache.org/docs/latest/api/python/index.html) allows us to work with Spark through the command line. 
@@ -44,40 +36,20 @@ and you should end up on the **pyspark** command prompt `>>>` as shown below
 
 ```
 bigdata@bigdata:~$ docker exec -ti spark-master pyspark
-WARNING: HADOOP_PREFIX has been replaced by HADOOP_HOME. Using value of HADOOP_PREFIX.
-Python 3.7.3 (default, May 19 2019, 19:22:57)
-[GCC 6.3.0 20170516] on linux
+
+Python 2.7.16 (default, Jan 14 2020, 07:22:06)
+[GCC 8.3.0] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
-Ivy Default Cache set to: /root/.ivy2/cache
-The jars for the packages stored in: /root/.ivy2/jars
-:: loading settings :: url = jar:file:/spark/jars/ivy-2.4.0.jar!/org/apache/ivy/core/settings/ivysettings.xml
-org.apache.commons#commons-lang3 added as a dependency
-:: resolving dependencies :: org.apache.spark#spark-submit-parent-7f79251a-791b-4afd-9ea6-cb401e73ed44;1.0
-	confs: [default]
-	found org.apache.commons#commons-lang3;3.5 in central
-:: resolution report :: resolve 128ms :: artifacts dl 2ms
-	:: modules in use:
-	org.apache.commons#commons-lang3;3.5 from central in [default]
-	---------------------------------------------------------------------
-	|                  |            modules            ||   artifacts   |
-	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
-	---------------------------------------------------------------------
-	|      default     |   1   |   0   |   0   |   0   ||   1   |   0   |
-	---------------------------------------------------------------------
-:: retrieving :: org.apache.spark#spark-submit-parent-7f79251a-791b-4afd-9ea6-cb401e73ed44
-	confs: [default]
-	0 artifacts copied, 1 already retrieved (0kB/6ms)
-2019-05-20 18:48:15,353 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 2.4.3
+   /__ / .__/\_,_/_/ /_/\_\   version 2.4.5
       /_/
 
-Using Python version 3.7.3 (default, May 19 2019 19:22:57)
+Using Python version 2.7.16 (default, Jan 14 2020 07:22:06)
 SparkSession available as 'spark'.
 >>>
 ```
@@ -86,14 +58,14 @@ You have an active `SparkSession` available as the `spark` variable. Enter any v
 
 ```
 >>> spark.version
-'2.4.3'
+u'2.4.5'
 ```
 
-You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which also allow to store the different steps as a notebook. 
+You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
 
 ### Using Apache Zeppelin
 
-In a browser window, navigate to <http://analyticsplatform:38081> and you should see the Apache Zeppelin homepage. 
+In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. 
 
 First let's finish the configuration of the Spark Interpreter. Click on the **anonymous** drop-down menu and select **Interpreter**
 
@@ -103,7 +75,9 @@ On the **Interpreters** page, navigate to the **Spark** interpreter. You can als
 
 ![Alt Image Text](./images/zeppelin-spark-interpreter.png "Zeppelin Interpreter")
 
-Click on **edit** to change the configuration. Navigate to the **Properties** section and enter `1` into the **spark.cores.max** field and `8g` into the **spark.executor.memory** field. 
+Click on **edit** to change the configuration. 
+
+Navigate to the **Properties** section and enter `1` into the **spark.cores.max** field and `8g` into the **spark.executor.memory** field. 
 
 ![Alt Image Text](./images/zeppelin-spark-interpreter2.png "Zeppelin Interpreter")
 
@@ -113,9 +87,11 @@ Then scroll all the way down to the bottom of the settings where you can see a *
 
 When asked to restart the interpreter, click **OK**. 
 
-Now let's create a new Notebook to perform some Spark actions. Navigate back to the Zeppelin homepage and click on the **Create new note** link. Enter `HelloSpark into the **Note Name** field and leave the **Default Interpreter** set to **spark** and click **Create**. 
+Now let's create a new Notebook to perform some Spark actions. Navigate back to the Zeppelin homepage and click on the **Create new note** link. 
 
-You should be brought forward to an empty notebook with an empty cell. Again just enter `spark.version` into the field and hit **Shift** + **Enter** to execute the statement.  
+Enter `HelloSpark` into the **Note Name** field and leave the **Default Interpreter** set to **spark** and click **Create**. 
+
+You should be brought forward to an empty notebook with an empty paragraph. Again let's use the `spark.version` command by adding it to the empty cell and hit **Shift** + **Enter** to execute the statement.  
 
 ![Alt Image Text](./images/zeppelin-spark-execute-cell.png "Zeppelin Execute Shell")
 
@@ -123,31 +99,48 @@ By default the Spark Zeppelin interpreter will be using the Scala API. To switch
 
 ![Alt Image Text](./images/zeppelin-spark-execute-python.png "Zeppelin Execute Shell")
 
-Zeppelin allows for mixing different interpreters in one and the same Notebook, wheras one interpreter always being the default (the one chosen when creating the notebook, **spark** in our case). 
+Zeppelin allows for mixing different interpreters in one and the same Notebook, whereas one interpreter always being the default (the one chosen when creating the notebook, **spark** in our case). 
 
-You can use the `%sh` interpreter to perform shell actions. We can use it for example to perform a hadoop filesystem action using the `hadoop fs` command. For example to list the files in the `/user/hue/` folder on HDFS, we can perform the following command
+You can use the `%sh` interpreter to perform shell actions. We can use it for example to perform a hadoop filesystem action using the `hadoop fs` command (if you have HDFS running) or an `s3cmd` to perform an action on Object Storage, if MinIO is running. 
+
+#### Working with HDFS (if installed)
+
+For example to list the files in the `/user/hue/` folder on HDFS, we can perform the following command
 
 ```
 %sh
 hadoop fs -ls hdfs://namenode:9000/user/hue 
 ```
 
-**Note**: the shell will be executed inside the `zeppelin` container. Therefore to work with HDFS, we have to provide a full hdfs link. 
+**Note**: the shell will be executed inside the `zeppelin` container. Therefore to work with HDFS, we have to provide a full HDFS link. 
 
 ![Alt Image Text](./images/zeppelin-spark-execute-shell.png "Zeppelin Execute Shell")
+
+#### Working with MinIO (if installed)
+
+To list all the objects within the `flight-bucket
+
+```
+%sh
+s3cmd ls -r s3://flight-bucket
+```
 
 You can use Apache Zeppelin to perform the workshop below. The other option is to use **Jupyter**. 
 
 ### Using Jupyter
 
-In a browser window navigate to <http://analyticsplatform:38888>. 
+In a browser window navigate to <http://dataplatform:28888>. 
 Enter `abc123` into the **Password or token** field and click **Log in**. 
 
 You should be forwarded to the **Jupyter** homepage. Click on the **Python 3** icon in the **Notebook** section to create a new notebook using the **Python 3** kernel.
 
 ![Alt Image Text](./images/jupyter-create-notebook.png "Jupyter Create Notebook")
   
-You will be forwarded to an empty notebook with a first empty cell. Here you can enter your commands. In contrast to **Apache Zeppelin**, we don't have an active Spark Session at hand. We first have to create one. Add the following code to the first cell
+You will be forwarded to an empty notebook with a first empty cell. 
+
+Here you can enter your commands. In contrast to **Apache Zeppelin**, we don't have an active Spark Session at hand. We first have to create one. 
+
+Add the following code to the first cell
 
 ```
 import os
@@ -170,35 +163,44 @@ spark = SparkSession.builder.appName('abc').config(conf=conf).getOrCreate()
 sc = spark.sparkContext
 ```
 
-and execute it by entering **Shift** + **Enter**. If you check the code you can see that we connect to the Spark Master and get a session on the "spark cluster", available through the `spark` variable. The Spark Context is available as variable `sc`.
+and execute it by entering **Shift** + **Enter**. 
 
-First execute `spark.version` in another shell to show the Spark version in place. And then excute a python command `print ("hello")` just to see that you are executing python. 
+If you check the code you can see that we connect to the Spark Master and get a session on the "spark cluster", available through the `spark` variable. The Spark Context is available as variable `sc`.
+
+First execute `spark.version` in another shell to show the Spark version in place. 
+
+Also execute a python command `print ("hello")` just to see that you are executing python. 
 
 ![Alt Image Text](./images/jupyter-execute-cell.png "Jupyter Execute cell")
 
 You can use Jupyter to perform the workshop. 
 
+
 ## Working with Spark Resilient Distributed Datasets (RDDs)
 
-Spark’s primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. It is a distributed collection of elements that is parallelised across the cluster. In other words, a RDD is an immutable collection of objects that is partitioned and distributed across multiple physical nodes of a YARN cluster and that can be operated in parallel.
+Spark’s primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. 
+
+It is a distributed collection of elements that is parallelised across the cluster. In other words, a RDD is an immutable collection of objects that is partitioned and distributed across multiple physical nodes of a YARN cluster and that can be operated in parallel.
 
 There are three methods for creating a RDD:
 
- * Parallelise an existing collection. This means that the data already resides within Spark and can now be operated on in parallel. 
+ 1. Parallelise an existing collection. This means that the data already resides within Spark and can now be operated on in parallel. 
  * Create a RDD by referencing a dataset. This dataset can come from any storage source supported by Hadoop such as HDFS, Cassandra, HBase etc.
  * Create a RDD by transforming an existing RDD to create a new RDD.
 
 We will be using the later two methods in this workshop.
 
-First let's upload the data needed for this workshop, using the techniques we have learned in the [HDFS Workshop](../02-hdfs/README.md).
+First let's upload the data needed for this workshop, using the techniques we have learned in the [HDFS Workshop](../02-hdfs/README.md) when working with HDFS or [Working with MinIO Object Storage](../03-object-storage/README.md) when working with MinIO Object Storage.
 
-### Upload Raw Data
+The raw data can be downloaded 
+
+### Upload Raw Data to HDFS
 
 In the RDD workshop we are working with text data.
 
 In HDFS under folder `/user/hue` create a new folder `wordcount` and upload the two files into that folder. 
 
-Here are the commands to perform when using the **Hadoop Filesystem Command** on the commmand line
+Here are the commands to perform when using the **Hadoop Filesystem Command** on the command line
 
 ```
 docker exec -ti namenode hadoop fs -mkdir -p /user/hue/wordcount/
@@ -210,13 +212,42 @@ docker exec -ti namenode hadoop fs -ls /user/hue/wordcount/
 
 Of course you can also use **Hue** to upload the data as we have learned in the [HDFS Workshop](../02-hdfs/README.md).
 
+### Upload Raw Data to MinIO
+
+First create a bucket for the data
+
+```
+docker exec -ti awscli s3cmd mb s3://wordcount-bucket
+```
+
+And then copy the `big.txt` into the new bucket 
+
+```
+docker exec -ti awscli s3cmd put /data-transfer/wordcount/big.txt s3://wordcount-bucket/raw-data/
+```
+
+Now the data is either available in HDFS or MinIO, depending on your environment. Next we will work with the data from Spark RDDs.
+
 ### Implement Wordcount using Spark Python API
 
 In this section we will see how Word Count can be implemented using the Spark Python API.
-You can either use one of the 3 different ways described above to access the Spark Python environment. Just copy and paste the commands either into the **PySpark** command line or the cells in **Zeppelin** or **Jupyter**. In **Jupyter** make sure to get the connection to spark using the script provided above. 
+
+You can use either one of the three different ways described above to access the Spark Python environment. 
+
+Just copy and paste the commands either into the **PySpark** command line or into the paragraphs in **Zeppelin** or **Jupyter**. In Zeppelin you have to switch to Python interpreter by using the following directive `%spark.pyspark` on each paragraph.
+
+In **Jupyter** make sure to get the connection to spark using the script shown before. 
+
+For data in HDFS, perform
 
 ```
 lines = sc.textFile("hdfs://namenode:9000/user/hue/wordcount/big.txt")
+```
+
+and if data is in MinIO object storage, perform
+
+```
+lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
 ```
 
 Split the line into words and flat map it
@@ -231,10 +262,19 @@ Reduce by key to get the counts by word and number
 counts = words.map(lambda word: (word,1)).reduceByKey(lambda a, b : a + b)
 ```
 
-Save the counts to a file on HDFS (in folder output). This is an action and will start execution on Spark. Make sure to remove the output folder in case it already exists
+Save the counts to a file on HDFS (in folder output) or on MinIO object storage. 
+
+This is an action and will start execution on Spark. Make sure to remove the output folder in case it already exists
+
+to write to HDFS:
 
 ```
 counts.saveAsTextFile("hdfs://namenode:9000/user/hue/wordcount/result")
+```
+to write to MinIO object storage:
+
+```
+counts.saveAsTextFile("s3a://wordcount-bucket/result-data")
 ```
 
 To view the number of distinct values in counts.
@@ -243,112 +283,195 @@ To view the number of distinct values in counts.
 counts.count()
 ```
 
-To check the results either use **Hue** or the **Hadoop FileSytem** command on the command line. 
+To check the results in HDFS or MinIO, perform the following commands. 
+
+For HDFS, do an ls and a cat to display the content: 
 
 ```
 docker exec -ti namenode hadoop fs -ls hdfs://namenode:9000/user/hue/wordcount/result
-```
 
-Use the HDFS cat command to see the output
-
-```
 docker exec -ti namenode hadoop fs -cat hdfs://namenode:9000/user/hue/wordcount/result/part-00000 | more
+```
+
+For MinIO object storage, do an ls to see the result and use the MinIO browser to download the object to the local machine.
+
+```
+docker exec -ti awscli s3cmd ls -r s3://wordcount-bucket/result-data
 ```
 
 This finishes the simple Python implementation of the word count in Spark.
  
 ## Working with Apache Spark Data Frames
 
-First let's upload the data needed for this workshop, using the techniques we have learned in the [HDFS Workshop](../02-hdfs/README.md).
+The data needed here has been uploaded to MinIO in workshop 03-object-storage. If there are already loaded, you can skip the next section "(Re-)Upload Raw Data from Workshop 03".
+ 
+### (Re-)Upload Raw Data from Workshop 03
 
-### Upload Raw Data
+In this workshop we are working with flight data. The files are available in the `data-transfer` folder. 
 
-In this workshop we are working with truck data. The files are also available in the `data-tranfer` folder of the Analytics Platform: [/01-environment/docker/data-transfer/flightdata](../01-environment/docker/data-transfer/truckdata).
-
-In HDFS under the folder `/user/hue` create a new folder `truckdata` and upload the two files into that folder. 
-
-Here are the commands to perform when using the **Hadoop Filesystem Command** on the commmand line
+Airports:
 
 ```
-docker exec -ti namenode hadoop fs -mkdir -p /user/hue/truckdata/
-
-docker exec -ti namenode hadoop fs -copyFromLocal /tmp/data-transfer/truckdata/geolocation.csv /user/hue/truckdata/
-docker exec -ti namenode hadoop fs -copyFromLocal /tmp/data-transfer/truckdata/trucks.csv /user/hue/truckdata/
-
-docker exec -ti namenode hadoop fs -ls /user/hue/truckdata/
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw-data/airports/airports.csv
 ```
 
-Now with the raw data in HDFS, let's use Spark and the DataFrames API to work with the data. 
+Plane-Data:
 
-### Working with Trucks and Geolocation data using Spark DataFrames
+```
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw-data/planes/plane-data.csv
+```
 
-For this workshop we will be using Zeppelin discussed above. But you can easily adapt it to **PySpark** or **Apache Jupyter**.
+Carriers:
 
-In a browser window, navigate to <http://analyticsplatform:38081> and make sure that you configure the **Spark** Interpreter as discussed above.
+```
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw-data/carriers/carriers.json
+```
+
+Flights:
+
+```
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw-data/flights/
+
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw-data/flights/
+```
+
+### Working with Flighs data using Spark DataFrames
+
+For this workshop we will be using Zeppelin discussed above. 
+
+But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
+
+In a browser window, navigate to <http://dataplatform:28080> and make sure that you configure the **Spark** Interpreter as discussed above.
 
 Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
+
 Click on **Create Note** and a new Notebook is created with one cell which is empty. 
 
-Let’s now start working with the Trucks data, which we have uploaded with the file `trucks.csv`.
-
-#### Working with Truck Data
+#### Add some Markdown first
 
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
 
 ```
-%md # Spark DataFrame sample with trucks and geolocation data
+%md # Spark DataFrame sample with flights data
 ```
 
 Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
 
 The markdown code should now be rendered as a Heading-1 title.
- 
-Make sure that the data is in the right place. You can use the directive `%sh` to execute a shell action.
+
+#### Working with Airports Data
+
+First add another title, this time as a Heading-2.
+
+```
+%md ## Working with the Airport data
+```
+
+Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw-data/airports/`. Let's see the data by performing an `%sh` directive
 
 ```
 %sh
-hadoop fs -ls hdfs://namenode:9000/user/hue/truckdata
+s3cmd ls -r s3://flight-bucket/raw-data/airports/
 ```
 
-You should see the two files inside the `truckdata` folder
+We can see that there is one file for the airports data.
 
-![Alt Image Text](./images/zeppelin-sh-ls.png "Zeppelin Show Files")
+![Alt Image Text](./images/zeppelin-sh-ls-airports.png "Zeppelin Show Files")
 
-
-Now let’s start using some code. First let’s import the spark python API. 
+Now let’s start using some code. First we have to import the spark python API. 
 
 ```
 %pyspark
 from pyspark.sql.types import *
 ```
 
-Next let’s import the trucks data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
+Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
 
 ```
 %pyspark
-trucksRawDF = spark.read.csv("hdfs://namenode:9000/user/hue/truckdata/trucks.csv", 
+airportsRawDF = spark.read.csv("s3a://flight-bucket/raw-data/airports", 
     	sep=",", inferSchema="true", header="true")
-trucksRawDF.show(5)
+airportsRawDF.show(5)
+```
+
+The output will show the header line followed by the 5 data lines.
+
+![Alt Image Text](./images/zeppelin-show-airports-raw.png "Zeppelin Welcome Screen")
+
+Now let’s display the schema, which has been derived from the data:
+
+```	
+%pyspark
+airportsRawDF.printSchema()
+```
+
+You can see that both string as well as double datatypes have been used and that the names of the columns are derived from the header row of the CSV file. 
+
+```
+root
+ |-- iata: string (nullable = true)
+ |-- airport: string (nullable = true)
+ |-- city: string (nullable = true)
+ |-- state: string (nullable = true)
+ |-- country: string (nullable = true)
+ |-- lat: double (nullable = true)
+ |-- long: double (nullable = true)
+``` 
+ 
+Next let’s ask for the total number of rows in the dataset. Should return a total of **3376**. 
+
+```
+%pyspark
+airportsRawDF.count()
+```
+ 
+#### Working with Flights Data
+
+First add another title, this time as a Heading-2.
+
+```
+%md ## Working with the Flights data
+```
+
+Let’s now start working with the Flights data, which we have uploaded with the various files within the `s3://flight-bucket/raw-data/flights/`.
+
+Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
+ 
+Make sure that the data is in the right place. You can use the directive `%sh` to execute a shell action.
+
+```
+%sh
+s3cmd ls -r s3://flight-bucket/raw-data/flights/
+```
+
+You should see the five files inside the `flights` folder
+
+![Alt Image Text](./images/zeppelin-sh-ls.png "Zeppelin Show Files")
+
+Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
+
+```
+%pyspark
+flightsRawDF = spark.read.csv("s3a://flight-bucket/raw-data/flights", 
+    	sep=",", inferSchema="true", header="true")
+flightsRawDF.show(5)
 ```
 	
 The output will show the header line followed by the 5 data lines.
 
-![Alt Image Text](./images/zeppelin-show-trucks-raw.png "Zeppelin Welcome Screen")
+![Alt Image Text](./images/zeppelin-show-flights-raw.png "Zeppelin Welcome Screen")
 
-If you get an error 
-
-```
-java.io.InvalidClassException: org.apache.commons.lang3.time.FastDateParser; local class incompatible: stream classdesc serialVersionUID = 2, local class serialVersionUID = 3
-``` 
-
-then make sure that you have added the `org.apache.commons:commons-lang3:3.5` as a dependency on the **Spark** interpreter (as shown in the introduction on how to use **Apache Zeppelin**). 
-
-
-Let’s display the schema, which has been derived from the data:
+Now let’s display the schema, which has been derived from the data:
 
 ```	
 %pyspark
-trucksRawDF.printSchema()
+flightsRawDF.printSchema()
 ```
 
 The result should be a rather large schema only shown here partially. You can see that both string as well as integer datatypes have been used and that the names of the columns are derived from the header row of the CSV file. 
@@ -392,41 +515,6 @@ hadoop fs -rm -R hdfs://namenode:9000/user/hue/truckdata/truck.json
 By now we have imported the truck data and made it available as the `trucksRawDF` Data Frame. We will use that data frame again later. 
 
 Additionally we have also stored the data to a file in json format. 
-
-Now let’s do the same for the geolocation data. 
-
-#### Working with the geolocation data
-
-Again use some markdown to show that we are now working with geolocation data
-
-```
-%md ## Import Geolocation data
-```
-	
-Then read the data from the `geolocation.csv` file into another DataFrame.
-
-```
-%pyspark
-geolocationRawDF = spark.read.csv("hdfs://namenode:9000/user/hue/truckdata/geolocation.csv", 
-	    sep=",", inferSchema="true", header="true")
-geolocationRawDF.show(5)
-```
-
-And show the schema, which has been inferred.
-
-```
-%pyspark
-geolocationRawDF.printSchema()
-```
-
-Let's also print the number of rows in the DataFrame. This should return 8000.
-
-```
-%pyspark
-geolocationRawDF.count()
-```
-
-Now we hold the geolocation data in another dataframe in memory. Let's see how we can further make use of these dataframes.
 
 ### Working with the data using Spark SQL
 
