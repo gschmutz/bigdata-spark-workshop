@@ -1,0 +1,662 @@
+# =====================================================
+# Platform: bigdata-platform
+# =====================================================
+version: '3.0'
+# enforce some dependencies
+# enforce some dependencies
+services:
+  #  ================================== Zookeeper ========================================== #}
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:5.5.0
+    container_name: zookeeper-1
+    hostname: zookeeper-1
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Kafka ========================================== #}
+  kafka-1:
+    image: confluentinc/cp-kafka:5.5.0
+    container_name: kafka-1
+    hostname: kafka-1
+    depends_on:
+      - zookeeper-1
+    ports:
+      - 9092:9092
+      - 29092:29092
+      - 9992:9992
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_RACK: r1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_DOCKERHOST://kafka-1:29092,LISTENER_EXTERNAL://kafka-1:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_DOCKERHOST://localhost:29092,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DELETE_TOPIC_ENABLE: 'False'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
+      KAFKA_JMX_PORT: 9992
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9992
+      KAFKA_JMX_HOSTNAME: kafka-1
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Schema Registry ========================================== #}
+  schema-registry-1:
+    image: confluentinc/cp-schema-registry:5.5.0
+    hostname: schema-registry-1
+    container_name: schema-registry-1
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8081
+    depends_on:
+      - zookeeper-1
+      - kafka-1
+    ports:
+      - 8081:8081
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry-1
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:19092
+      SCHEMA_REGISTRY_MASTER_ELIGIBILITY: 'true'
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,OPTIONS
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Schema Registry UI ========================================== #}
+  schema-registry-ui:
+    image: landoop/schema-registry-ui:latest
+    container_name: schema-registry-ui
+    hostname: schema-registry-ui
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28102
+    depends_on:
+      - kafka-1
+      - schema-registry-1
+    ports:
+      - 28102:8000
+    environment:
+      SCHEMAREGISTRY_URL: http://${PUBLIC_IP}:8081
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Cluster Manager for Apache Kafka (CMAK) ========================================== #}
+  cmak:
+    image: trivadis/cmak:latest
+    container_name: cmak
+    hostname: cmak
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28104
+    depends_on:
+      - zookeeper-1
+      - kafka-1
+    ports:
+      - 28104:9000
+    environment:
+      ZK_HOSTS: zookeeper-1:2181
+      APPLICATION_SECRET: abc123!
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Apache Kafka HQ (AKHQ) ========================================== #}
+  akhq:
+    image: tchiotludo/akhq:latest
+    container_name: akhq
+    hostname: akhq
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28107
+    ports:
+      - 28107:8080
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka-1:19092"
+              schema-registry:
+                url: "http://schema-registry-1:8081"
+              connect:
+                url: "http://kafka-connect-1:8083"
+    depends_on:
+      - kafka-1
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Apache Hadoop ========================================== #
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    labels:
+      com.mdps.service.webui.name: Hadoop NameNode UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:9870
+    ports:
+      - 9870:9870
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      CLUSTER_NAME: test
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/namenode:/hadoop/dfs/name
+    restart: unless-stopped
+  datanode-1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode-1
+    labels:
+      com.mdps.service.webui.name: Hadoop DataNode-1 UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:9864
+    ports:
+      - 9864:9864
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: namenode:9870
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/datanode-1:/hadoop/dfs/data
+    restart: unless-stopped
+  datanode-2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode-2
+    labels:
+      com.mdps.service.webui.name: Hadoop DataNode-2 UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:9865
+    ports:
+      - 9865:9864
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: namenode:9870
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/datanode-2:/hadoop/dfs/data
+    restart: unless-stopped
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: resourcemanager
+    hostname: resourcemanager
+    labels:
+      com.mdps.service.webui.name: YARN RessourceManager UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:18088
+    ports:
+      - 18088:8088
+    depends_on:
+      - namenode
+      - datanode-1
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      YARN_CONF_yarn_resourcemanager_webapp_address: ${PUBLIC_IP}:18088
+      YARN_CONF_yarn_nodemanager_webapp_address: ${PUBLIC_IP}:18042
+      YARN_CONF_yarn_timeline___service_webapp_address: ${PUBLIC_IP}:28020
+      YARN_CONF_yarn_log_server_url: ${PUBLIC_IP}:28020
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  nodemanager:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: nodemanager
+    hostname: nodemanager
+    labels:
+      com.mdps.service.webui.name: YARN NodeManager UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:18042
+    ports:
+      - 18042:8042
+    depends_on:
+      - namenode
+      - datanode-1
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      YARN_CONF_yarn_resourcemanager_webapp_address: ${PUBLIC_IP}:18088
+      YARN_CONF_yarn_nodemanager_webapp_address: ${PUBLIC_IP}:18042
+      YARN_CONF_yarn_timeline___service_webapp_address: ${PUBLIC_IP}:28020
+      YARN_CONF_yarn_log_server_url: ${PUBLIC_IP}:28020
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  historyserver:
+    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
+    container_name: historyserver
+    hostname: historyserver
+    labels:
+      com.mdps.service.webui.name: YARN History Server
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:18188
+    ports:
+      - 18188:8188
+    depends_on:
+      - namenode
+      - datanode-1
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: namenode:9870 datanode-1:9864 resourcemanager:18088
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Apache Spark 2.x ========================================== #
+  spark-master:
+    image: trivadis/apache-spark-master:2.4.5-hadoop2.8
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - 6066:6066
+      - 7077:7077
+      - 8080:8080
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SPARK_PUBLIC_DNS: ${PUBLIC_IP}
+      INIT_DAEMON_STEP: setup_spark
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+#      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+    restart: unless-stopped
+  spark-worker-1:
+    image: trivadis/apache-spark-worker:2.4.5-hadoop2.8
+    container_name: spark-worker-1
+    hostname: spark-worker-1
+    depends_on:
+      - spark-master
+    ports:
+      - 28111:28111
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SPARK_MASTER: spark://spark-master:7077
+#      SPARK_WORKER_CORES: 2
+#      SPARK_WORKER_MEMORY: 1g
+      SPARK_WORKER_WEBUI_PORT: '28111'
+      SPARK_PUBLIC_DNS: ${PUBLIC_IP}
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+    restart: unless-stopped
+  spark-worker-2:
+    image: trivadis/apache-spark-worker:2.4.5-hadoop2.8
+    container_name: spark-worker-2
+    hostname: spark-worker-2
+    depends_on:
+      - spark-master
+    ports:
+      - 28112:28112
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SPARK_MASTER: spark://spark-master:7077
+#      SPARK_WORKER_CORES: 2
+#      SPARK_WORKER_MEMORY: 1g
+      SPARK_WORKER_WEBUI_PORT: '28112'
+      SPARK_PUBLIC_DNS: ${PUBLIC_IP}
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+    restart: unless-stopped
+  spark-history:
+    image: trivadis/apache-spark-worker:2.4.5-hadoop2.8
+    command: /spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
+    container_name: spark-history
+    hostname: spark-history
+    labels:
+      com.mdps.service.webui.name: Spark History Server
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28117
+      com.mdps.service.restapi.name: Spark History Server
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:28117/api/v1
+    expose:
+      - 18080
+    ports:
+      - 28117:18080
+    environment:
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+    restart: unless-stopped
+  #  ================================== Apache Livy ========================================== #
+  livy:
+    image: trivadis/apache-livy:latest
+    container_name: livy
+    hostname: livy
+    labels:
+      com.mdps.service.webui.name: Livy Server UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:8998/ui#
+      com.mdps.service.restapi.name: Livy API
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8998/
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      SPARK_MASTER: yarn
+      DEPLOY_MODE: client
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+    ports:
+      - 8998:8998
+    restart: always
+  #  ================================== Apache Hive Metastore ========================================== #
+  hive-metastore:
+    image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
+    container_name: hive-metastore
+    hostname: hive-metastore
+    ports:
+      - 9083:9083
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      CORE_CONF_fs_defaultFS: file:///tmp
+      SERVICE_PRECONDITION: hive-metastore-db:5432
+    volumes:
+      - ./data-transfer:/data-transfer
+    command: /opt/hive/bin/hive --service metastore
+    restart: unless-stopped
+  hive-metastore-db:
+    image: trivadis/apache-hive-metastore-postgresql:3.1.0-postgres9.5.3
+    container_name: hive-metastore-db
+    hostname: hive-metastore-db
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Apache Hue ========================================== #
+  hue:
+    image: gethue/hue:latest
+    container_name: hue
+    hostname: hue
+    dns: 8.8.8.8
+    depends_on:
+      - hue-db
+      - solr
+    ports:
+      - 8888:8888
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./conf/hue/hue.ini:/usr/share/hue/desktop/conf/hue.ini
+    restart: unless-stopped
+  hue-db:
+    image: postgres:10
+    container_name: hue-db
+    hostname: hue-db
+    environment:
+      POSTGRES_DB: hue
+      POSTGRES_PASSWORD: hue
+      POSTGRES_USER: hue
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== StreamSets DataCollector ========================================== #}
+  streamsets-1:
+    image: trivadis/streamsets-kafka-hadoop-aws:latest
+    container_name: streamsets-1
+    hostname: streamsets-1
+    labels:
+      com.mdps.service.webui.name: StreamSets Data Collector UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:18630
+      com.mdps.service.restapi.name: StreamSets Data Collector REST API
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:18630/collector/restapi
+    ports:
+      - 18630:18630
+    environment:
+      SDC_OFFSET_DIRECTORY: /data/custom-offset-el
+      SDC_JAVA_OPTS: -Xmx2g -Xms2g
+      SDC_JAVA8_OPTS: -XX:+UseG1GC
+      SDC_CONF_MONITOR_MEMORY: 'true'
+      SDC_CONF_PIPELINE_MAX_RUNNERS_COUNT: 50
+    volumes:
+      - ./data-transfer:/data-transfer
+#      - ./streamsets-extras/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/postgresql-42.2.6.jar:/opt/streamsets-datacollector-latest/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/postgresql-42.2.6.jar:Z
+#      - ./streamsets-extras/libs-common-lib:/opt/streamsets-datacollector-latest/libs-common-lib:Z
+#      - ./streamsets-extras/user-libs:/opt/streamsets-datacollector-user-libs:Z
+    ulimits:
+      nofile:
+        soft: 32768
+        hard: 32768
+    restart: unless-stopped
+  #  ================================== StreamSets Transformer ========================================== #}
+  streamsets-transformer-1:
+    image: streamsets/transformer:latest
+    container_name: streamsets-transformer-1
+    hostname: streamsets-transformer-1
+    labels:
+      com.mdps.service.webui.name: StreamSets Transformer UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:19630
+      com.mdps.service.restapi.name: StreamSets Transformer REST API
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:19630/collector/restapi
+    ports:
+      - 19630:19630
+    volumes:
+      - ./data-transfer:/data-transfer
+#      - ./container-volume/streamsets-transformer/data:/data:Z
+#      - ./streamsets-extras/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/postgresql-42.2.6.jar:/opt/streamsets-datacollector-latest/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/postgresql-42.2.6.jar:Z
+#      - ./streamsets-extras/libs-common-lib:/opt/streamsets-datacollector-latest/libs-common-lib:Z
+#      - ./streamsets-extras/user-libs:/opt/streamsets-datacollector-user-libs:Z
+    restart: unless-stopped
+  #  ================================== NiFi ========================================== #}
+  nifi-1:
+    image: apache/nifi:latest
+    container_name: nifi-1
+    hostname: nifi-1
+    labels:
+      com.mdps.service.webui.name: Apache NiFi UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:18080/nifi
+    ports:
+      - 18080:8080
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Node-RED ========================================== #}
+  airflow:
+    image: bitnami/airflow:latest
+    container_name: airflow
+    hostname: airflow
+    labels:
+      com.mdps.service.webui.name: Airflow UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28139
+      com.mdps.service.restapi.name: Airflow REST API
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:28139/api/experimental/
+    ports:
+      - 28139:8080
+    environment:
+      - AIRFLOW_HOME=/opt/bitnami/airflow
+      - AIRFLOW_EXECUTOR=LocalExecutor
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_DATABASE_HOST=airflow-db
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=abc123!
+      - AIRFLOW_LOAD_EXAMPLES=no
+      - AIRFLOW_PASSWORD=abc123!
+      - AIRFLOW_USERNAME=airflow
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./scripts/airflow/dags:/opt/bitnami/airflow/dags:Z
+      - ./plugins/airflow/:/opt/bitnami/airflow/plugins:Z
+    restart: unless-stopped
+  airflow-scheduler:
+    image: bitnami/airflow-scheduler:latest
+    container_name: airflow-scheduler
+    hostname: airflow-scheduler
+    environment:
+      - AIRFLOW_HOME=/opt/bitnami/airflow
+      - AIRFLOW_EXECUTOR=LocalExecutor
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_DATABASE_HOST=airflow-db
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=abc123!
+      - AIRFLOW_LOAD_EXAMPLES=no
+      - AIRFLOW_PASSWORD=abc123!
+      - AIRFLOW_USERNAME=airflow
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./scripts/airflow/dags:/opt/bitnami/airflow/dags:Z
+      - ./plugins/airflow/:/opt/bitnami/airflow/plugins:Z
+    restart: unless-stopped
+  airflow-db:
+    image: bitnami/postgresql:10
+    container_name: airflow-db
+    hostname: airflow-db
+    environment:
+      - POSTGRESQL_DATABASE=bitnami_airflow
+      - POSTGRESQL_USERNAME=bn_airflow
+      - POSTGRESQL_PASSWORD=abc123!
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Zeppelin ========================================== #}
+  zeppelin:
+    image: trivadis/apache-zeppelin:0.8.2-spark2.4-hadoop2.8
+    container_name: zeppelin
+    hostname: zeppelin
+    labels:
+      com.mdps.service.webui.name: Apache Zeppelin UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28080
+    ports:
+      - 28080:8080
+#      - "4040:4040"
+#      - "42331:42331"
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      ZEPPELIN_ADDR: 0.0.0.0
+      ZEPPELIN_PORT: '8080'
+      ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT: 120000
+      ZEPPELIN_INTERPRETER_DEP_MVNREPO: https://repo.maven.apache.org/maven2
+      SPARK_MASTER: spark://spark-master:7077
+      # set spark-master for Zeppelin interpreter
+      MASTER: spark://spark-master:7077
+      SPARK_DRIVER_HOST: zeppelin
+      SPARK_DRIVER_BINDADDRESS: 0.0.0.0
+      PYSPARK_PYTHON: python3
+# no longer necessary with 0.8.2 of Zepplin
+#      - SPARK_SUBMIT_OPTIONS="--packages org.apache.commons:commons-lang3:3.5"
+      # enableV4 to make it work with AWS Frankfurt region
+      SPARK_SUBMIT_OPTIONS: --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+      - ./conf/s3cfg:/root/.s3cfg
+      - ./conf/zeppelin/shiro.ini:/opt/zeppelin/conf/shiro.ini
+      - ./conf/zeppelin/interpreter.json:/opt/zeppelin/conf/interpreter.json
+      - ./conf/zeppelin/interpreter-setting.json:/opt/zeppelin/interpreter/spark/interpreter-setting.json
+    restart: unless-stopped
+  #  ================================== Jupyter ========================================== #}
+  jupyter:
+    image: jupyter/all-spark-notebook:f9b134f7bd08
+    container_name: jupyter
+    hostname: jupyter
+    labels:
+      com.mdps.service.webui.name: Jupyter UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28888
+    ports:
+      - 28888:8888
+    environment:
+      JUPYTER_ENABLE_LAB: 'true'
+      JUPYTER_TOKEN: abc123!
+      GRANT_SUDO: 'true'
+      TINI_SUBREAPER: 'true'
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== SolR ========================================== #}
+  solr:
+    image: solr:8
+    container_name: solr
+    hostname: solr
+    labels:
+      com.mdps.service.webui.name: SolR UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:8983
+    ports:
+      - 8983:8983
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Presto ========================================== #}
+  presto-1:
+    image: starburstdata/presto:latest
+    hostname: presto-1
+    container_name: presto-1
+    labels:
+      com.mdps.service.webui.name: Presto UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28081
+    ports:
+      - 28081:8080
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Presto ========================================== #}
+  dremio-1:
+    image: dremio/dremio-oss:latest
+    container_name: dremio-1
+    hostname: dremio-1
+    labels:
+      com.mdps.service.webui.name: Dremio UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:9047
+    ports:
+      - 9047:9047
+      - 31010:31010
+      - 45678:45678
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
