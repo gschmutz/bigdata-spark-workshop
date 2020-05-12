@@ -4,7 +4,7 @@
       platys:
         platform-name: 'bigdata-platform'
         stack-image-name: 'trivadis/platys-modern-data-platform'
-        stack-image-version: '1.5.0'
+        stack-image-version: '1.5.1'
         structure: 'flat'
 
       # ===== Apache Zookeeper ========
