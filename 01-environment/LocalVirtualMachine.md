@@ -30,7 +30,7 @@ Now let's checkout the NoSQL Workshop project from GitHub:
 cd /home/bigdata
 sudo rm -R hadoop-spark-workshop/
 git clone https://github.com/gschmutz/hadoop-spark-workshop.git
-cd hadoop-spark-workshop/01-environment/docker
+cd hadoop-spark-workshop/01-environment/docker-minio
 ```
 
 ## Get sample flight data
