@@ -249,24 +249,30 @@ flightsRawDF.count()
 	
 You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
-Let’s create a JSON representation of the data. We will write it to a refined folder. 
+Let’s create a Parquet representation of the data in the refined folder. Additionally we partition the data by `year` and `month`. 
 
 For HDFS:
 
 ```
 %pyspark
-flightsRawDF.write.json("hdfs://namenode:9000/user/hue/refined-data/flights")
+flightsRawDF.write.partitionBy("year","month").parquet("hdfs://namenode:9000/user/hue/refined-data/flights")
 ```
 	
 For MinIO:
 
 ```
 %pyspark
-flightsRawDF.write.json("s3a://flight-bucket/refined-data/flights")
+flightsRawDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/refined-data/flights")
 ```
 
 Check that the file has been written to HDFS or MinIO using either one of the techniques seen before. 
-	
+
+For example for the object storage solution, we can add
+
+```
+%sh
+s3cmd ls -r s3://flight-bucket/refined-data/flights
+```	
 	
 Should you want to execute the write a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution of the write will throw an error. 
 
@@ -290,13 +296,20 @@ By now we have imported the airports and flights data and made it available as a
 
 Additionally we have also stored the data to a file in json format. 
 
-## Use Spark SQL to join flights with airports
+## Let’s use some SQL to work with the data
 
-First let's register the two DataFrames as temporary tables in Spark SQL
+First let's read the data from the parquet refined structure just created before. 
 
 ```
 %pyspark
-flightsRawDF.createOrReplaceTempView("flights")
+flightsRefinedDF = spark.read.format("parquet").load("s3a://flight-bucket/refined-data/flights")
+```
+
+With the `flightsRefinedDF` DataFrame in place, register the two DataFrames as temporary tables in Spark SQL
+
+```
+%pyspark
+flightsRefinedDF.createOrReplaceTempView("flights")
 airportsRawDF.createOrReplaceTempView("airports")
 ```
 
@@ -307,12 +320,67 @@ We can always display the registered tables by using the following statement:
 spark.sql("show tables").show()
 ```
 
+We can use `spark.sql()` to now execute an SELECT statement using one of the two tables
+
 ```
 %pyspark
-spark.sql("""SELECT distance, origin, destination 
-        FROM flights WHERE distance > 1000 
-        ORDER BY distance DESC""").show(10)
+spark.sql("SELECT * FROM airports").show()
 ```
+
+But in Zeppelin, testing such a statement is even easier. You can use the `%sql` directive to directly perform an SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit. 
+
+```
+%sql
+SELECT * 
+FROM airports
+```
+
+Let's see a `GROUP BY` in action
+
+```
+%sql
+SELECT country, state, count(*)
+FROM airports
+GROUP BY country, state
+```
+
+If we only want to see the ones for the USA, we add a `WHERE` clause
+
+```
+%sql
+SELECT country, state, count(*)
+FROM airports
+WHERE country = 'USA'
+GROUP BY country, state
+```
+
+Once you are ready, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. 
+
+```
+%pyspark
+usAirportsByStateDF = spark.sql("""
+        SELECT country, state, count(*)
+        FROM airports
+        WHERE country = 'USA'
+        GROUP BY country, state
+          """)
+usAirportsByStateDF.show()
+```
+
+
+If you perform a SELECT on the flights table using one or more of the partition columns, the query will prune the non-used partitions and only read the necessary files for the needed partitions
+
+```
+%sql
+SELECT * 
+FROM flights
+WHERE year = 2008 
+AND month = 04
+```
+
+## Use Spark SQL to perform some analytics on the data
+
+Let's see the the 10 longest flights in descending order with `origin` and `destination`
 
 ```
 %sql
@@ -322,6 +390,68 @@ WHERE distance > 1000
 ORDER BY distance DESC
 ```
 
+```
+%sql
+SELECT arrDelay, origin, destination,
+    CASE
+         WHEN arrDelay > 360 THEN 'Very Long Delays'
+         WHEN arrDelay > 120 AND arrDelay < 360 THEN 'Long Delays'
+         WHEN arrDelay > 60 AND arrDelay < 120 THEN 'Short Delays'
+         WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
+         WHEN arrDelay = 0 THEN 'No Delays'
+         ELSE 'Early'
+    END AS flight_delays
+         FROM flights
+         ORDER BY arrDelay DESC
+```
 
+## Use Spark SQL to join flights with airports
 
+Last but not least let's use the `airports` table to enrich the values returned by the `flights` table so we have more information on the origin and destination airport. 
 
+If we know SQL, we know that this can be done using a JOIN between two tables. The same syntax is also valid in Spark SQL. Following the techniques learned above, let's first test it using the handy %sql directive. 
+
+```
+%sql
+SELECT ao.airport AS origin_airport
+		, ao.city AS origin_city
+		, ad.airport AS desitination_airport
+		, ad.city AS destination_city
+		, f.*
+FROM flights  AS f
+LEFT JOIN airports AS ao
+ON (f.origin = ao.iata)
+LEFT JOIN airports AS ad
+ON (f.destination = ad.iata)
+```
+
+As soon as we are happy, we can again wrap it in a `spark.sql()` statement. 
+
+```
+%pyspark
+flightEnrichedDF = spark.sql("""
+		SELECT ao.airport AS origin_airport
+				, ao.city AS origin_city
+				, ad.airport AS desitination_airport
+				, ad.city AS destination_city
+				, f.*
+		FROM flights  AS f
+		LEFT JOIN airports AS ao
+		ON (f.origin = ao.iata)
+		LEFT JOIN airports AS ad
+		ON (f.destination = ad.iata)
+		""")
+```
+
+Let's see the result behind the DataFrame
+
+```
+%pyspark
+flightEnrichedDF.show()
+```
+
+Finally let's write the enriched structure as a result to object storage using again the Parquet format:
+
+```
+flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result-data/flights")
+```
