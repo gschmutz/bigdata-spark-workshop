@@ -1,12 +1,10 @@
-# Data Reading and Writing using Spark RDD and DataFrames
+# Getting Started using Spark RDD and DataFrames
 
 ## Introduction
 
 In this workshop we will work with [Apache Spark](https://spark.apache.org/) and implement some basic operations using the Spark DataFrame API for Python. 
 
-We assume that the **Analytics platform** described [here](../01-environment) is running and accessible. 
-
-The same data as in the [Hive Workshop](../04-hive/README.md) will be used. 
+We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
 
 ##	 Accessing Spark
 
@@ -118,7 +116,7 @@ hadoop fs -ls hdfs://namenode:9000/user/hue
 
 #### Working with MinIO (if installed)
 
-To list all the objects within the `flight-bucket
+To list all the objects within the `flight-bucket`
 
 ```
 %sh
@@ -192,8 +190,6 @@ We will be using the later two methods in this workshop.
 
 First let's upload the data needed for this workshop, using the techniques we have learned in the [HDFS Workshop](../02-hdfs/README.md) when working with HDFS or [Working with MinIO Object Storage](../03-object-storage/README.md) when working with MinIO Object Storage.
 
-The raw data can be downloaded 
-
 ### Upload Raw Data to HDFS
 
 In the RDD workshop we are working with text data.
@@ -226,7 +222,7 @@ And then copy the `big.txt` into the new bucket
 docker exec -ti awscli s3cmd put /data-transfer/wordcount/big.txt s3://wordcount-bucket/raw-data/
 ```
 
-Now the data is either available in HDFS or MinIO, depending on your environment. Next we will work with the data from Spark RDDs.
+Now with the data either available in HDFS or MinIO, let's use the data using Spark RDDs.
 
 ### Implement Wordcount using Spark Python API
 
@@ -299,277 +295,156 @@ For MinIO object storage, do an ls to see the result and use the MinIO browser t
 docker exec -ti awscli s3cmd ls -r s3://wordcount-bucket/result-data
 ```
 
-This finishes the simple Python implementation of the word count in Spark.
+This finishes this simple Python implementation of the word count in Spark using Spark's Resilient Distributed Datasets (RDD).
  
-## Working with Apache Spark Data Frames
+## Working with Spark DataFrames
 
-The data needed here has been uploaded to MinIO in workshop 03-object-storage. If there are already loaded, you can skip the next section "(Re-)Upload Raw Data from Workshop 03".
- 
-### (Re-)Upload Raw Data from Workshop 03
+The data needed here has been uploaded to MinIO in the Working with RDD section. 
 
-In this workshop we are working with flight data. The files are available in the `data-transfer` folder. 
+You can use either one of the three different ways described above to access the Spark Python environment. 
 
-Airports:
+For Zeppelin you can find a complete Notebook under the zeppelin folder. 
 
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw-data/airports/airports.csv
-```
+The following statements assume that they are used from within Zeppelin, that's why you find the `%pyspark` directives: 
 
-Plane-Data:
-
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw-data/planes/plane-data.csv
-```
-
-Carriers:
-
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw-data/carriers/carriers.json
-```
-
-Flights:
-
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw-data/flights/
-```
-
-### Working with Flighs data using Spark DataFrames
-
-For this workshop we will be using Zeppelin discussed above. 
-
-But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
-
-In a browser window, navigate to <http://dataplatform:28080> and make sure that you configure the **Spark** Interpreter as discussed above.
-
-Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
-
-Click on **Create Note** and a new Notebook is created with one cell which is empty. 
-
-#### Add some Markdown first
-
-Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
-
-```
-%md # Spark DataFrame sample with flights data
-```
-
-Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
-
-The markdown code should now be rendered as a Heading-1 title.
-
-#### Working with Airports Data
-
-First add another title, this time as a Heading-2.
-
-```
-%md ## Working with the Airport data
-```
-
-Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw-data/airports/`. Let's see the data by performing an `%sh` directive
-
-```
-%sh
-s3cmd ls -r s3://flight-bucket/raw-data/airports/
-```
-
-We can see that there is one file for the airports data.
-
-![Alt Image Text](./images/zeppelin-sh-ls-airports.png "Zeppelin Show Files")
-
-Now let’s start using some code. First we have to import the spark python API. 
+First let's see the `spark.read`method, which is part of the DataFrameReader, which the following statement shows:
 
 ```
 %pyspark
-from pyspark.sql.types import *
+spark.read
 ```
 
-Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
-
-```
-%pyspark
-airportsRawDF = spark.read.csv("s3a://flight-bucket/raw-data/airports", 
-    	sep=",", inferSchema="true", header="true")
-airportsRawDF.show(5)
-```
-
-The output will show the header line followed by the 5 data lines.
-
-![Alt Image Text](./images/zeppelin-show-airports-raw.png "Zeppelin Welcome Screen")
-
-Now let’s display the schema, which has been derived from the data:
-
-```	
-%pyspark
-airportsRawDF.printSchema()
-```
-
-You can see that both string as well as double datatypes have been used and that the names of the columns are derived from the header row of the CSV file. 
-
-```
-root
- |-- iata: string (nullable = true)
- |-- airport: string (nullable = true)
- |-- city: string (nullable = true)
- |-- state: string (nullable = true)
- |-- country: string (nullable = true)
- |-- lat: double (nullable = true)
- |-- long: double (nullable = true)
-``` 
- 
-Next let’s ask for the total number of rows in the dataset. Should return a total of **3376**. 
+We can easily display the methods it eposes, such as `text()`, `json()` and many others:
 
 ```
 %pyspark
-airportsRawDF.count()
+dir (spark.read)
 ```
- 
-#### Working with Flights Data
+in this workshop we will be using the `text()` operation. 
 
-First add another title, this time as a Heading-2.
-
-```
-%md ## Working with the Flights data
-```
-
-Let’s now start working with the Flights data, which we have uploaded with the various files within the `s3://flight-bucket/raw-data/flights/`.
-
-Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
- 
-Make sure that the data is in the right place. You can use the directive `%sh` to execute a shell action.
-
-```
-%sh
-s3cmd ls -r s3://flight-bucket/raw-data/flights/
-```
-
-You should see the five files inside the `flights` folder
-
-![Alt Image Text](./images/zeppelin-sh-ls.png "Zeppelin Show Files")
-
-The CSV files in this case do not contain a header line, therefore we can not use the same technique as before with the airports and derive the schema from the header. 
-
-We first have to manually define a schema. One way is to use a DSL as shown in the next code block. 
+Let's start by reading the data from object storage into a `bookDF` DataFrame:
 
 ```
 %pyspark
-flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOfWeek` INTEGER, `depTime` INTEGER, `crsDepTime` INTEGER, `arrTime` INTEGER, `crsArrTime` INTEGER, `uniqueCarrier` STRING, `flightNum` STRING, `tailNum` STRING, `actualElapsedTime` INTEGER,
-                   `crsElapsedTime` INTEGER, `airTime` INTEGER, `arrDelay` INTEGER,`depDelay` INTEGER,`origin` STRING, `dest` STRING, `distance` INTEGER, `taxiIn` INTEGER, `taxiOut` INTEGER, `cancelled` STRING, `cancellationCode` STRING, `diverted` STRING, 
-                   `carrierDelay` STRING, `weatherDelay` STRING, `nasDelay` STRING, `securityDelay` STRING, `lateAircraftDelay` STRING"""
+bookDF = spark.read.text("s3a://wordcount-bucket/raw-data/big.txt")
+bookDF
 ```
 
-Now we can import the flights data into a DataFrame using this schema and show the first 5 rows. 
+A DataFrame with a single value of type string is returned.
 
-We use  to use the header line for naming the columns and specify to infer the schema. We specify `schema=fligthSchema` to use the schema from above.  
-
-```
-%pyspark
-flightsRawDF = spark.read.csv("s3a://flight-bucket/raw-data/flights", 
-    	sep=",", inferSchema="false", header="false", schema=flightSchema)
-flightsRawDF.show(5)
-```
-	
-The output will show the header line followed by the 5 data lines.
-
-![Alt Image Text](./images/zeppelin-show-flights-raw.png "Zeppelin Welcome Screen")
-
-Let’s also see the schema, which is not very surprising
-
-```	
-%pyspark
-flightsRawDF.printSchema()
-```
-
-The result should be a rather large schema only shown here partially. You can see that both string as well as integer datatypes have been used and that the names of the columns are derived from the header row of the CSV file. 
-
-```
-root
- |-- year: integer (nullable = true)
- |-- month: integer (nullable = true)
- |-- dayOfMonth: integer (nullable = true)
- |-- dayOfWeek: integer (nullable = true)
- |-- depTime: integer (nullable = true)
- |-- crsDepTime: integer (nullable = true)
- |-- arrTime: integer (nullable = true)
- |-- crsArrTime: integer (nullable = true)
- |-- uniqueCarrier: string (nullable = true)
- |-- flightNum: string (nullable = true)
- |-- tailNum: string (nullable = true)
- |-- actualElapsedTime: integer (nullable = true)
- |-- crsElapsedTime: integer (nullable = true)
- |-- airTime: integer (nullable = true)
- |-- arrDelay: integer (nullable = true)
- |-- depDelay: integer (nullable = true)
- |-- origin: string (nullable = true)
- |-- dest: string (nullable = true)
- |-- distance: integer (nullable = true)
- |-- taxiIn: integer (nullable = true)
- |-- taxiOut: integer (nullable = true)
- |-- cancelled: string (nullable = true)
- |-- cancellationCode: string (nullable = true)
- |-- diverted: string (nullable = true)
- |-- carrierDelay: string (nullable = true)
- |-- weatherDelay: string (nullable = true)
- |-- nasDelay: string (nullable = true)
- |-- securityDelay: string (nullable = true)
- |-- lateAircraftDelay: string (nullable = true)
-```
-	
-Next let’s ask for the total number of rows in the dataset. Should return **50'000**. 
+We can easily display the schema in a more readable way:
 
 ```
 %pyspark
-flightsRawDF.count()
+bookDF.printSchema()
 ```
-	
-You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
-Let’s create a JSON representation of the data. We will write it to a refined folder. 
-
-For HDFS:
+To display the data behind the DataFrame, we can use the `show()` method. If used without any parameters, by default a maximum of 20 rows is shown. 
 
 ```
 %pyspark
-flightsRawDF.write.json("hdfs://namenode:9000/user/hue/refined-data/flights")
+bookDF.show()
 ```
-	
-For MinIO:
+
+We can also change it to `10` records and truncate them to 50 characters:
 
 ```
 %pyspark
-flightsRawDF.write.json("s3a://flight-bucket/refined-data/flights")
+book.show(10, truncate=50)
 ```
-	
-	
-Should you want to execute it a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution will throw an error. 
 
-You can directly execute the remove from within Zeppelin, using the `%sh` directive. 
-
-For HDFS:
+Next we tokenize each word, by splitting on a single space character, return a list of words:
 
 ```
-%sh
-hadoop fs -rm -R hdfs://namenode:9000/user/hue/refined-data/flights
+%pyspark
+from pyspark.sql.functions import split
+
+linesDF = bookDF.select(split(bookDF.value, " ").alias("line"))
+linesDF.show(5)
 ```
-	
-For MinIO:
+
+the result will look similar to the one below
 
 ```
-%sh
-s3cmd rm -r s3://flight-bucket/refined-data/flights
++--------------------+
+|                line|
++--------------------+
+|[The, Project, Gu...|
+|[by, Sir, Arthur,...|
+|[(#15, in, our, s...|
+|                  []|
+|[Copyright, laws,...|
++--------------------+
+only showing top 5 rows
 ```
-	
-By now we have imported the airports and flights data and made it available as a Data Frame. 
 
-Additionally we have also stored the data to a file in json format. 
+Using the `bookDF.value` we are able to select a specific column out from the DataFrame. There are alternative approaches, as shown next. They all get the same result:
 
+```
+%pyspark
+from pyspark.sql.functions import col
 
+bookDF.select(bookDF.value) 
+bookDF.select(bookDF["value"]) 
+bookDF.select(col("value"))
+```
 
+Print the schema and we can see that a line is an array of string elements, i.e. the single words
 
+```
+%pyspark
+linesDF.printSchema()
+```
+
+Not let's reshape the result by exploding the array of words into rows of words. We again show the result using the `show()` method.
+
+```
+from pyspark.sql.functions import explode, col
+
+wordsDF = linesDF.select(explode(col("line")).alias("word"))
+wordsDF.show(15)
+```
+
+With the table of words, we next use the `lower` function to change the case to all lowercase. 
+
+```
+%pyspark
+from pyspark.sql.functions import lower 
+wordsLowerDF = wordsDF.select(lower(col("word")).alias("word_lower"))
+
+wordsLowerDF.show()
+```
+
+Now using `regexp_extract()` function we make sure that only words are kept (only letters a - z). 
+
+```
+%pyspark
+from pyspark.sql.functions import regexp_extract 
+wordsCleanDF = wordsLowerDF.select( regexp_extract(col("word_lower"), "[a-z]*", 0).alias("word") )
+
+wordsCleanDF.show()
+```
+
+Next let's remove empty words, by just applying a `where` operation:
+
+```
+%pyspark
+wordsNonNullDF = wordsCleanDF.where(col("word") != "")
+
+wordsNonNullDF.show()
+```
+
+With that we are finally ready to group by word and return the count by word
+
+```
+%pyspark
+resultsDF = wordsNonNullDF.groupby(col("word")).count()
+resultsDF
+```
+
+Finally we order the counts in descending order and only show the top 10 word counts
+
+```
+%pyspark
+resultsDF.orderBy("count", ascending=False).show(10)
+```
