@@ -7,7 +7,7 @@ We assume that the **Data platform** described [here](../01-environment) is runn
 
 The same data as in the [HDFS Workshop](../02-hdfs/README.md) or [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
-We assume that you have done Workshop 5, where you have learnt how to use Spark form either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
+We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
  
 ## Prepare the data, if no longer available
 
@@ -148,6 +148,26 @@ Next let’s ask for the total number of rows in the dataset. Should return a to
 %pyspark
 airportsRawDF.count()
 ```
+
+You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
+
+Let’s create a JSON representation of the data in the refined folder. 
+For HDFS:
+
+```
+%pyspark
+airportsRawDF.write.json("hdfs://namenode:9000/user/hue/refined-data/airports")
+```
+	
+For MinIO:
+
+```
+%pyspark
+flightsRawDF.write.json("s3a://flight-bucket/refined-data/airports")
+```
+
+Check that the file has been written to HDFS or MinIO using either one of the techniques seen before. 
+
  
 ## Working with Flights Data
 
