@@ -63,9 +63,9 @@ You can use `pyspark` for this workshop. But there are also two other, browser-b
 
 ### Using Apache Zeppelin
 
-In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. 
+In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
 
-First let's finish the configuration of the Spark Interpreter. Click on the **anonymous** drop-down menu and select **Interpreter**
+First let's finish the configuration of the Spark Interpreter. Click on the **admin** drop-down menu and select **Interpreter**
 
 ![Alt Image Text](./images/zeppelin-interpreter.png "Zeppelin Interpreter")
 
@@ -350,7 +350,7 @@ We can also change it to `10` records and truncate them to 50 characters:
 
 ```
 %pyspark
-book.show(10, truncate=50)
+bookDF.show(10, truncate=50)
 ```
 
 Next we tokenize each word, by splitting on a single space character, return a list of words:
