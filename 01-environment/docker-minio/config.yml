@@ -189,7 +189,7 @@
       MYSQL_enable: false
       SQLSERVER_enable: false
 
-      POSTGRESQL_enable: false
+      POSTGRESQL_enable: true
       POSTGRESQL_volume_map_data: false
       TIMESCALEDB_enable: false
       TIMESCALEDB_volume_map_data: false
@@ -203,6 +203,7 @@
       PRESTO_enable: true
       # one of starburstdata, oss
       PRESTO_edition: 'starburstdata'
+      PRESTO_version: '332-e.0'
 
       # ===== Dremio ========
       DREMIO_enable: true

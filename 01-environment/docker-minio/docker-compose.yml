@@ -494,9 +494,23 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+  #  ================================== PostgreSQL ========================================== #}
+  postgresql:
+    image: postgres:latest
+    container_name: postgresql
+    hostname: postgresql
+    environment:
+      - POSTGRES_PASSWORD=sample
+      - POSTGRES_USER=sample
+      - POSTGRES_DB=sample
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./init/postgresql:/docker-entrypoint-initdb.d/
+    restart: unless-stopped
   #  ================================== Presto ========================================== #}
   presto-1:
-    image: starburstdata/presto:latest
+    image: starburstdata/presto:332-e.0
     hostname: presto-1
     container_name: presto-1
     labels:
@@ -507,6 +521,7 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/presto/minio.properties:/usr/lib/presto/etc/catalog/minio.properties
+      - ./conf/presto/postgresql.properties:/usr/lib/presto/etc/catalog/postgresql.properties
     restart: unless-stopped
   #  ================================== Presto ========================================== #}
   dremio-1:
