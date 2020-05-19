@@ -140,6 +140,7 @@ services:
       - 6066:6066
       - 7077:7077
       - 8080:8080
+      - 4040-4044:4040-4044
     env_file:
       - ./conf/hadoop.env
     environment:
@@ -148,13 +149,14 @@ services:
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       INIT_DAEMON_STEP: setup_spark
       SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
 #      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
     volumes:
       - ./data-transfer:/data-transfer
@@ -179,13 +181,14 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
     volumes:
       - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
@@ -209,13 +212,14 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
     volumes:
       - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
@@ -236,13 +240,14 @@ services:
       - 28117:18080
     environment:
       SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
     volumes:
       - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
@@ -263,13 +268,14 @@ services:
       SPARK_MASTER: spark://spark-master:7077
       DEPLOY_MODE: client
       SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
     volumes:
       - ./data-transfer:/data-transfer
       - ./container-volume/spark/logs/:/var/log/spark/logs
@@ -433,34 +439,34 @@ services:
       com.mdps.service.webui.url: http://${PUBLIC_IP}:28080
     ports:
       - 28080:8080
-#      - "4040:4040"
-#      - "42331:42331"
+      - 4050-4054:4050-4054
     env_file:
       - ./conf/hadoop.env
     environment:
       CORE_CONF_fs_s3a_endpoint: http://minio:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_packages:
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /etc/spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions: -Dcom.amazonaws.services.s3.enableV4
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       ZEPPELIN_ADDR: 0.0.0.0
       ZEPPELIN_PORT: '8080'
       ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT: 120000
       ZEPPELIN_INTERPRETER_DEP_MVNREPO: https://repo.maven.apache.org/maven2
-      SPARK_MASTER: spark://spark-master:7077
+#      SPARK_MASTER: "spark://spark-master:7077"
       # set spark-master for Zeppelin interpreter
       MASTER: spark://spark-master:7077
       SPARK_DRIVER_HOST: zeppelin
       SPARK_DRIVER_BINDADDRESS: 0.0.0.0
+      SPARK_UI_PORT: 4050
+      SPARK_DRIVER_extraJavaOptions:
+      SPARK_EXECUTOR_extraJavaOptions:
       PYSPARK_PYTHON: python3
-# no longer necessary with 0.8.2 of Zepplin
-#      - SPARK_SUBMIT_OPTIONS="--packages org.apache.commons:commons-lang3:3.5"
-      # enableV4 to make it work with AWS Frankfurt region
       SPARK_SUBMIT_OPTIONS: --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4
     volumes:
       - ./data-transfer:/data-transfer

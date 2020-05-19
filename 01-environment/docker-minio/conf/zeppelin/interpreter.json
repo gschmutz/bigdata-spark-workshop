@@ -1003,6 +1003,11 @@
           "value": "Zeppelin",
           "type": "string"
         },
+        "spark.ui.port": {
+          "name": "spark.ui.port",
+          "value": "4050",
+          "type": "number"
+        },
         "spark.hadoop.fs.s3a.access.key": {
           "name": "spark.hadoop.fs.s3a.access.key",
           "value": "V42FCGRVMK24JJ8DHUYG",
@@ -1062,6 +1067,16 @@
           "name": "zeppelin.R.render.options",
           "value": "out.format \u003d \u0027html\u0027, comment \u003d NA, echo \u003d FALSE, results \u003d \u0027asis\u0027, message \u003d F, warning \u003d F, fig.retina \u003d 2",
           "type": "textarea"
+        },
+        "spark.executor.extraJavaOptions": {
+          "name": "spark.executor.extraJavaOptions",
+          "value": "",
+          "type": "string"
+        },
+        "spark.driver.extraJavaOptions": {
+          "name": "spark.driver.extraJavaOptions",
+          "value": "",
+          "type": "string"
         }
       },
       "status": "READY",
@@ -1629,6 +1644,29 @@
     }
   },
   "interpreterBindings": {
+    "2FATGCP79": [
+      "spark",
+      "md",
+      "angular",
+      "sh",
+      "livy",
+      "alluxio",
+      "file",
+      "flink",
+      "python",
+      "ignite",
+      "lens",
+      "cassandra",
+      "kylin",
+      "elasticsearch",
+      "jdbc",
+      "hbase",
+      "bigquery",
+      "pig",
+      "groovy",
+      "neo4j",
+      "sap"
+    ],
     "2F6KNCSDZ": [
       "spark",
       "md",
@@ -1652,7 +1690,53 @@
       "neo4j",
       "sap"
     ],
+    "2F9N64FE4": [
+      "spark",
+      "md",
+      "angular",
+      "sh",
+      "livy",
+      "alluxio",
+      "file",
+      "flink",
+      "python",
+      "ignite",
+      "lens",
+      "cassandra",
+      "kylin",
+      "elasticsearch",
+      "jdbc",
+      "hbase",
+      "bigquery",
+      "pig",
+      "groovy",
+      "neo4j",
+      "sap"
+    ],
     "2F96HRHYZ": [
+      "spark",
+      "md",
+      "angular",
+      "sh",
+      "livy",
+      "alluxio",
+      "file",
+      "flink",
+      "python",
+      "ignite",
+      "lens",
+      "cassandra",
+      "kylin",
+      "elasticsearch",
+      "jdbc",
+      "hbase",
+      "bigquery",
+      "pig",
+      "groovy",
+      "neo4j",
+      "sap"
+    ],
+    "2FAJQDRVP": [
       "spark",
       "md",
       "angular",
