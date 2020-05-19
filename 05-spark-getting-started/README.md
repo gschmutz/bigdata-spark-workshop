@@ -128,7 +128,7 @@ You can use Apache Zeppelin to perform the workshop below. The other option is t
 ### Using Jupyter
 
 In a browser window navigate to <http://dataplatform:28888>. 
-Enter `abc123` into the **Password or token** field and click **Log in**. 
+Enter `abc123!` into the **Password or token** field and click **Log in**. 
 
 You should be forwarded to the **Jupyter** homepage. Click on the **Python 3** icon in the **Notebook** section to create a new notebook using the **Python 3** kernel.
 

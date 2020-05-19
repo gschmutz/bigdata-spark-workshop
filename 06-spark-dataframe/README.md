@@ -163,7 +163,7 @@ For MinIO:
 
 ```
 %pyspark
-flightsRawDF.write.json("s3a://flight-bucket/refined-data/airports")
+airportsRawDF.write.json("s3a://flight-bucket/refined-data/airports")
 ```
 
 Check that the file has been written to HDFS or MinIO using either one of the techniques seen before. 
@@ -473,5 +473,6 @@ flightEnrichedDF.show()
 Finally let's write the enriched structure as a result to object storage using again the Parquet format:
 
 ```
+%pyspark
 flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result-data/flights")
 ```
