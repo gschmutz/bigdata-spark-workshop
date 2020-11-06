@@ -3,8 +3,8 @@
  # or to know about the different variables available for the generator
       platys:
         platform-name: 'bigdata-platform'
-        stack-image-name: 'trivadis/platys-modern-data-platform'
-        stack-image-version: '1.5.1'
+        platform-stack: 'trivadis/platys-modern-data-platform'
+        platform-stack-version: '1.9.0-preview'
         structure: 'flat'
 
       # ===== Apache Zookeeper ========
@@ -237,6 +237,11 @@
       # ===== Container Mgmt ========
       PORTAINER_enable: false
       CADVISOR_enable: false
+      
+      #
+      # ===== Wetty ========
+      #
+      WETTY_enable: true
 
       # ===== Python image ========
       PYTHON_enable: false
