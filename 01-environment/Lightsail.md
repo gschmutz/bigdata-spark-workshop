@@ -18,6 +18,22 @@ Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and s
 Scroll down to **Launch script** and add the following script 
 
 ```
+export DOCKER_COMPOSE_VERSION=1.25.3
+export USERNAME=ubuntu
+export PASSWORD=ubuntu
+
+# Prepare Environment Variables 
+export PUBLIC_IP=$(curl ipinfo.io/ip)
+export DOCKER_HOST_IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+
+# allow login by password
+sudo sed -i "s/.*PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+echo "${USERNAME}:${PASSWORD}"|chpasswd
+sudo service sshd restart
+
+# add alias "dataplatform" to /etc/hosts
+echo "$DOCKER_HOST_IP     dataplatform" | sudo tee -a /etc/hosts
+
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge"
@@ -28,10 +44,6 @@ sudo usermod -aG docker ubuntu
 curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-
-# Prepare Environment Variables
-export PUBLIC_IP=$(curl ipinfo.io/ip)
-export DOCKER_HOST_IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
@@ -53,9 +65,16 @@ unzip -o flight-data.zip
 rm flight-data.zip
 rm -R __MACOSX/
 
-cd /home/ubuntu/hadoop-spark-workshop/01-environment/docker-minio
+# Prepare Environment Variables into .bash_profile file
+printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
+printf "export DOCKER_HOST_IP=$DOCKER_HOST_IP\n" >> /home/$USERNAME/.bash_profile
+printf "export DATAPLATFORM_HOME=$PWD\n" >> /home/$USERNAME/.bash_profile
+printf "\n" >> /home/$USERNAME/.bash_profile
+sudo chown ubuntu:ubuntu /home/$USERNAME/.bash_profile
+
 # Startup Environment
-sudo -E docker-compose up -d
+cd /home/ubuntu/hadoop-spark-workshop/01-environment/docker-minio
+docker-compose up -d
 ```
 
 into the **Launch Script** edit field
