@@ -7,6 +7,14 @@
         platform-stack-version: '1.9.0-preview'
         structure: 'flat'
 
+      # ===== Global configuation, valid for all or a group of services ========
+      # Timezone, use a Linux string such as Europe/Zurich or America/New_York
+      use_timezone: ''
+      # the name of the repository to use for private images, which are not on docker hub (currently only Oracle images)
+      private_docker_repository_name: 'trivadis'
+
+      PROVISIONING_DATA_enable: true
+
       # ===== Apache Zookeeper ========
       ZOOKEEPER_enable: true
       ZOOKEEPER_volume_map_data: false
