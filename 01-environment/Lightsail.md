@@ -38,10 +38,10 @@ echo "$DOCKER_HOST_IP     dataplatform" | sudo tee -a /etc/hosts
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge"
 apt-get install -y docker-ce
-sudo usermod -aG docker ubuntu
+sudo usermod -aG docker $USERNAME
 
 # Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
@@ -49,31 +49,20 @@ ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 sudo sysctl -w vm.max_map_count=262144   
 
 # Get the project
-cd /home/ubuntu 
+cd /home/${USERNAME} 
 git clone https://github.com/gschmutz/hadoop-spark-workshop.git
-chown -R ubuntu:ubuntu hadoop-spark-workshop
+chown -R ${USERNAME}:${PASSWORD} hadoop-spark-workshop
 
-cd hadoop-spark-workshop/01-environment/docker-minio
-
-# Get sample flight data
-cd data-transfer
-mkdir -p flight-data
-cd flight-data
-wget https://gschmutz-datasets.s3.eu-central-1.amazonaws.com/datasets/flight-data.zip
-sudo apt-get install unzip
-unzip -o flight-data.zip
-rm flight-data.zip
-rm -R __MACOSX/
+cd /home/${USERNAME}/hadoop-spark-workshop/01-environment/docker-minio
 
 # Prepare Environment Variables into .bash_profile file
 printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
 printf "export DOCKER_HOST_IP=$DOCKER_HOST_IP\n" >> /home/$USERNAME/.bash_profile
 printf "export DATAPLATFORM_HOME=$PWD\n" >> /home/$USERNAME/.bash_profile
 printf "\n" >> /home/$USERNAME/.bash_profile
-sudo chown ubuntu:ubuntu /home/$USERNAME/.bash_profile
+sudo chown ${USERNAME}:${PASSWORD} /home/$USERNAME/.bash_profile
 
 # Startup Environment
-cd /home/ubuntu/hadoop-spark-workshop/01-environment/docker-minio
 docker-compose up -d
 ```
 
