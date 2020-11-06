@@ -427,6 +427,25 @@ services:
     ports:
       - 8998:8998
     restart: always
+  #  ================================== Apache Hive Server ========================================== #
+  hive-server:
+    image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
+    container_name: hive-server
+    hostname: hive-server
+    ports:
+      - 10000:10000
+      - 10002:10002
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: jdbc:postgresql://hive-metastore/metastore
+      SERVICE_PRECONDITION=hive-metastore: '9083'
+#      - HDFS_CONF_fs_s3a_access_key: ${MINIO_ACCESS_KEY}
+#      - HDFS_CONF_fs_s3a_secret_key: ${MINIO_SECRET_KEY}
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
   #  ================================== Apache Hive Metastore ========================================== #
   hive-metastore:
     image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
