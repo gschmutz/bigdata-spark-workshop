@@ -3,10 +3,18 @@
  # or to know about the different variables available for the generator
       platys:
         platform-name: 'bigdata-platform'
-        stack-image-name: 'trivadis/platys-modern-data-platform'
-        stack-image-version: '1.5.2-preview'
+        platform-stack: 'trivadis/platys-modern-data-platform'
+        platform-stack-version: '1.9.0-preview'
         structure: 'flat'
+        
+      # ===== Global configuation, valid for all or a group of services ========
+      # Timezone, use a Linux string such as Europe/Zurich or America/New_York
+      use_timezone: ''
+      # the name of the repository to use for private images, which are not on docker hub (currently only Oracle images)
+      private_docker_repository_name: 'trivadis'
 
+      PROVISIONING_DATA_enable: true
+      
       # ===== Apache Zookeeper ========
       ZOOKEEPER_enable: true
       ZOOKEEPER_volume_map_data: false
@@ -238,7 +246,12 @@
       # ===== Container Mgmt ========
       PORTAINER_enable: false
       CADVISOR_enable: false
-
+      
+      #
+      # ===== Wetty ========
+      #
+      WETTY_enable: true
+      
       # ===== Python image ========
       PYTHON_enable: false
       PYTHON_script_folder: ''
