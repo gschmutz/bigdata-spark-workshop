@@ -240,7 +240,7 @@
 
       # ===== Code Server ========
       CODE_SERVER_enable: true
-      CODE_SERVER_volume_map_platform_root: true
+      CODE_SERVER_volume_map_platform_root: false
 
       # ===== Container Mgmt ========
       PORTAINER_enable: false

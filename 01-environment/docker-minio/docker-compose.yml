@@ -651,6 +651,22 @@ services:
 #      - './minio/config:/root/.minio'
     command: tail -f /dev/null
     restart: unless-stopped
+  #  ================================== Code-Server IDE (VS Code in Browser) ================= #
+  code-server:
+    image: trivadis/code-server:latest
+    container_name: code-server
+    hostname: code-server
+    labels:
+      com.mdps.service.webui.name: Code-Server UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28140
+    user: 0:0
+    ports:
+      - 28140:8080
+    environment:
+      PASSWORD: abc123!
+    volumes:
+      - ./data-transfer:/home/coder/data-transfer
+    restart: unless-stopped
   #  ================================== cAdvisor ========================================== #
   wetty:
     image: svenihoney/wetty:latest

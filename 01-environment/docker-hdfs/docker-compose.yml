@@ -766,7 +766,6 @@ services:
       PASSWORD: abc123!
     volumes:
       - ./data-transfer:/home/coder/data-transfer
-      - ../:/home/coder/platform-root:Z
     restart: unless-stopped
   #  ================================== cAdvisor ========================================== #
   wetty:
