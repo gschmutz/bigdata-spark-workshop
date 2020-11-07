@@ -533,7 +533,7 @@ services:
     restart: unless-stopped
   #  ================================== StreamSets Transformer ========================================== #
   streamsets-transformer-1:
-    image: streamsets/transformer:3.17.0-latest
+    image: streamsets/transformer:3.16.0-latest
     container_name: streamsets-transformer-1
     hostname: streamsets-transformer-1
     labels:
