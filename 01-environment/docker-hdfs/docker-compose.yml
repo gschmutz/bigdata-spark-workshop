@@ -1,7 +1,10 @@
 # =====================================================
 # Platform: bigdata-platform
 # =====================================================
-version: '3.0'
+version: '3.5'
+networks:
+  default:
+    name: bigdata-platform
 # enforce some dependencies
 # enforce some dependencies
 services:
@@ -440,7 +443,7 @@ services:
     environment:
       CORE_CONF_fs_defaultFS: hdfs://namenode:9000
       HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: jdbc:postgresql://hive-metastore/metastore
-      SERVICE_PRECONDITION=hive-metastore: '9083'
+      SERVICE_PRECONDITION: hive-metastore:9083
 #      - HDFS_CONF_fs_s3a_access_key: ${MINIO_ACCESS_KEY}
 #      - HDFS_CONF_fs_s3a_secret_key: ${MINIO_SECRET_KEY}
     volumes:
@@ -457,6 +460,7 @@ services:
       - ./conf/hadoop.env
     environment:
       CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      HIVE_SITE_CONF_hive_metastore_dir: hdfs://namenode:9000/user/hive/warehouse
       SERVICE_PRECONDITION: hive-metastore-db:5432
     volumes:
       - ./data-transfer:/data-transfer
