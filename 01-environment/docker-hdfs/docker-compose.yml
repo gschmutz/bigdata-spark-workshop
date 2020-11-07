@@ -435,11 +435,13 @@ services:
     image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
     container_name: hive-server
     hostname: hive-server
+    labels:
+      com.mdps.service.webui.name: Hive Server UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:10001
     ports:
       - 10000:10000
       - 10001:10001
       - 10002:10002
-      - 9999:9999
     env_file:
       - ./conf/hadoop.env
     environment:
@@ -531,7 +533,7 @@ services:
     restart: unless-stopped
   #  ================================== StreamSets Transformer ========================================== #
   streamsets-transformer-1:
-    image: streamsets/transformer:3.16.0-latest
+    image: streamsets/transformer:3.17.0-latest
     container_name: streamsets-transformer-1
     hostname: streamsets-transformer-1
     labels:
