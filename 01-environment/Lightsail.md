@@ -20,6 +20,8 @@ Scroll down to **Launch script** and add the following script. Make sure to spec
 * `hdfs` - if you want to have Hadoop HDFS on a Hadoop cluster 
 * `minio` (default) - if you want to have a stack with a local object store and no Hadoop 
 
+Optionally change the password from the default value of `ubuntu` to a more secure one. 
+
 ```
 export PLATFORM_FLAVOUR=minio
 export DOCKER_COMPOSE_VERSION=1.25.3
@@ -85,8 +87,6 @@ into the **Launch Script** edit field
  
 ![Alt Image Text](./images/lightsail-create-instance-3.png "Lightsail Homepage")
 
-Click on **Change SSH key pair** and leave the **Default** selected and then click on **Download** and save the file to a convenient location on your machine. 
-
 Under **Choose your instance plan** click on the arrow on the right and select the **16 GB** instance.   
 
 Under **Identify your instance** enter **Ubuntu-Hadoop-1** into the edit field. 
@@ -99,7 +99,7 @@ The new instance will show up in the Instances list on the Lightsail homepage.
 
 ![Alt Image Text](./images/lightsail-image-started.png "Lightsail Homepage")
 
-Click on the instance to navigate to the image details page. On the right you can find the Public IP address **18.196.124.212** of the newly created instance.
+Click on the instance to navigate to the image details page. On the right you can find the Public IP address of the newly created instance, which is **18.196.124.212** in this example, of course your Public IP will be different.
 
 ![Alt Image Text](./images/lightsail-image-details.png "Lightsail Homepage")
 
@@ -113,13 +113,25 @@ The initialisation is finished when you see the `Creating xxxxx .... done` lines
 
 ![Alt Image Text](./images/lightsail-create-instance-log-file.png "Lightsail Homepage")
 
-Optionally you can also SSH into the Lightsail instance using the **SSH key pair** you have downloaded above. For that open a terminal window (on Mac / Linux) or Putty (on Windows) and connect as ubuntu to the Public IP address of the instance.   
+## Connecting from a Terminal window using SSH
+
+Optionally you can also SSH into the Lightsail instance using the **SSH key pair** which you can download from the **Account** menu in the top menu bar. 
+
+For that open a terminal window (on Mac / Linux) or Putty (on Windows) and connect as ubuntu to the **Public IP** address of the instance.   
 
 ```
 ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.196.124.212 
 ```
 
-## Connecting to Services from Client
+## Using a Terminal over Web-Browser
+
+After the stack is started, you can use your web browser (best is Chrome) to access the terminal in the ligthsail environment. Navigate to <http://18.196.124.212:3001> (replace the IP address by the IP address your IP address and you should see a back terminal window asking to enter the username to connect:
+
+![Alt Image Text](./images/wetty-1.png "Lightsail Homepage")
+
+Enter `ubuntu` for the username and the value you have chosen as your password when creating the lightsail environment (when specifying the **Launch Script**). 
+
+## Allow using the Services from your client
 
 For accessing the services in the cloud, we have to options:
 
@@ -130,7 +142,7 @@ Due to the fact, that the lightsail instance is exposed to the public internet, 
 
 But of course using an SSH tunnel is more secure, but on the other hand much more difficult to setup.  
 
-### 1) Open Ports on Firewall
+### 1) Open Ports on the Firewall
 
 So with all services running, there is one last step to do. We have to configure the Firewall to allow traffic into the Lightsail instance. 
 
