@@ -211,7 +211,6 @@
       PRESTO_enable: true
       # one of starburstdata, oss
       PRESTO_edition: 'starburstdata'
-      PRESTO_version: '332-e.0'
 
       # ===== Dremio ========
       DREMIO_enable: true

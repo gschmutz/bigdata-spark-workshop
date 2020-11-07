@@ -558,7 +558,7 @@ services:
     restart: unless-stopped
   #  ================================== Presto ========================================== #
   presto-1:
-    image: starburstdata/presto:332-e.0
+    image: starburstdata/presto:344-e
     hostname: presto-1
     container_name: presto-1
     labels:
@@ -583,7 +583,7 @@ services:
     restart: unless-stopped
   #  ================================== Presto ========================================== #
   dremio-1:
-    image: dremio/dremio-oss:4.7
+    image: dremio/dremio-oss:4.9
     container_name: dremio-1
     hostname: dremio-1
     labels:
