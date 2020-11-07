@@ -18,7 +18,9 @@ Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and s
 Scroll down to **Launch script** and add the following script 
 
 ```
+export PLATFORM_FLAVOR=hdfs
 export DOCKER_COMPOSE_VERSION=1.25.3
+export PLATYS_VERSION=2.4.0
 export USERNAME=ubuntu
 export PASSWORD=ubuntu
 
@@ -45,6 +47,13 @@ curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VE
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
+# Install Platys
+sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VERSION}/platys_${PLATYS_VERSION}_linux_x86_64.tar.gz" -o /tmp/platys.tar.gz
+tar zvxf /tmp/platys.tar.gz 
+sudo mv platys /usr/local/bin/
+sudo chown root:root /usr/local/bin/platys
+sudo rm platys.tar.gz 
+
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
 
@@ -53,7 +62,7 @@ cd /home/${USERNAME}
 git clone https://github.com/gschmutz/hadoop-spark-workshop.git
 chown -R ${USERNAME}:${PASSWORD} hadoop-spark-workshop
 
-cd /home/${USERNAME}/hadoop-spark-workshop/01-environment/docker-minio
+cd /home/${USERNAME}/hadoop-spark-workshop/01-environment/docker-${PLATFORM_FLAVOR}
 
 # Prepare Environment Variables into .bash_profile file
 printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
