@@ -11,14 +11,17 @@ Click **Create instance** to navigate to the **Create an instance** dialog.
 ![Alt Image Text](./images/lightsail-create-instance-1.png "Lightsail Homepage")
 
 Optionally change the **Instance Location** to a AWS region of your liking.
-Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and select **Ubuntu 18.04 LTS** for the **Select a blueprint**. 
+Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and select **Ubuntu 20.04 LTS** for the **Select a blueprint**. 
 
 ![Alt Image Text](./images/lightsail-create-instance-2.png "Lightsail Homepage")
 
-Scroll down to **Launch script** and add the following script 
+Scroll down to **Launch script** and add the following script. Make sure to specify the flavour in the first line with either
+
+* `hdfs` - if you want to have Hadoop HDFS on a Hadoop cluster 
+* `minio` (default) - if you want to have a stack with a local object store and no Hadoop 
 
 ```
-export PLATFORM_FLAVOR=hdfs
+export PLATFORM_FLAVOUR=minio
 export DOCKER_COMPOSE_VERSION=1.25.3
 export PLATYS_VERSION=2.4.0
 export USERNAME=ubuntu
@@ -54,6 +57,9 @@ sudo mv platys /usr/local/bin/
 sudo chown root:root /usr/local/bin/platys
 sudo rm platys.tar.gz 
 
+# Install various Utilities
+sudo apt-get install -y curl jq kafkacat
+
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
 
@@ -62,7 +68,7 @@ cd /home/${USERNAME}
 git clone https://github.com/gschmutz/hadoop-spark-workshop.git
 chown -R ${USERNAME}:${PASSWORD} hadoop-spark-workshop
 
-cd /home/${USERNAME}/hadoop-spark-workshop/01-environment/docker-${PLATFORM_FLAVOR}
+cd /home/${USERNAME}/hadoop-spark-workshop/01-environment/docker-${PLATFORM_FLAVOUR}
 
 # Prepare Environment Variables into .bash_profile file
 printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
@@ -79,7 +85,9 @@ into the **Launch Script** edit field
  
 ![Alt Image Text](./images/lightsail-create-instance-3.png "Lightsail Homepage")
 
-Click on **Change SSH key pair** and leave the **Default** selected and then click on **Download** and save the file to a convenient location on your machine. Under **Choose your instance plan** click on the arrow on the right and select the **16 GB** instance.   
+Click on **Change SSH key pair** and leave the **Default** selected and then click on **Download** and save the file to a convenient location on your machine. 
+
+Under **Choose your instance plan** click on the arrow on the right and select the **16 GB** instance.   
 
 Under **Identify your instance** enter **Ubuntu-Hadoop-1** into the edit field. 
 
@@ -114,12 +122,39 @@ ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.196.124.212
 ## Connecting to Services from Client
 
 For accessing the services in the cloud, we have to options:
-  * use a SSH Tunnel
-  * open the ports on the firewall
 
-Due to the fact, that the lightsail instance is exposed to the public internet, opening the ports is not the best idea. Using an SSH tunnel is much more secure.  
+* open the ports on the firewall (with the option to only allow a certain client to connect)
+* use a SSH Tunnel
 
-### SSH Tunnel as a Socks Proxy
+Due to the fact, that the lightsail instance is exposed to the public internet, opening the ports is not the best idea. But if you only open it restricted to your IP address the risk can be minimised. 
+
+But of course using an SSH tunnel is more secure, but on the other hand much more difficult to setup.  
+
+### 1) Open Ports on Firewall
+
+So with all services running, there is one last step to do. We have to configure the Firewall to allow traffic into the Lightsail instance. 
+
+
+Click on the **Networking** tab/link to navigate to the network settings.
+
+![Alt Image Text](./images/lightsail-image-networking.png "Lightsail Homepage")
+
+Click on **Add rule** to add a new Firewall rule.
+
+For simplicity reasons, we allow all TCP traffic by selecting **All TCP** on port range **0 - 65535**. 
+To increase security, you should restrict incoming traffic to one or more IP addresses by selecting the option **Restrict to IP address** and adding the IP address of your client as the **Source IP address**.
+
+![Alt Image Text](./images/lightsail-image-networking-add-firewall-rule-1.png "Lightsail Homepage")
+
+To find out your IP address, browse to <https://www.whatismyip.com/> and use the `XXX.XXX.XXX.XXX` value shown right to **My Public IPv4 is:** to replace the `188.60.35.196` value in the image above.
+
+Click on **Create** to save this new Firewall rule and it should be added to the list of rules. 
+
+![Alt Image Text](./images/lightsail-image-networking-add-firewall-rule-2.png "Lightsail Homepage")
+
+Your instance is now ready to use. Complete the post installation steps documented the [here](README.md).
+
+### 2) SSH Tunnel as a Socks Proxy
 
 Opening an SSH tunnel is different on Windows and Mac. The following short description shows how to create the tunnel on Windows and on Mac OS-X.
 
@@ -127,7 +162,7 @@ Opening an SSH tunnel is different on Windows and Mac. The following short descr
 
 First you have to install Putty (available at <http://www.chiark.greenend.org.uk/~sgtatham/putty/>). We will use Putty to extract the private key as well as for creating the SSH Tunnel. 
 
-**1. Download the SSH Key of the Lightroom instance and Extract Private Key**
+**a). Download the SSH Key of the Lightroom instance and Extract Private Key**
 
 In order to connect to the lightsail instance, a copy of the private SSH key. You can use the key pair that Lightsail creates. Download the key from the AWS console by choosing **Account** on the top navigation bar and again choose **Account** from the drop-down menu. Navigate to the **SSH Keys** tab. 
 
@@ -145,7 +180,7 @@ PuTTYgen confirms that you successfully imported the key, and then you can choos
 
 Choose **Save private key**, and then confirm you don't want to save it with a passphrase.
 
-**2. Create the SSH Tunnel**
+**b). Create the SSH Tunnel**
 
 Start Putty and from the Session tab, enter the public IP (54.93.82.199) into the **Host Name (or IP address)** field. Leave the **port** field to 22.
 
@@ -165,7 +200,7 @@ Now click on **Open** and confirm the Alert pop up with **Yes**. Enter `ubuntu` 
 
 Be sure to save your connection for future use.
 
-**3. Configure Web Browser to use the SSH Tunnel** 
+**c). Configure Web Browser to use the SSH Tunnel** 
 
 As a last step you have to configure the browser (we assume Firefox here, but Chrome would be fine as well) to use the SSH Tunnel. 
 
@@ -190,7 +225,7 @@ You can now reach the services on Lightsail using the localhost address. For exa
 
 #### Using Mac OS-X
 
-**1. Download the SSH Key of the Lightroom instance**
+**a). Download the SSH Key of the Lightroom instance**
 
 Download the key from the AWS console by choosing **Account** on the top navigation bar and again choose **Account** from the drop-down menu. Navigate to the **SSH Keys** tab. 
 
@@ -198,7 +233,7 @@ Download the key from the AWS console by choosing **Account** on the top navigat
 
 Select the **Default** key and click on the **Download** link to download it to your local computer. 
 
-**2. Create the SSH Tunnel**
+**b). Create the SSH Tunnel**
 On Mac OS-X you can either use the `ssh` command line utility to open up a ssh tunnel or 
 download an SSH Tunnel GUI client. The [**Secure Pipes**](https://www.opoet.com/pyro/) Application is the one I use here.
 
@@ -229,7 +264,7 @@ Now the SSH tunnel can be activated by again clicking on the clod icon in the me
 
 The green icon in front of the connection signals that the SSH tunnel has been established successfully. 
 
-**3. Configure Web Browser to use the SSH Tunnel** 
+**c). Configure Web Browser to use the SSH Tunnel** 
 
 As a last step you have to configure the browser (we assume Firefox here, but Chrome would be fine as well) to use the SSH Tunnel. 
 
@@ -253,19 +288,6 @@ Click again on the **FoxyProxy** icon in the top right corner and select the **H
 
 You can now reach the services on Lightsail using the localhost address. For example you can reach Zeppelin over <http://localhost:38081>. For the other URLs, consult the table at the bottom of the main [Readme](README.md). 
 
-
-### Open Ports on Firewall
-
-So with all services running, there is one last step to do. We have to configure the Firewall to allow traffic into the Lightsail instance. 
-
-![Alt Image Text](./images/lightsail-image-networking.png "Lightsail Homepage")
-
-Click on the **Networking** tab/link to navigate to the network settings and under **Firewall** click on ** **Add another**.
-For simplicity reasons, we allow all TCP traffic by selecting **All TCP** on port range **0 - 65535** and then click **Save**. 
-
-![Alt Image Text](./images/lightsail-image-networking-add-firewall-rule.png "Lightsail Homepage")
-
-Your instance is now ready to use. Complete the post installation steps documented the [here](README.md).
 
 ## Stop an Instance
 
