@@ -437,7 +437,9 @@ services:
     hostname: hive-server
     ports:
       - 10000:10000
+      - 10001:10001
       - 10002:10002
+      - 9999:9999
     env_file:
       - ./conf/hadoop.env
     environment:
@@ -475,7 +477,7 @@ services:
     restart: unless-stopped
   #  ================================== Apache Hue ========================================== #
   hue:
-    image: gethue/hue:4.7.1
+    image: gethue/hue:4.8.0
     container_name: hue
     hostname: hue
     dns: 8.8.8.8
