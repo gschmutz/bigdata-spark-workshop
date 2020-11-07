@@ -125,18 +125,22 @@ ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.196.124.212
 
 ## Using a Terminal over Web-Browser
 
+Before you can use this option, you either have to open the ports on the Firewall or create an SSH tunnel, documented under **Enable using the Services from your client**.
+
 After the stack is started, you can use your web browser (best is Chrome) to access the terminal in the ligthsail environment. Navigate to <http://18.196.124.212:3001> (replace the IP address by the IP address your IP address and you should see a back terminal window asking to enter the username to connect:
 
 ![Alt Image Text](./images/wetty-1.png "Lightsail Homepage")
 
-Enter `ubuntu` for the username and the value you have chosen as your password when creating the lightsail environment (when specifying the **Launch Script**). 
+Enter `ubuntu` for the **username** and enter value you have chosen as your password when creating the lightsail environment (when specifying the **Launch Script**) for the **password** and you should be able to connect. 
 
-## Allow using the Services from your client
+![Alt Image Text](./images/wetty-2.png "Lightsail Homepage")
+
+## Enable using the Services from your client
 
 For accessing the services in the cloud, we have to options:
 
 * open the ports on the firewall (with the option to only allow a certain client to connect)
-* use a SSH Tunnel
+* Create an SSH Tunnel
 
 Due to the fact, that the lightsail instance is exposed to the public internet, opening the ports is not the best idea. But if you only open it restricted to your IP address the risk can be minimised. 
 
@@ -166,9 +170,9 @@ Click on **Create** to save this new Firewall rule and it should be added to the
 
 Your instance is now ready to use. Complete the post installation steps documented the [here](README.md).
 
-### 2) SSH Tunnel as a Socks Proxy
+### 2) Create an SSH Tunnel as a Socks Proxy
 
-Opening an SSH tunnel is different on Windows and Mac. The following short description shows how to create the tunnel on Windows and on Mac OS-X.
+Opening an SSH tunnel is different on Windows and Mac. The following short description shows how to create the tunnel on **Windows** and on **Mac OS-X**.
 
 #### Using Windows
 
