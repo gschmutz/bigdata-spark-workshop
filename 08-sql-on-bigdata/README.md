@@ -14,11 +14,11 @@ In order for us to use Presto with Object Storage or HDFS, we first have to crea
 
 ### Create Airport Table in Hive Metastore
 
-In order to access data in HDFS or Object Storage using Presto, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined-data/..' points to the data we have uploaded before.
+In order to access data in HDFS or Object Storage using Presto, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined/..' points to the data we have uploaded before.
 
 Connect to Hive Metastore CLI
 
-```
+```bash
 docker exec -ti hive-metastore hive
 ```
 
@@ -26,7 +26,7 @@ and on the command prompt, execute the following `CREATE TABLE` statement.
 
 and create a new database `flight_db` and in that database a table `airport_t`:
 
-```
+```sql
 CREATE DATABASE flight_db;
 USE flight_db;
 
@@ -37,32 +37,32 @@ CREATE EXTERNAL TABLE airport_t (iata string
 									, lat double
 									, long double									 )
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
-LOCATION 's3a://flight-bucket/refined-data/airports';
+LOCATION 's3a://flight-bucket/refined/airports';
 ```
 
 ### Query Airport Table from Presto
 
 Next let's query the data from Presto. Connect to the Presto CLI using
 
-```
+```bash
 docker exec -it presto-1 presto-cli
 ```
 
 Now on the Presto command prompt, switch to the right database. 
 
-```
+```sql
 use minio.flight_db;
 ```
 
 Let's see that there is one table available:
 
-```
+```sql
 show tables;
 ```
 
 We can see the `airport_t` table we created in the Hive Metastore before
 
-```
+```sql
 presto:default> show tables;
      Table
 ---------------
@@ -72,13 +72,13 @@ presto:default> show tables;
 
 We can use the `DESCRIBE` command to see the structure of the table:
 
-```
+```sql
 DESCRIBE minio.flight_db.airport_t;
 ```
 
 and you should get the following result
 
-```
+```sql
 presto:flight_db> DESCRIBE minio.flight_db.airport_t;
  Column  |  Type   | Extra | Comment
 ---------+---------+-------+---------
@@ -93,19 +93,19 @@ presto:flight_db> DESCRIBE minio.flight_db.airport_t;
 
 We can also leave out the `minio.fligth_db` qualifier, because it is the current database.
 
-```
+```sql
 DESCRIBE airport_t;
 ```
 
 We can query the table from the current database
 
-```
+```sql
 SELECT * FROM airport_t;
 ```
 
 And of course we can execute the same query with a fully qualified table, including the database:
 
-```
+```sql
 SELECT * 
 FROM minio.flight_db.airport_t;
 ```
@@ -120,19 +120,19 @@ With the query on the airports data being successful, let's also create the tabl
 
 Connect again to Hive Metastore CLI
 
-```
+```bash
 docker exec -ti hive-metastore hive
 ```
 
 change to the database created above
 
-```
+```sql
 USE flight_db;
 ```
 
 and create the `flight_t` table. Because it is a partitioned table using the parquet format (check the previous workshop for how it has been stored), we have to use the `PARTITIONED BY` and `STORED AS` clause. 
 
-```
+```sql
 CREATE EXTERNAL TABLE flights_t ( dayOfMonth integer
                              , dayOfWeek integer
                              , depTime integer
@@ -152,12 +152,12 @@ CREATE EXTERNAL TABLE flights_t ( dayOfMonth integer
                              , distance integer) 
 PARTITIONED BY (year integer, month integer)
 STORED AS parquet
-LOCATION 's3a://flight-bucket/refined-data/flights';
+LOCATION 's3a://flight-bucket/refined/flights';
 ```
 
 Before we can query the table using Presto, we also have to repair the table, so that it recognizes the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store / HDFS.
 
-```
+```sql
 MSCK REPAIR TABLE flights_t;
 ```
 
@@ -167,25 +167,25 @@ Now we are ready to query it.
 
 Again connect to the Presto CLI using
 
-```
+```bash
 docker exec -it presto-1 presto-cli
 ```
 
 and switch to the correct database
 
-```
+```sql
 use minio.flight_db;
 ```
 
 Let's see that the newly created `flight_s` table is available:
 
-```
+```sql
 show tables;
 ```
 
 So let's see the data
 
-```
+```sql
 SELECT * FROM flights_t;
 ```
 
@@ -195,7 +195,7 @@ Of course we can't just use a `SELECT * ...` but also do analytical queries.
 
 Let's see how many flights we have between an origin and a destination
 
-```
+```sql
 SELECT origin, destination, count(*)
 FROM flights_t
 GROUP BY origin, destination;
@@ -203,7 +203,7 @@ GROUP BY origin, destination;
 
 and the same for just the month of April in 2008:
 
-```
+```sql
 SELECT origin, destination, count(*)
 FROM flights_t
 WHERE year = 2008 and month = 04
@@ -222,13 +222,13 @@ In this section we create the airports data as a Postgesql table. Let's assume b
 
 Connect to Postgresql
 
-```
+```bash
 docker exec -ti postgresql psql -d sample -U sample
 ```
 
 Create a database and the table for the airport data using a different name  `pg_airport_t` to distinguish it to the one in Minio. 
 
-```
+```sql
 CREATE SCHEMA flight_data;
 
 DROP TABLE flight_data.pg_airport_t;
@@ -248,7 +248,7 @@ CREATE TABLE flight_data.pg_airport_t
 
 Finally let's import the data from the data-transfer folder. 
 
-```
+```sql
 COPY flight_data.pg_airport_t(iata,airport,city,state,country,lat,long) 
 FROM '/data-transfer/flight-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
@@ -257,25 +257,25 @@ FROM '/data-transfer/flight-data/airports.csv' DELIMITER ',' CSV HEADER;
 
 Next let's query the data from Presto. Once more connect to the Presto CLI using
 
-```
+```bash
 docker exec -it presto-1 presto-cli
 ```
 
 Now on the Presto command prompt, switch to the database representing the Postgresql. 
 
-```
+```sql
 use postgresql.flight_data;
 ```
 
 Let's see that there is one table available:
 
-```
+```sql
 show tables;
 ```
 
 We can see the `pg_airport_t` table we created in the Postgresql RDBMS 
 
-```
+```sql
 presto:default> show tables;
      Table
 ---------------
@@ -285,13 +285,13 @@ presto:default> show tables;
 
 check that you can query the data, now from Postgresql RDBMS. 
 
-```
+```sql
 SELECT * FROM pg_airport_t;
 ```
 
 Of course you can also do analytical queries:
 
-```
+```sql
 SELECT country, count(*)
 FROM pg_airport_t
 GROUP BY country;
@@ -302,7 +302,7 @@ GROUP BY country;
 With the `pg_airport_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Presto's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
 
 
-```
+```sql
 SELECT ao.airport, ao.city, ad.airport, ad.city, f.*
 FROM minio.flight_db.flights_t  AS f
 LEFT JOIN postgresql.flight_data.pg_airport_t AS ao
