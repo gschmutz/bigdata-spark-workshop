@@ -241,7 +241,7 @@ services:
       - ./conf/hadoop.env
     environment:
       CORE_CONF_fs_defaultFS: hdfs://namenode:9000
-      YARN_CONF_yarn_resourcemanager_webapp_address: resourcemanger:8088
+      YARN_CONF_yarn_resourcemanager_webapp_address: resourcemanager:8088
       YARN_CONF_yarn_nodemanager_webapp_address: nodemanager:8042
       YARN_CONF_yarn_timeline___service_webapp_address: ${PUBLIC_IP}:18188
       YARN_CONF_yarn_log_server_url: ${PUBLIC_IP}:18188
