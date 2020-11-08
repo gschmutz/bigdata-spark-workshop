@@ -19,18 +19,19 @@ There are various ways for accessing Hive. In this workshop we will use the foll
 There would also be the option to use **HiveServer2** and use Hive from any tool supporting ODBC or JDBC. But this is not covered in this workshop.
 
 ### Using the Hive CLI
+
 The [Hadoop CLI](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Cli) allows us to work with Hadoop and HDFS through the command line. 
 We can use it to create tables, load data into a table and query from tables.
 
 In our environment, the Hadoop command is accessible inside the `hive-server` container. To connect to the Hive over the Hive CLI use the `hive` command. To get the help page run
 
-```
+```bash
 docker exec -ti hive-server hive -h
 ```
 
 and you should get the help page in return
 
-```
+```bash
 $ docker exec -ti hive-server hive -h
 SLF4J: Class path contains multiple SLF4J bindings.
 SLF4J: Found binding in [jar:file:/opt/hive/lib/log4j-slf4j-impl-2.6.2.jar!/org/slf4j/impl/StaticLoggerBinder.class]
@@ -56,13 +57,13 @@ usage: hive
 
 To connect to Hive, just use the command without the `-h` option
 
-```
+```bash
 docker exec -ti hive-server hive
 ```
 
 Now on the command prompt `hive>` you can enter the hive commands. Let's list the available databases.
 
-```
+```sql
 hive> show databases;
 OK
 default
@@ -74,115 +75,64 @@ hive>
 
 [Hue](http://gethue.com/) is a web-based interactive query editor in the Hadoop stack that lets you visualise and share data.
 
-In a browser window, navigate to <http://analyticsplatform:28888> and sign in with user `hue` and password `hue`. You should be forwarded to the **Hue** homepage. 
-
-If asked for the tour through Hue, either follow it, or just close the window. You should end up on the Hue homepage.
+In a browser window, navigate to <http://dataplatform:8888> and sign in with user `hue` and password `hue`. You should be forwarded to the **Hive** window. 
 
 ![Alt Image Text](./images/hue-homepage.png "Hue Home Page")
 
-To access the Hive Query, navigate to the menu by clicking on the "database" icon in the top left corner. On the left you should see a menu showing Hive and the available databases, wich currently is just the default database.
+If asked for the tour through Hue, either follow it, or just close the window. 
+
+If you don't see the **Hive** window, then you can navigate to it using the menu bar on the left
 
 ![Alt Image Text](./images/hue-hive-databases.png "Hive Databases")
-
-If you click on the **Query** drop-down, the Query Editor will be shown in the detail section. 
-
-![Alt Image Text](./images/hue-hive-query-editor.png "Hive Query Editor")
 
 Enter the commands into the query window and execute it either using the **>** icon to the left or hitting **CTRL + ENTER** on the keyboard. You can also use the `show databases` command to display the Hive databases here.
 
 ![Alt Image Text](./images/hue-hive-query-editor-show-db.png "Hive Query Editor")
 
-## Working with Hive
+## First steps with Hive
 
-Apache Hive presents a relational view of data in HDFS and ensures that users need not worry about where or in what format their data is stored. Hive can display data from RCFile format, text files, ORC, JSON, parquet, sequence files and many of other formats in a tabular view. 
+Hive supports two different types of Hive tables, the **Hive Managed Tables** and the **Hive External Tables**.
 
-Through the use of SQL you can view your data as a table and create queries like you would in an RDBMS.
+Let's create a `test1.csv` in the `data-transfer` folder on the Data Platform. Either use the terminal or the visual code-server <http://dataplatform:28140> (for the code-server, the password is `abc123!`). 
 
-First let's upload the data needed for this workshop, using the techniques we have learned in the [HDFS Workshop](../02-hdfs/README.md).
-
-### Upload Raw Data
-
-In this workshop we are working with truck data. The files are also available in the `data-transfer` folder of the Analytics Platform: [/01-environment/docker/data-transfer/flightdata](../01-environment/docker/data-transfer/truckdata).
-
-In HDFS under the folder `/user/hue` create a new folder `truckdata` and upload the two files into that folder. 
-
-Here are the commands to perform when using the **Hadoop Filesystem Command** on the commmand line
-
-```
-docker exec -ti namenode hadoop fs -mkdir -p /user/hue/truckdata/
-
-docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/truckdata/geolocation.csv /user/hue/truckdata/
-docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/truckdata/trucks.csv /user/hue/truckdata/
-
-docker exec -ti namenode hadoop fs -ls /user/hue/truckdata/
+```csv
+id,text
+1,HDFS
+2,MapReduce
+3,Hive
+4,Pig
+5,Spark
 ```
 
-Now with the raw data in HDFS, let's create some tables and load them. 
+In a terminal window, connect to Hive CLI 
 
-### Create a Database for the Truck Data
-
-First let's create a Hive database for holding the tables.
-
-You can either use the `CREATE DATABASE` statement in **Hive CLI** or **Hue**
-
-```
-CREATE DATABASE truckdb;
+```bash
+docker exec -ti hive-server hive
 ```
 
-Or in Hue there is also a graphical way using the **+** sign next to the Databases list on the left side.
+and create a new database
 
-![Alt Image Text](./images/hue-create-database.png "Hue Create Database")
-
-To see the databases in place, execute the following command in either **Hive CLI** or **Hue** 
-
-```
-SHOW databases;
+```sql
+CREATE DATABASE testdb;
+USE testdb;
 ```
 
-In **Hue** you can also click on the refresh icon, next to the **Databases**.
+### Working with Hive Managed Tables
 
-![Alt Image Text](./images/hue-refresh-db.png "Refresh DBs")
+First let's see how Hive Managed table work. Such a table is managed by hive and the data for these tables are held inside the Hive Warehouse in the HDFS folder `/user/hive/warehouse`.
 
-### Create Hive Staging Tables
+To load the data into the Hive managed table, we first copy it into Copy the file to HDFS under `/user/hue/test-data` 
 
-Now that you are familiar with the Hive User View, let’s create the initial staging tables for the geolocation and trucks data. In this section we will learn how to create four Hive tables: `geolocation_stage`, `trucking_stage`, `geolocation`, `trucking`.
+In the Hive CLI create the managed table
 
-First we are going to create the two tables to stage the data in their original CSV text format and then we will create two more tables where we will optimise the storage with ORC. 
-
-Here is a visual representation of the Data Flow:
-
-![Alt Image Text](./images/use-case-diagram.png "Use Case Diagram")
-
-The following statements can either be executed using the Hive CLI or the **Hue Query Editor**. Screenshots of how to use it via **Hue** will be shown together with the description of the various tasks. 
-
-Make sure that you switch to the `trucksdb` database created above, before you perform the next steps. You can either to it in **Hive CLI** using
-
-```
-use truckdb;
-```
-
-or in **Hue** using the Drop-Down on the top of the Query Editor
-
-![Alt Image Text](./images/hue-switch-database.png "Use Case Diagram")
-
-	
-#### Create Table GEOLOCATION_STAGE for staging initial load
-
-To create the table named `geolocation_stage` execute the following `CREATE TABLE` statement
-
-```
-CREATE TABLE geolocation_stage (truckid string, driverid string, event string, latitude DOUBLE, longitude DOUBLE, city string, state string, velocity BIGINT, event_ind BIGINT, idling_ind BIGINT)
+```sql
+CREATE TABLE test_hive_wh (id INTEGER, text string)
 	ROW FORMAT DELIMITED
 	FIELDS TERMINATED BY ','
 	STORED AS TEXTFILE
 	TBLPROPERTIES ("skip.header.line.count"="1");
 ```
-
-It reflects the format of the CSV file `geolocation.csv`. 
-
-![Alt Image Text](./images/hue-create-geolocation-stage.png "Use Case Diagram")
-
-Click the green **Execute** button to run the command. 
+It reflects the format of the CSV file `test1.csv`. 
 
 Let’s review some aspects of the **CREATE TABLE** statements issued above. If you have an SQL background this statement should seem very familiar except for the last 3 lines after the columns definition:
 
@@ -194,545 +144,565 @@ format.
 
 For details on these clauses consult the [Apache Hive Language Manual](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL).
 
-#### Create Table `trucks_stage` for Staging Initial Load
+If you query from the table, you will see now rows returned. 
 
-Now create the `trucks_stage` table in the same way as the `geolocation_stage`. 
-
-```
-CREATE TABLE trucks_stage(driverid string, truckid string, model string, 
-          jun13_miles bigint, jun13_gas bigint, 
-          may13_miles bigint, may13_gas bigint, 
-          apr13_miles bigint, apr13_gas bigint, 
-          mar13_miles bigint, mar13_gas bigint, 
-          feb13_miles bigint, feb13_gas bigint, 
-          jan13_miles bigint, jan13_gas bigint, 
-          dec12_miles bigint, dec12_gas bigint, 
-          nov12_miles bigint, nov12_gas bigint, 
-          oct12_miles bigint, oct12_gas bigint, 
-          sep12_miles bigint, sep12_gas bigint, 
-          aug12_miles bigint, aug12_gas bigint, 
-          jul12_miles bigint, jul12_gas bigint, 
-          jun12_miles bigint, jun12_gas bigint,
-          may12_miles bigint, may12_gas bigint, 
-          apr12_miles bigint, apr12_gas bigint, 
-          mar12_miles bigint, mar12_gas bigint, 
-          feb12_miles bigint, feb12_gas bigint, 
-          jan12_miles bigint, jan12_gas bigint, 
-          dec11_miles bigint, dec11_gas bigint, 
-          nov11_miles bigint, nov11_gas bigint, 
-          oct11_miles bigint, oct11_gas bigint, 
-          sep11_miles bigint, sep11_gas bigint, 
-          aug11_miles bigint, aug11_gas bigint, 
-          jul11_miles bigint, jul11_gas bigint, 
-          jun11_miles bigint, jun11_gas bigint, 
-          may11_miles bigint, may11_gas bigint, 
-          apr11_miles bigint, apr11_gas bigint, 
-          mar11_miles bigint, mar11_gas bigint, 
-          feb11_miles bigint, feb11_gas bigint, 
-          jan11_miles bigint, jan11_gas bigint, 
-          dec10_miles bigint, dec10_gas bigint, 
-          nov10_miles bigint, nov10_gas bigint, 
-          oct10_miles bigint, oct10_gas bigint, 
-          sep10_miles bigint, sep10_gas bigint, 
-          aug10_miles bigint, aug10_gas bigint, 
-          jul10_miles bigint, jul10_gas bigint, 
-          jun10_miles bigint, jun10_gas bigint, 
-          may10_miles bigint, may10_gas bigint, 
-          apr10_miles bigint, apr10_gas bigint, 
-          mar10_miles bigint, mar10_gas bigint, 
-          feb10_miles bigint, feb10_gas bigint, 
-          jan10_miles bigint, jan10_gas bigint, 
-          dec09_miles bigint, dec09_gas bigint, 
-          nov09_miles bigint, nov09_gas bigint, 
-          oct09_miles bigint, oct09_gas bigint, 
-          sep09_miles bigint, sep09_gas bigint, 
-          aug09_miles bigint, aug09_gas bigint, 
-          jul09_miles bigint, jul09_gas bigint, 
-          jun09_miles bigint, jun09_gas bigint, 
-          may09_miles bigint, may09_gas bigint, 
-          apr09_miles bigint, apr09_gas bigint, 
-          mar09_miles bigint, mar09_gas bigint, 
-          feb09_miles bigint, feb09_gas bigint, 
-          jan09_miles bigint, jan09_gas bigint)
-	ROW FORMAT DELIMITED
-	FIELDS TERMINATED BY ','
-	STORED AS TEXTFILE
-	TBLPROPERTIES ("skip.header.line.count"="1");
+```sql
+SELECT * FROM test_hive_wh;
 ```
 
-The structure and properties again reflects the format of the CSV file `trucks.csv`. It is a very wide table, representing the many columns of the CSV file. 
+We have only created the table, but there are no data files "behind" that table. You can check the HDFS folder to see that it is empty using the following command
 
-### Verify that the 2 new tables exist
-
-To verify the tables were defined successfully, in **Hue** or **Hive CLI** execute
-
-```
-show tables;
+```bash
+docker exec -ti namenode hadoop fs -ls -R /user/hive/warehouse
 ```
 
-In **Hue** you navigate into the database on the left side and you should see the tables. If not you have to hit the refresh icon. 
+we can see that there is a folder `test_hive_wh` inside the `testdb.db` folder, reflecting the name of the table and the database.
 
-![Alt Image Text](./images/hue-show-tables.png "Use Case Diagram")
-
-So we have created two tables, but do they already contain the data? 
-
-A simple query can answer that question
-
-```
-SELECT * FROM trucks_stage;
-```
-We can see that the `trucks_stage` table **does not yet hold any data**. This should be the same for the other table as well.
-
-If you are using **Hue** to query the tables, then make sure that you select the right database in the drop-down on the top of the Query Browser.
-
-![Alt Image Text](./images/hue-select-from-stage-table.png "Select Stage Table")
-
-
-We have created the tables in the **Hive Datawarehouse**, but our files in HDFS are located somewhere else. By default, when you create a table in Hive, a directory with the same name gets created in the `/user/hive/warehouse` folder in HDFS. 
-
-Using the **File Browser**, navigate to the `/user/hive/warehouse` folder and you should find a `truckdb.db` folder, which itself holds one folder for each table. 
-
-![Alt Image Text](./images/hue-show-warehouse-folder.png "Select Stage Table")
-
-Both the `geolocation_stage` and the `trucks_stage` are currently empty, although the table is fully functioning, which is the reason why the SELECT query before returned zero rows. 
-
-We could have created the table as **EXTERNAL** and link it with the location of the file in the `CREATE TABLE` clause. 
-
-In this workshop we will manually move the data from the HDFS folder to the right place.
-
-### Load data into the Staging tables
-
-The definition of a Hive table and it's associated metadata (i.e., the directory the data is stored in, the file format, what Hive properties are set, etc.) are stored in the Hive metastore, which in our environment is located in a PostgreSQL instance.
-
-Let’s load the data into your two Hive tables. Populating a Hive table can be done in various ways. A simple way to populate a table is to put a file into the directory associated with the table. 
-
-#### Move the file using HDFS commands
-
-In the **File Browser** View, navigate to the file `/user/hue/truckdata/geolocation.csv` and select it. 
-
-Now click on **Actions** | **Move** and select the `/user/hive/warehouse/truckdb.db/geolocation_stage` folder as the **Move to** target and click **Move**. 
-
-The file has now been moved to the Hive warehouse. 
-
-Another query on the table should now return the data:
-
-```
-SELECT * FROM geolocation_stage;
+```bash
+ubuntu@ip-172-26-1-182:~$ docker exec -ti namenode hadoop fs -ls -R /user/hive/warehouse
+drwxr-xr-x   - root supergroup          0 2020-11-08 09:50 /user/hive/warehouse/testdb.db
+drwxr-xr-x   - root supergroup          0 2020-11-08 09:50 /user/hive/warehouse/testdb.db/test_hive_wh
 ```
 
-#### Use the `LOAD DATA INPATH` command
+Now let's load the data from the data-transfer folder into the Hive managed table
 
-To load the trucks data we use another, more automatic approach through Hive. Execute the following SQL command
-
-```
-LOAD DATA INPATH '/user/hue/truckdata/trucks.csv' OVERWRITE INTO TABLE trucks_stage;
+```bash
+LOAD DATA LOCAL INPATH '/data-transfer/test1.csv'  OVERWRITE INTO TABLE test_hive_wh;
 ```
 
-This also copies the data from the HDFS folder to the folder of the `trucks_stage` table. 
+Now let's query from the table
 
-A quick check with a SELECT reveals that it has worked
-
-```
-SELECT COUNT(*) FROM trucks_stage;
+```sql
+SELECT * FROM test_hive_wh;
 ```
 
-**Note**: using this approach, we don't have to know exactly where the data in the warehouse is located, Hive is doing that work for us. 
+and you should see the following result
 
-If we now navigate back to the `/user/hue/truckdata`  folder, we can see that it is empty! We have successfully moved the data into the Hive warehouse. 
-
-The next step will be to provide that data to potential consumers in a more efficient manner by usiing an columnar format instead of a text format. 
-
-### Define an ORC Table in Hive
-
-The **Optimized Row Columnar**  file format ([Apache ORC](https://orc.apache.org/) project) provides a highly efficient way to store Hive data. It was designed to overcome limitations of the other Hive file formats. Using ORC files improves performance when Hive is reading, writing, and processing data.
-
-To use the ORC format, specify ORC as the file format when creating the table `CREATE TABLE ... STORED AS ORC`
-
-We will create two ORC tables, one for geolocation and one for trucks, which will be created from the data in the **geolocation_stage** and **trucks_stage** tables (which are based on the less optimal text format).
-
-```
-CREATE TABLE geolocation 
-STORED AS ORC AS 
-SELECT * 
-FROM geolocation_stage;
-```
-
-We have successfully moved our raw data from the stating zone into the refined zone. 
-In real life we might also perform some cleansing and processing in that step.
-
-To see that the new table holds the data, just perform a simple SELECT query
-
-```
-SELECT * 
-FROM geolocation
-LIMIT 10;
-```
-
-To verify that the `geolocation` table is using the ORC format, execute the following query
-
-```
-DESCRIBE formatted geolocation;
-```
-
-The result should be similar to the one shown below
-	
-```
-hive> DESCRIBE formatted geolocation;
+```sql
+hive> SELECT * FROM test_hive_wh;
 OK
-# col_name            	data_type           	comment
-
-truckid             	string
-driverid            	string
-event               	string
-latitude            	double
-longitude           	double
-city                	string
-state               	string
-velocity            	bigint
-event_ind           	bigint
-idling_ind          	bigint
-
-# Detailed Table Information
-Database:           	truckdb
-Owner:              	root
-CreateTime:         	Wed May 15 06:07:30 UTC 2019
-LastAccessTime:     	UNKNOWN
-Retention:          	0
-Location:           	hdfs://namenode:8020/user/hive/warehouse/truckdb.db/geolocation
-Table Type:         	MANAGED_TABLE
-Table Parameters:
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1
-	numRows             	8000
-	rawDataSize         	3904000
-	totalSize           	52817
-	transient_lastDdlTime	1557900450
-
-# Storage Information
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-Compressed:         	No
-Num Buckets:        	-1
-Bucket Columns:     	[]
-Sort Columns:       	[]
-Storage Desc Params:
-	serialization.format	1
-Time taken: 0.124 seconds, Fetched: 39 row(s)
-```	
-	
-We can see that for the SerDe infact the OrcSerde is used. Compare that with the `geolocation_stage` table. 
-
-```
-DESCRIBE formatted geolocation_stage;
+1       HDFS
+2       MapReduce
+3       Hive
+4       Pig
+5       Spark
+Time taken: 0.123 seconds, Fetched: 5 row(s)
 ```
 
-Now let's perform the same operation also for the `trucks_stage` table. 
+The data has been copied into the Hive warehouse folder, which you can see by executing the following statement from a terminal window
 
-```
-CREATE TABLE trucks 
-STORED AS ORC TBLPROPERTIES ("orc.compress.size"="1024") AS 
-SELECT * 
-FROM trucks_stage;
+```bash
+docker exec -ti namenode hadoop fs -ls -R /user/hive/warehouse
 ```
 
-With the two tables in place in a query-optimal form, let's perform some analytics on it. 
+you should see the following structure
 
-## Analyse the Truck Data
-
-Next we will be using Hive to analyse derived data from the `geolocation` and `trucks` tables. 
-
-Let’s get started with the first transformation.  We want to calculate the miles per gallon for each truck. 
-
-We will start with the `trucks` table.  We need to sum up all the miles and gas columns on a per truck basis. Hive has a series of functions that can be used to reformat a table. The keyword `LATERAL VIEW` is how we invoke things. [Lateral View](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+LateralView) is used in conjunction with [user-defined table generating functions (UDTF)](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-Built-inTable-GeneratingFunctions(UDTF)). A UDTF generates zero or more output rows for each input row. A lateral view first applies the UDTF to each row of base table and then joins resulting output rows to the input rows to form a virtual table having the supplied table alias.
-
-The `stack` UDTF allows us to restructure the data (jun13 to jan09) into 3 columns labeled `rdate`, `mile` and `gas` (ex: `"june13"`, `june13_miles`, `june13_gas`) that make up a maximum of 54 rows. 
-
-We pick `truckid`, `driverid`, `rdate`, `miles` and `gas` from our original table and add a calculated column `mpg` (miles/gas).
-
-Let’s create the table `truck_mileage` from existing trucking data.
-
-```
-CREATE TABLE truck_mileage 
-AS SELECT truckid, driverid, rdate, miles, gas, miles / gas mpg 
-FROM trucks 
-LATERAL VIEW stack(54,
-				'jun13',jun13_miles,jun13_gas,
-				'may13',may13_miles,may13_gas,
-				'apr13',apr13_miles,apr13_gas,
-				'mar13',mar13_miles,mar13_gas,
-				'feb13',feb13_miles,feb13_gas,
-				'jan13',jan13_miles,jan13_gas,
-				'dec12',dec12_miles,dec12_gas,
-				'nov12',nov12_miles,nov12_gas,
-				'oct12',oct12_miles,oct12_gas,
-				'sep12',sep12_miles,sep12_gas,
-				'aug12',aug12_miles,aug12_gas,
-				'jul12',jul12_miles,jul12_gas,
-				'jun12',jun12_miles,jun12_gas,
-				'may12',may12_miles,may12_gas,
-				'apr12',apr12_miles,apr12_gas,
-				'mar12',mar12_miles,mar12_gas,
-				'feb12',feb12_miles,feb12_gas,
-				'jan12',jan12_miles,jan12_gas,
-				'dec11',dec11_miles,dec11_gas,
-				'nov11',nov11_miles,nov11_gas,
-				'oct11',oct11_miles,oct11_gas,
-				'sep11',sep11_miles,sep11_gas,
-				'aug11',aug11_miles,aug11_gas,
-				'jul11',jul11_miles,jul11_gas,
-				'jun11',jun11_miles,jun11_gas,
-				'may11',may11_miles,may11_gas,
-				'apr11',apr11_miles,apr11_gas,
-				'mar11',mar11_miles,mar11_gas,
-				'feb11',feb11_miles,feb11_gas,
-				'jan11',jan11_miles,jan11_gas,
-				'dec10',dec10_miles,dec10_gas,
-				'nov10',nov10_miles,nov10_gas,
-				'oct10',oct10_miles,oct10_gas,
-				'sep10',sep10_miles,sep10_gas,
-				'aug10',aug10_miles,aug10_gas,
-				'jul10',jul10_miles,jul10_gas,
-				'jun10',jun10_miles,jun10_gas,
-				'may10',may10_miles,may10_gas,
-				'apr10',apr10_miles,apr10_gas,
-				'mar10',mar10_miles,mar10_gas,
-				'feb10',feb10_miles,feb10_gas,
-				'jan10',jan10_miles,jan10_gas,
-				'dec09',dec09_miles,dec09_gas,
-				'nov09',nov09_miles,nov09_gas,
-				'oct09',oct09_miles,oct09_gas,
-				'sep09',sep09_miles,sep09_gas,
-				'aug09',aug09_miles,aug09_gas,
-				'jul09',jul09_miles,jul09_gas,
-				'jun09',jun09_miles,jun09_gas,
-				'may09',may09_miles,may09_gas,
-				'apr09',apr09_miles,apr09_gas,
-				'mar09',mar09_miles,mar09_gas,
-				'feb09',feb09_miles,feb09_gas,
-				'jan09',jan09_miles,jan09_gas ) dummyalias AS rdate, miles, gas;
-```
-	
-From that table, let's calculate the average mileage. Let's first find the correct result using just a query statement
-
-```
-SELECT truckid, avg(mpg) avgmpg 
-FROM truck_mileage 
-GROUP BY truckid;
+```bash
+ubuntu@ip-172-26-6-34:~/hadoop-spark-workshop/01-environment/docker-hdfs$ docker exec -ti namenode hadoop fs -ls -R /user/hive/warehouse
+drwxr-xr-x   - root supergroup          0 2020-11-07 17:20 /user/hive/warehouse/testdb.db
+drwxr-xr-x   - root supergroup          0 2020-11-07 20:40 /user/hive/warehouse/testdb.db/test_hive_wh
+-rw-r--r--   3 root supergroup         48 2020-11-07 20:40 /user/hive/warehouse/testdb.db/test_hive_wh/test1.csv
 ```
 
-When we are happy with the result, we can embed the statement in a `CREATE TABLE ... AS ... ` 
+If you drop the table, then the data in the warehouse will also be deleted. Execute the `DROP TABLE` statement in Hive CLI
 
-```
-CREATE TABLE avg_mileage
-STORED AS ORC
-AS
-SELECT truckid, avg(mpg) avgmpg
-FROM truck_mileage
-GROUP BY truckid;
+```bash
+docker exec -ti hive-server hive -e "DROP TABLE testdb.test_hive_wh"
 ```
 
-It’s a fairly common pattern in Hive to persist results into a table. It is called [Create Table as Select (CTAS)](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-CreateTableAsSelect%28CTAS%29). 
+and then check the warehouse folder again
 
-## Hive Partitioned Table
-Hive is a good tool for performing queries on large datasets, especially datasets that require full table scans. But quite often there are instances where users need to filter the data on specific column values. Generally, Hive users know about the domain of the data that they deal with. With this knowledge they can identify common columns that are frequently queried in order to identify columns with low cardinality which can be used to organize data using the partitioning feature of Hive. In non-partitioned tables, Hive would have to read all the files in a table’s data directory and subsequently apply filters on it. This is slow and expensive—especially in cases of large tables.
-
-The concept of partitioning is not new for folks who are familiar with relational databases. Partitions are essentially horizontal slices of data which allow larger sets of data to be separated into more manageable chunks. In Hive, partitioning is supported for both managed and external tables.
-
-We will create a `flight` table, which is partitioned by YEAR and MONTH and is holding flights for 2008.
-
-Start Hive on the `hive-server` container
-
+```bash
+docker exec -ti namenode hadoop fs -ls -R /user/hive/warehouse
 ```
+
+and you can see that the file is gone, it has been deleted due to the `DROP TABLE`
+
+```bash
+ubuntu@ip-172-26-6-34:~/hadoop-spark-workshop/01-environment/docker-hdfs$ docker exec -ti namenode hadoop fs -ls -R /user/hive/warehouse
+drwxr-xr-x   - root supergroup          0 2020-11-07 20:55 /user/hive/warehouse/testdb.db
+```
+
+Manage tables manage the lifecycle of the data behind the table. Now let's see the other type of Hive tables, the external tables. 
+
+### Working with External tables
+
+An external table does not managed the data behind the table. Let's see that in action. 
+
+First we copy the exact same file manually into a new HDFS folder
+
+```bash
+docker exec -ti namenode hadoop fs -mkdir -p /user/hue/test-data
+
+docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/test1.csv /user/hue/test-data
+```
+
+And then we create the external table wrapping the data in the folder. Open the Hive CLI
+
+```bash
 docker exec -ti hive-server hive
 ```
 
-Now create a database and switch to that database;
+change into the `testdb` database and create the table
 
-```
-CREATE DATABASE flightdata;
-USE flightdata;
-```
+```sql
+USE testdb;
 
-First let's create a partitioned table.
-
-```
-CREATE TABLE `flight` (
-  `dayofmonth` bigint,
-  `dayofweek` bigint,
-  `deptime` bigint,
-  `crsdeptime` bigint,
-  `arrtime` bigint,
-  `crsarrtime` bigint,
-  `uniquecarrier` string,
-  `flightnum` bigint,
-  `tailnum` string,
-  `actualelapsedtime` bigint,
-  `crselapsedtime` bigint,
-  `airtime` bigint,
-  `arrdelay` bigint,
-  `depdelay` bigint,
-  `origin` string,
-  `dest` string,
-  `distance` bigint,
-  `taxiin` bigint,
-  `taxiout` bigint,
-  `cancelled` boolean,
-  `cancellationcode` string,
-  `diverted` boolean,
-  `carrierdelay` string,
-  `weatherdelay` string,
-  `nasdelay` string,
-  `securitydelay` string,
-  `lateaircraftdelay` string)
-PARTITIONED BY (`year` bigint, `month` bigint)
-ROW FORMAT SERDE
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
-WITH SERDEPROPERTIES (
-  'colelction.delim'='',
-  'field.delim'=',',
-  'mapkey.delim'='',
-  'serialization.format'=',')
-STORED AS INPUTFORMAT
-  'org.apache.hadoop.mapred.TextInputFormat'
-OUTPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-TBLPROPERTIES (
-  'skip.header.line.count'='1',
-  'transient_lastDdlTime'='1573991877');
+CREATE EXTERNAL TABLE test_hive_ext (id INTEGER, text string)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	STORED AS TEXTFILE
+	LOCATION "hdfs://namenode:9000/user/hue/test-data"
+	TBLPROPERTIES ("skip.header.line.count"="1");
 ```
 
-Now let's load the data using the `LOAD DATA LOCAL` command, which allows us to load a local file (local to the `hive-server` container) into a Hive table. By using the partition clause, we can specify the partition it should be loaded into. Still in the hive shell perform:
+Compared to the managed table above, we use the additional `EXTERNAL` keyword and we specify the location of the data for that table. The location is the folder, which holds the data as one or more files. 
 
-```
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_1.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=1);
+Now lets query the data
 
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_2.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=2);
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_3.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=3);
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_4.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=4);
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_5.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=5);
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_6.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=6 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_7.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=7 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_8.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=8 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_9.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=9 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_10-1.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=10 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_10-2.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=10 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_11.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=11 );
-
-LOAD DATA LOCAL INPATH '/data-transfer/flightdata/flights_2008_12.csv' 
-OVERWRITE INTO TABLE flight PARTITION (year='2008',month=12 );
+```sql
+SELECT * FROM test_hive_ext;
 ```
 
-Now let's see how the files have been loaded. We have created a managed table, so the table data is under `/user/hive/warehouse`. You can use the `dfs` command from the Hive shell to execute HDFS commands. 
+and we should see the following result
 
-A `dfs -ls -R` performs a folder listing recursively:
-
-```
-dfs -ls -R /user/hive/warehouse/flightdata.db;
-```
-
-you should see an output similar to the one shown below:
-
-```
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=1
--rwxrwxr-x   3 root supergroup   60577093 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=1/flights_2008_1.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=10
--rwxrwxr-x   3 root supergroup   47487359 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=10/flights_2008_10-2.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=11
--rwxrwxr-x   3 root supergroup   53127605 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=11/flights_2008_11.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=12
--rwxrwxr-x   3 root supergroup   54998023 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=12/flights_2008_12.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=2
--rwxrwxr-x   3 root supergroup   56824186 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=2/flights_2008_2.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=3
--rwxrwxr-x   3 root supergroup   61561755 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=3/flights_2008_3.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=4
--rwxrwxr-x   3 root supergroup   59867299 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=4/flights_2008_4.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=5
--rwxrwxr-x   3 root supergroup   25650829 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=5/flights_2008_5.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=6
--rwxrwxr-x   3 root supergroup   60790288 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=6/flights_2008_6.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=7
--rwxrwxr-x   3 root supergroup   62857510 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=7/flights_2008_7.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=8
--rwxrwxr-x   3 root supergroup   61344436 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=8/flights_2008_8.csv
-drwxrwxr-x   - root supergroup          0 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=9
--rwxrwxr-x   3 root supergroup   54305392 2019-11-17 23:13 /user/hive/warehouse/flightdata.db/flight/year=2008/month=9/flights_2008_9.csv
-```
-
-We can see that the partitioning is part of the folder naming: /user/hive/warehouse/flightdata.db/flight/**year=2008**/**month=9**/flights\_2008\_9.csv.
-
-If you include both `year` and `month` in a query, then only the given partition is read by Hive. 
-
-```
-SELECT count(*) FROM flight WHERE year = 2008 and month = 2;
-```
-
-You can check that by using the `explain dependency` followed by the SELECT you would execute
-
-```
-explain dependency SELECT count(*) FROM flight WHERE year = 2008 and month = 2;
-```
-
-should return
-
-```
+```sqk
+hive> select * from test_hive_ext;
 OK
-{"input_tables":[{"tablename":"default@flight","tabletype":"MANAGED_TABLE"}],"input_partitions":[{"partitionName":"default@flight@year=2008/month=2"}]}
+1       HDFS
+2       MapReduce
+3       Hive
+4       Pig
+5       Spark
+Time taken: 2.17 seconds, Fetched: 5 row(s)
 ```
 
-whereas a select without where clause
+if we now drop the table
 
-```
-explain dependency SELECT count(*) FROM flight;
+```bash
+docker exec -ti hive-server hive -e "DROP TABLE testdb.test_ext"
 ```
 
-as expected, has to read all the partitions
+we can see that the data is not touched
 
+```bash
+docker exec -ti namenode hadoop fs -ls -R /user/hue/test-data
 ```
+
+which shows the result of the `hadoop fs -ls -R`
+
+```bash
+ubuntu@ip-172-26-6-34:~/hadoop-spark-workshop/01-environment/docker-hdfs$ docker exec -ti namenode hadoop fs -ls -R /user/hue/test-data
+-rw-r--r--   3 root supergroup         48 2020-11-07 21:13 /user/hue/test-data/test1.csv
+```
+
+### What happens if the `CREATE TABLE` is not correct?
+
+If something in the mapping of the tables to the files in HDFS is wrong, then you will get just NULL values back.
+
+Let's demonstrate that with an additional column, for which there is no data in the file
+
+```sql
+CREATE EXTERNAL TABLE test_hive_ext_too_many_cols (id INTEGER, text string, nonexisting string)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	STORED AS TEXTFILE
+	LOCATION "hdfs://namenode:9000/user/hue/test-data"
+	TBLPROPERTIES ("skip.header.line.count"="1");
+```
+
+and you will see that the 3rd column is all `NULL`
+
+```sql
+hive> select * from test_hive_ext_too_many_cols;
 OK
-{"input_tables":[{"tablename":"default@flight","tabletype":"MANAGED_TABLE"}],"input_partitions":[{"partitionName":"default@flight@year=2008/month=1"},{"partitionName":"default@flight@year=2008/month=2"},{"partitionName":"default@flight@year=2008/month=3"},{"partitionName":"default@flight@year=2008/month=4"},{"partitionName":"default@flight@year=2008/month=5"},{"partitionName":"default@flight@year=2008/month=6"},{"partitionName":"default@flight@year=2008/month=7"},{"partitionName":"default@flight@year=2008/month=8"},{"partitionName":"default@flight@year=2008/month=9"},{"partitionName":"default@flight@year=2008/month=10"},{"partitionName":"default@flight@year=2008/month=11"},{"partitionName":"default@flight@year=2008/month=12"}]}
+1       HDFS    NULL
+2       MapReduce       NULL
+3       Hive    NULL
+4       Pig     NULL
+5       Spark   NULL
+Time taken: 0.116 seconds, Fetched: 5 row(s)
 ```
 
-You can force having to use a partition by setting the `hive.mapred.mode` to strict.
+What happens if we use a wrong datatype for a column?
 
-```
-set hive.mapred.mode=strict;
-```
-
-Now a query without restricting on one of the partition keys will return with an error:
-
-```
-hive> select * from flight;
-FAILED: SemanticException Queries against partitioned tables without a partition filter are disabled for safety reasons. If you know what you are doing, please sethive.strict.checks.large.query to false and that hive.mapred.mode is not set to 'strict' to proceed. Note that if you may get errors or incorrect results if you make a mistake while using some of the unsafe features. No partition predicate for Alias "flight" Table "flight"
+```sql
+CREATE EXTERNAL TABLE test_hive_ext_wrong_datatype (id INTEGER, wrongdatatype INTEGER)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	STORED AS TEXTFILE
+	LOCATION "hdfs://namenode:9000/user/hue/test-data"
+	TBLPROPERTIES ("skip.header.line.count"="1");
 ```
 
-## Summary
+you can see that all `NULL` values are returned in that case
 
-We have learnt that we can create Hive tables with **CREATE TABLE** and load data into them using the **LOAD DATA INPATH** command. Additionally, we have seen how to change the file format of the tables to ORC, so hive is more efficient at reading, writing and processing the underlying data. 
+```sql
+hive> select * from test_hive_ext_wrong_datatype;
+OK
+1       NULL
+2       NULL
+3       NULL
+4       NULL
+5       NULL
+Time taken: 0.128 seconds, Fetched: 5 row(s)
+```
 
-We have also learned how to grap column values from our existing table using **SELECT {column_name…} FROM {table_name}** to create a new table.
+What if there is a wrong format applied to the underlaying file. We specify a `;` for the field delimiter, which is obviously wrong. 
+
+```sql
+CREATE EXTERNAL TABLE test_hive_ext_wrong_format (id INTEGER, text string)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ';'
+	STORED AS TEXTFILE
+	LOCATION "hdfs://namenode:9000/user/hue/test-data"
+	TBLPROPERTIES ("skip.header.line.count"="1");
+```
+
+in that case the result is all `NULL`
+
+```sql
+hive> select * from test_hive_ext_wrong_format;
+OK
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+Time taken: 0.107 seconds, Fetched: 5 row(s)
+```
+
+It is important to realise that a `NULL` value can also be a correct result, if there is no data available for a given column. So you have to be careful when you analyse your query results, it could be as well be an error in your table mapping. 
+
+## Using Hive for working with the Flight Data
+
+Apache Hive presents a relational view of data in HDFS and ensures that users need not worry about where or in what format their data is stored. Hive can display data from RCFile format, text files, ORC, JSON, parquet, sequence files and many of other formats in a tabular view. 
+
+Through the use of SQL you can view your data as a table and create queries like you would in an RDBMS.
+
+The data for this workshop has been uploaded to HDFS in the [HDFS Workshop](../02-hdfs/README.md). If you haven't done that, then just execute the following statements to have the files in place:
+
+Create the folders in HDFS
+
+```bash
+docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/airports &&
+  docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/plane-data &&
+  docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/carriers && 
+  docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/flights
+```
+
+and upload the data
+
+```bash
+docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/airports.csv /user/hue/flight-data/raw/airports &&
+	docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/carriers.json /user/hue/flight-data/raw/carriers &&
+
+	docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/plane-data.csv /user/hue/flight-data/raw/plane-data &&
+
+	docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/flights-small/flights_2008_4_1.csv /data-transfer/flight-data/flights-small/flights_2008_4_2.csv /data-transfer/flight-data/flights-small/flights_2008_5_1.csv /data-transfer/flight-data/flights-small/flights_2008_5_2.csv /data-transfer/flight-data/flights-small/flights_2008_5_3.csv  /user/hue/flight-data/raw/flights
+```
+
+### Create a Database for the Flight Data
+
+First let's create a Hive database for holding the tables.
+
+You can either use the `CREATE DATABASE` statement in **Hive CLI** or **Hue**
+
+```sql
+CREATE DATABASE flightdb;
+```
+
+Or in Hue there is also a graphical way using the **+** sign next to the Databases list on the left side.
+
+![Alt Image Text](./images/hue-create-database.png "Hue Create Database")
+
+To see the databases in place, execute the following command in either **Hive CLI** or **Hue** 
+
+```sql
+SHOW databases;
+```
+
+In **Hue** you can also click on the refresh icon, next to the **Databases**.
+
+![Alt Image Text](./images/hue-refresh-db.png "Refresh DBs")
+
+### Create Hive tables on the raw data
+
+Now that you are familiar with the Hive User View, let’s create the initial staging tables for the airport and flights data. In this section we will learn how to create two Hive tables: `airports_raw`, `flights_raw`.
+
+First we are going to create the two tables to stage the data in their original CSV text format and then we will create two more tables where we will optimise the storage with ORC. 
+
+
+The following statements can either be executed using the Hive CLI or the **Hue Query Editor**. Screenshots of how to use it via **Hue** will be shown together with the description of the various tasks. 
+
+Make sure that you switch to the `flightdb` database created above, before you perform the next steps. You can either to it in **Hive CLI** using
+
+```sql
+use flightdb;
+```
+
+or in **Hue** using the Drop-Down on the top of the Query Editor
+
+![Alt Image Text](./images/hue-switch-database.png "Use Case Diagram")
+
+#### Create Table AIRPORTS_RAW for staging initial load
+
+To create the table named `airports_raw` execute the following `CREATE TABLE` statement
+
+```sql
+DROP TABLE IF EXISTS airports_raw;
+
+CREATE EXTERNAL TABLE airports_raw (iata string, airport string, city string, state string, country string, latitude double, longitude double)
+   ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+	STORED AS TEXTFILE
+	LOCATION "hdfs://namenode:9000/user/hue/flight-data/raw/airports"
+	TBLPROPERTIES ("skip.header.line.count"="1");
+```
+
+We create it as an external table over the data file in the HDFS folder `user/hue/flight-data/raw/airports`. We have to use the `org.apache.hadoop.hive.serde2.OpenCSVSerde` serde class, in order to remove the `"` characters in the csv file. 
+
+Let's see that it actually works by querying for the first 10 airports
+
+```sql
+SELECT * FROM airports_raw
+LIMIT 10;
+```
+
+you should see a result similar to the one below
+
+```sql
+hive> SELECT * FROM airports_raw
+    > LIMIT 10;
+OK
+00M     Thigpen         Bay Springs     MS      USA     31.95376472     -89.23450472
+00R     Livingston Municipal    Livingston      TX      USA     30.68586111     -95.01792778
+00V     Meadow Lake     Colorado Springs        CO      USA     38.94574889     -104.5698933
+01G     Perry-Warsaw    Perry   NY      USA     42.74134667     -78.05208056
+01J     Hilliard Airpark        Hilliard        FL      USA     30.6880125      -81.90594389
+01M     Tishomingo County       Belmont MS      USA     34.49166667     -88.20111111
+02A     Gragg-Wade      Clanton AL      USA     32.85048667     -86.61145333
+02C     Capitol Brookfield      WI      USA     43.08751        -88.17786917
+02G     Columbiana County       East Liverpool  OH      USA     40.67331278     -80.64140639
+03D     Memphis Memorial        Memphis MO      USA     40.44725889     -92.22696056
+Time taken: 0.13 seconds, Fetched: 10 row(s)
+```
+
+#### Create Table `flights_raw` for Staging Initial Load
+
+Now create the `flights_raw ` table in the same way as the `airports_raw`, except that we are using the `OpenCSVSerde` format class. 
+
+```sql
+DROP TABLE IF EXISTS fligths_raw;
+
+CREATE EXTERNAL TABLE flights_raw (year integer
+									 , month integer
+								    , day_of_month integer
+								    , day_of_week integer
+								    , dep_time integer
+								    , crs_dep_time integer
+								    , arr_time integer
+								    , crs_arr_time integer
+								    , unique_carrier string
+								    , flight_num string
+								    , tail_num string
+								    , actual_elapsed_time integer
+								    , crs_elapsed_time integer
+								    , air_time integer
+								    , arr_delay integer
+								    , dep_delay integer
+								    , origin string
+								    , dest string
+								    , distance integer
+								    , taxi_in integer
+								    , taxi_out integer
+								    , cancelled string
+								    , cancellation_code string
+								    , diverted integer
+								    , carrier_delay integer
+								    , weather_delay integer
+								    , nas_deleay integer
+								    , security_delay integer
+								    , late_aircraft_delay integer) 
+	ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+	STORED AS TEXTFILE
+	LOCATION 'hdfs://namenode:9000/user/hue/flight-data/raw/flights';
+```
+
+We can also see that we specify `/user/hue/flight-data/raw/flights` as the HDFS folder for where the data is located. Let's see the content of this folder:
+
+![Alt Image Text](./images/hue-show-flights-folder.png "Use Case Diagram")
+
+We can see that there are multiple files inside the `flights` folder. All these files together make up the data behind the table. 
+
+Let's see that it works by using a query on the new table, again limiting the result to 10 rows
+
+```sql
+SELECT * FROM flights_raw
+LIMIT 10;
+```
+
+we can see 10 flights of 2008
+
+```sql
+hive> SELECT * FROM flights_raw
+    > LIMIT 10;
+OK
+2008    4       3       4       1201    1140    1352    1305    WN      165     N333SW  111     85      97      47      21     MCI      BNA     491     6       8       N               N       21      0       26      0       0
+2008    4       3       4       1845    1815    2023    1940    WN      214     N326SW  98      85      83      43      30     MCI      BNA     491     6       9       N               N       0       0       13      0       30
+2008    4       3       4       2159    2155    2328    2315    WN      314     N384SW  89      80      75      13      4      MCI      BNA     491     7       7       N               N       NA      NA      NA      NA      NA
+2008    4       3       4       757     800     929     925     WN      2634    N505SW  92      85      68      4       -3     MCI      BNA     491     9       15      N               N       NA      NA      NA      NA      NA
+2008    4       3       4       1314    1240    1621    1605    WN      633     N301SW  127     145     117     16      34     MCI      BWI     967     3       7       N               N       16      0       0       0       0
+2008    4       3       4       2126    1935    30      2255    WN      2008    N789SW  124     140     109     95      111    MCI      BWI     967     7       8       N               N       56      0       0       0       39
+2008    4       3       4       713     710     1017    1030    WN      2453    N268WN  124     140     112     -13     3      MCI      BWI     967     4       8       N               N       NA      NA      NA      NA      NA
+2008    4       3       4       740     735     908     910     WN      11      N332SW  88      95      77      -2      5      MCI      DAL     461     4       7       N               N       NA      NA      NA      NA      NA
+2008    4       3       4       924     910     1052    1040    WN      19      N678AA  88      90      76      12      14     MCI      DAL     461     4       8       N               N       NA      NA      NA      NA      NA
+2008    4       3       4       1132    1040    1301    1210    WN      25      N254WN  89      90      77      51      52     MCI      DAL     461     4       8       N               N       48      0       0       0       3
+Time taken: 2.148 seconds, Fetched: 10 row(s)
+```
+
+What if we want to now the number of flights we have in total in the 5 files we have uploaded to HDFS?
+It is as simple as using a `SELECT COUNT(*) ...`
+
+```sql
+SELECT COUNT(*) FROM flights_raw;
+```
+
+If we execute that statement, for the first time we will not get an immediate result but will see that a Map/Reduce job is started, which after a while will return the result of `50000`.
+
+```sql
+hive> select count(*) from flights_raw;
+Query ID = root_20201108104559_352e6eaa-e64f-42cc-bb32-c5bc9b21c65b
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1604832285090_0001, Tracking URL = http://18.197.190.251:18088/proxy/application_1604832285090_0001/
+Kill Command = /opt/hadoop-3.1.2/bin/mapred job  -kill job_1604832285090_0001
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2020-11-08 10:46:15,073 Stage-1 map = 0%,  reduce = 0%
+2020-11-08 10:46:21,375 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 3.34 sec
+2020-11-08 10:46:28,594 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 5.56 sec
+MapReduce Total cumulative CPU time: 5 seconds 560 msec
+Ended Job = job_1604832285090_0001
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 5.56 sec   HDFS Read: 4970632 HDFS Write: 105 SUCCESS
+Total MapReduce CPU Time Spent: 5 seconds 560 msec
+OK
+50000
+Time taken: 30.513 seconds, Fetched: 1 row(s)
+```
+
+We have a total of 50'000 flights in the `flights_raw` table, which is correct, as each single file holds 10'000 rows.
+
+If we want to see the MapReduce Job running on the Hadoop cluster, we can navigate to <http://dataplatform:18088> while the job is running and see a screen similar to the one below.
+
+![Alt Image Text](./images/resource-manager-show-application.png "Use Case Diagram")
+
+
+So far we have seen rather simple SQL statements. But of course we can also do aggregations and joins. 
+
+Let's see how many airports we have by country
+
+```sql
+SELECT country, count(*)
+FROM airports_raw
+GROUP BY country;
+```
+
+Again a MapReduce job will get started, which you can see in the output shown below
+
+```sql
+hive> SELECT country, count(*)
+    > FROM airports_raw
+    > GROUP BY country;
+Query ID = root_20201108195935_a427a3eb-e309-41bc-93f9-d15c10b02f3f
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1604864370455_0003, Tracking URL = http://resourcemanager:8088/proxy/application_1604864370455_0003/
+Kill Command = /opt/hadoop-3.1.2/bin/mapred job  -kill job_1604864370455_0003
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2020-11-08 19:59:44,187 Stage-1 map = 0%,  reduce = 0%
+2020-11-08 19:59:50,369 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.51 sec
+2020-11-08 19:59:56,548 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 4.46 sec
+MapReduce Total cumulative CPU time: 4 seconds 460 msec
+Ended Job = job_1604864370455_0003
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 4.46 sec   HDFS Read: 257993 HDFS Write: 228 SUCCESS
+Total MapReduce CPU Time Spent: 4 seconds 460 msec
+OK
+Federated States of Micronesia  1
+N Mariana Islands       1
+Palau   1
+Thailand        1
+USA     3372
+Time taken: 22.247 seconds, Fetched: 5 row(s)
+```
+
+Most of the airports in the database are in the US.
+
+Last but not least let's join the `flights_raw` table to the `airports_raw` table to enrich the airport codes with the name of the airport, once for the origin and once for the destination.
+
+```sql
+SELECT ao.airport, ao.city, ad.airport, ad.city, f.*
+FROM flights_raw  AS f
+LEFT JOIN airports_raw AS ao
+ON (f.origin = ao.iata)
+LEFT JOIN airports_raw AS ad
+ON (f.dest = ad.iata)
+LIMIT 5;
+```
+
+We limit it to 5 so we don't get 50'000 rows back. 
+
+```sql
+hive> SELECT ao.airport, ao.city, ad.airport, ad.city, f.*
+    > FROM flights_raw  AS f
+    > LEFT JOIN airports_raw AS ao
+    > ON (f.origin = ao.iata)
+    > LEFT JOIN airports_raw AS ad
+    > ON (f.dest = ad.iata)
+    > LIMIT 5;
+No Stats for flightdb@flights_raw, Columns: taxi_in, distance, year, tail_num, origin, dep_delay, nas_deleay, dest, day_of_month, flight_num, diverted, taxi_out, crs_arr_time, actual_elapsed_time, air_time, weather_delay, day_of_week, arr_delay, dep_time, crs_elapsed_time, cancellation_code, unique_carrier, crs_dep_time, month, late_aircraft_delay, cancelled, arr_time, security_delay, carrier_delay
+No Stats for flightdb@airports_raw, Columns: iata, city, airport
+No Stats for flightdb@airports_raw, Columns: iata, city, airport
+Query ID = root_20201108200202_91cab1b5-a89f-45e7-8317-144b230d8a7e
+Total jobs = 1
+WARNING: HADOOP_PREFIX has been replaced by HADOOP_HOME. Using value of HADOOP_PREFIX.
+SLF4J: Found binding in [jar:file:/opt/hadoop-3.1.2/share/hadoop/common/lib/slf4j-log4j12-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
+2020-11-08 20:02:11     Dump the side-table for tag: 1 with group count: 3376 into file: file:/tmp/root/f68dc3b3-4765-4bdb-bde4-76403134563c/hive_2020-11-08_20-02-02_660_7199246875091384267-1/-local-10005/HashTable-Stage-5/MapJoin-mapfile31--.hashtable
+Execution completed successfully
+MapredLocal task succeeded
+Launching Job 1 out of 1
+Number of reduce tasks is set to 0 since there's no reduce operator
+Starting Job = job_1604864370455_0005, Tracking URL = http://resourcemanager:8088/proxy/application_1604864370455_0005/
+Kill Command = /opt/hadoop-3.1.2/bin/mapred job  -kill job_1604864370455_0005
+Hadoop job information for Stage-5: number of mappers: 1; number of reducers: 0
+2020-11-08 20:02:19,073 Stage-5 map = 0%,  reduce = 0%
+2020-11-08 20:02:25,237 Stage-5 map = 100%,  reduce = 0%, Cumulative CPU 3.12 sec
+MapReduce Total cumulative CPU time: 3 seconds 120 msec
+Ended Job = job_1604864370455_0005
+MapReduce Jobs Launched: 
+Stage-Stage-5: Map: 1   Cumulative CPU: 3.12 sec   HDFS Read: 726692 HDFS Write: 993 SUCCESS
+Total MapReduce CPU Time Spent: 3 seconds 120 msec
+OK
+Kansas City International       Kansas City     Nashville International Nashville       2008    4       3       4       1201    1140    13521305     WN      165     N333SW  111     85      97      47      21      MCI     BNA     491     6       8       N               N       21  26       0       0
+Kansas City International       Kansas City     Nashville International Nashville       2008    4       3       4       1845    1815    20231940     WN      214     N326SW  98      85      83      43      30      MCI     BNA     491     6       9       N               N       0   13       0       30
+Kansas City International       Kansas City     Nashville International Nashville       2008    4       3       4       2159    2155    23282315     WN      314     N384SW  89      80      75      13      4       MCI     BNA     491     7       7       N               N       NA  NA       NA      NA      NA
+Kansas City International       Kansas City     Nashville International Nashville       2008    4       3       4       757     800     929 925      WN      2634    N505SW  92      85      68      4       -3      MCI     BNA     491     9       15      N               N       NA  NA       NA      NA      NA
+Kansas City International       Kansas City     Baltimore-Washington International      Baltimore       2008    4       3       4       13141240     1621    1605    WN      633     N301SW  127     145     117     16      34      MCI     BWI     967     3       7       N           16       0       0       0       0
+Time taken: 23.654 seconds, Fetched: 5 row(s)
+```
