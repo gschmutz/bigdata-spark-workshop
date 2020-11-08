@@ -11,7 +11,7 @@ The files prepared in this workshop will be used later by the other workshops.
 
 If you want the data to persist even after you shutdown the docker-compose stack, then you might want to add an additional value mapping to the `minio` service (this is of less use if you have provisioned the stack on **AWS Lightsail**). 
 
-```
+```bash
     volumes:
       - './container-volume/minio/data/:/data'
 ```
@@ -36,7 +36,7 @@ In our environment, S3cmd is accessible inside the `awscli` as well as the `zepp
 
 Running `s3cmd -h` will show the help page of s3cmd.
 
-```
+```bash
 docker exec -ti awscli s3cmd -h
 ```
 
@@ -76,13 +76,13 @@ First we have to create a bucket.
 
 Here are the commands to perform when using the **S3cmd** on the command line
 
-```
+```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
 and you should get the bucket created method as shown below
 
-```
+```bash
 bigdata@bigdata:~$ docker exec -ti awscli s3cmd mb s3://flight-bucket
 Bucket 's3://flight-bucket/' created
 ```
@@ -93,7 +93,7 @@ Navigate to the MinIO UI (<http://dataplatform:9000>) and you should see the new
 
 or you could also use `s3cmd ls` to list all buckets.
 
-```
+```bash
 docker exec -ti awscli s3cmd ls s3://
 ```
 
@@ -101,41 +101,41 @@ docker exec -ti awscli s3cmd ls s3://
 
 To upload a file we are going to use the `s3cmd put` command. First for the `airports.csv`
 
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw-data/airports/airports.csv
+```bash
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
 ```
 
 and then also for the `plane-data.csv` file. 
 
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw-data/planes/plane-data.csv
+```bash
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
 ```
 
 Let's use the `s3cmd ls` command once more but now to display the content of the `flight-bucket`
 
-```
+```bash
 docker exec -ti awscli s3cmd ls s3://flight-bucket/
 ```
 
-We can see that the bucket contains a directory with the name `raw-data`, which is the prefix we have used when uploading the data above. 
+We can see that the bucket contains a directory with the name `raw`, which is the prefix we have used when uploading the data above. 
 
-```
+```bash
 bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls s3://flight-bucket/
-                       DIR   s3://flight-bucket/raw-data/
+                       DIR   s3://flight-bucket/raw/
 ```
 
 If we use the `-r` argument
 
-```
+```bash
 docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
 ```
 
 we can see the objects with the hierarchy as well. 
 
-```
+```bash
 bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
-2020-05-04 21:00    244438   s3://flight-bucket/raw-data/airports/airports.csv
-2020-05-04 21:01    428558   s3://flight-bucket/raw-data/planes/plane-data.csv
+2020-05-04 21:00    244438   s3://flight-bucket/raw/airports/airports.csv
+2020-05-04 21:01    428558   s3://flight-bucket/raw/planes/plane-data.csv
 ```
 
 We can see the same in the MinIO Browser.  
@@ -147,8 +147,8 @@ We can see the same in the MinIO Browser.
 
 To upload a file we are going to use the `s3cmd put` command. First for the `carriers.json`
 
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw-data/carriers/carriers.json
+```bash
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
 ```
 
 Check again in the MinIO Browser that the object has been uploaded.
@@ -157,19 +157,15 @@ Check again in the MinIO Browser that the object has been uploaded.
 
 Next let's upload some flights data files, all documenting flights in April and May of 2008
 
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw-data/flights/
-
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw-data/flights/
+```bash
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
-All these objects are no available in the flight-bucket under the `raw-data/flights` path.
+All these objects are no available in the flight-bucket under the `raw/flights` path.
 
 ![Alt Image Text](./images/minio-flights.png "Minio list objects")
 
@@ -177,24 +173,24 @@ All these objects are no available in the flight-bucket under the `raw-data/flig
 
 Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` we should have a `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
 
-```
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw-data/pdf/
+```bash
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw/pdf/
 ```
 
 You can see by the output that a multi-part upload has been performed:
 
-```
-$ docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw-data/pdf/
+```bash
+$ docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw/pdf/
 WARNING: pilot_handbook.pdf: Owner username not known. Storing UID=1000 instead.
 WARNING: pilot_handbook.pdf: Owner groupname not known. Storing GID=1000 instead.
 WARNING: Module python-magic is not available. Guessing MIME types based on file extensions.
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 1 of 4, 15MB] [1 of 1]
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 1 of 4, 15MB] [1 of 1]
  15728640 of 15728640   100% in    0s    77.98 MB/s  done
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 2 of 4, 15MB] [1 of 1]
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 2 of 4, 15MB] [1 of 1]
  15728640 of 15728640   100% in    0s    73.09 MB/s  done
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 3 of 4, 15MB] [1 of 1]
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 3 of 4, 15MB] [1 of 1]
  15728640 of 15728640   100% in    0s    80.48 MB/s  done
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw-data/pdf/pilot_handbook.pdf'  [part 4 of 4, 8MB] [1 of 1]
+upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 4 of 4, 8MB] [1 of 1]
  8702870 of 8702870   100% in    0s    66.63 MB/s  done
 ```
 

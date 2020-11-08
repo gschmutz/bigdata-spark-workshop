@@ -21,13 +21,13 @@ In this workshop we are going to use the [File System Shell](https://hadoop.apac
 
 In our environment, the Hadoop command is accessible inside the `namenode` container. To access the help for the `fs` command, enter
 
-```
+```bash
 docker exec -ti namenode hadoop fs
 ```
 
 and you should get the help page in return
 
-```
+```bash
 bigdata@bigdata:~$ docker exec -ti namenode hadoop fs
 Usage: hadoop fs [generic options]
 	[-appendToFile <localsrc> ... <dst>]
@@ -88,13 +88,13 @@ Find the documentation on the various options of the `hadoop fs` command here: <
 
 So to get a directory listing of the folder `user` in HDFS, you would use
 
-```
+```bash
 docker exec -ti namenode hadoop fs -ls /user
 ```
 
 to get back a result similar to this
 
-```
+```bash
 bigdata@bigdata:~$ docker exec -ti namenode hadoop fs -ls /user
 Found 3 items
 drwxr-xr-x   - root supergroup          0 2019-05-13 15:59 /user/hive
@@ -106,7 +106,7 @@ drwxr-xr-x   - root supergroup          0 2019-05-13 15:59 /user/hive
 
 To use it, we first have to create the "home directory" in HDFS for the user `hue`. We can do that by using the `mkdir` option of the `hadoop fs` command.
 
-```
+```bash
 docker exec -ti namenode hadoop fs -mkdir -p /user/hue
 ```
 
@@ -142,7 +142,7 @@ Enter `fligh-tdata` into the **Directory Name** and click **Create**. We will us
 
 To create the folder with the **Hadoop File Command** instead of using **Hue**, use the `mkdir` command
 
-```
+```bash
 docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/airports &&
   docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/plane-data &&
   docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/raw/carriers && 
@@ -155,13 +155,13 @@ Now with the directories in place, we can start uploading data. The files we upl
 
 Use the `ls` command on the docker host
 
-```
+```bash
 ls -lsa $DATAPLATFORM_HOME/data-transfer/flight-data/
 ```
 
 and you should see the following files
 
-```
+```bash
 ubuntu@ip-172-26-6-34:~/hadoop-spark-workshop/01-environment/docker-hdfs$ ls -lsa $DATAPLATFORM_HOME/data-transfer/flight-data
 total 2336
   4 drwxr-xr-x 4 root   root     4096 Nov  7 12:28 .
@@ -187,7 +187,7 @@ Two of the files (`airports.csv` and `carriers.json`) to be uploaded are also ch
 
 Alternatively use the **Hadoop File Command** to upload all the files.
 
-```
+```bash
 docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/airports.csv /user/hue/flight-data/raw/airports
 
 docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/carriers.json /user/hue/flight-data/raw/carriers
@@ -199,13 +199,13 @@ docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/pla
 
 To see a listing of files we have uploaded from the command line, just perform 
 
-```
+```bash
 docker exec -ti namenode hadoop fs -lsr /user/hue/flight-data/
 ```
 
 and you should see an output similar to the one below.
 
-```
+```bash
 ubuntu@ip-172-26-6-34:~/hadoop-spark-workshop/01-environment/docker-hdfs$ docker exec -ti namenode hadoop fs -lsr /user/hue/flight-data/
 lsr: DEPRECATED: Please use 'ls -R' instead.
 drwxr-xr-x   - root supergroup          0 2020-11-07 15:06 /user/hue/flight-data/raw
@@ -234,13 +234,13 @@ You can use the controls at the top to page through the content of the file.
 
 To show the content of the file from the **Hadoop File Command` you use the `cat` command. 
 
-```
+```bash
 docker exec -ti namenode hadoop fs -cat /user/hue/flight-data/raw/plane-data/plane-data.csv | head
 ```
 
 because we pipe the result of the `cat` command into head, we only see the first 10 rows
 
-```
+```bash
 ubuntu@ip-172-26-6-34:~/hadoop-spark-workshop/01-environment/docker-hdfs$ docker exec -ti namenode hadoop fs -cat /user/hue/flight-data/raw/plane-data/plane-data.csv | head
 2020-11-07 15:07:25,991 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
 tailnum,type,manufacturer,issue_date,model,status,aircraft_type,engine_type,year
@@ -269,7 +269,7 @@ A copy of the file is made and put into the folder specified.
 
 To copy the `carriers.csv` file using the **Hadoop File Command**, perform the following command
 
-```
+```bash
 docker exec -ti namenode hadoop fs -mkdir -p /user/hue/flight-data/backup
 
 docker exec -ti namenode hadoop fs -cp /user/hue/flight-data/raw/airports/airports.csv /user/hue/flight-data/backup/airports.csv
@@ -286,19 +286,19 @@ The file will end up in the downloads folder of your browser.
 
 To download the `airports.csv` file using the **Hadoop File Command**, perform the following command
 
-```
+```bash
 docker exec -ti namenode hadoop fs -copyToLocal /user/hue/flight-data/raw/airports/airports.csv /data-transfer
 ```
 
 and a file should be written to the `$DATAPLATFORM_HOME/data-transfer` folder on the docker machine. 
 
-```
+```bash
 ls $DATAPLATFORM_HOME/data-transfer/
 ```
 
 As we don't need it locally, let's remove it. 
 
-```
+```bash
 sudo rm $DATAPLATFORM_HOME/data-transfer/airports.csv
 ```
 
@@ -313,7 +313,7 @@ Confirm the delete by clicking on **Yes** and the file will be removed immediate
 
 To delete the `airports.csv` file in the backup folder using the **Hadoop File Command**, perform the following command
 
-```
+```bash
 docker exec -ti namenode hadoop fs -rm /user/hue/flight-data/backup/airports.csv
 ```
 
@@ -323,13 +323,13 @@ Next let's upload some flights data files, all documenting flights in April and 
 
 Let's use the same command as above to upload the first file using the ** Hadoop File Command**:
 
-```
+```bash
 docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/flights-small/flights_2008_4_1.csv /user/hue/flight-data/raw/flights
 ```
 
 you can also specify multiple source file to be loaded into the destination in HDFS:
 
-```
+```bash
 docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/flights-small/flights_2008_4_2.csv /data-transfer/flight-data/flights-small/flights_2008_5_1.csv /data-transfer/flight-data/flights-small/flights_2008_5_2.csv /data-transfer/flight-data/flights-small/flights_2008_5_3.csv  /user/hue/flight-data/raw/flights
 ```
 

@@ -26,13 +26,13 @@ The [PySpark API](https://spark.apache.org/docs/latest/api/python/index.html) al
 
 In our environment, PySpark is accessible inside the `spark-master` container. To start PySpark use the `pyspark` command. 
 
-```
+```bash
 docker exec -ti spark-master pyspark
 ```
 
 and you should end up on the **pyspark** command prompt `>>>` as shown below
 
-```
+```bash
 bigdata@bigdata:~$ docker exec -ti spark-master pyspark
 
 Python 2.7.16 (default, Jan 14 2020, 07:22:06)
@@ -54,7 +54,7 @@ SparkSession available as 'spark'.
 
 You have an active `SparkSession` available as the `spark` variable. Enter any valid command, just to test we can ask Spark for the version which is installed. 
 
-```
+```bash
 >>> spark.version
 u'2.4.5'
 ```
@@ -105,7 +105,7 @@ You can use the `%sh` interpreter to perform shell actions. We can use it for ex
 
 For example to list the files in the `/user/hue/` folder on HDFS, we can perform the following command
 
-```
+```bash
 %sh
 hadoop fs -ls hdfs://namenode:9000/user/hue 
 ```
@@ -118,7 +118,7 @@ hadoop fs -ls hdfs://namenode:9000/user/hue
 
 To list all the objects within the `flight-bucket`
 
-```
+```bash
 %sh
 s3cmd ls -r s3://flight-bucket
 ```
@@ -140,7 +140,7 @@ Here you can enter your commands. In contrast to **Apache Zeppelin**, we don't h
 
 Add the following code to the first cell
 
-```
+```python
 import os
 # make sure pyspark tells workers to use python3 not 2 if both are installed
 #os.environ['PYSPARK_PYTHON'] = '/usr/bin/python3'
@@ -198,7 +198,7 @@ In HDFS under folder `/user/hue` create a new folder `wordcount` and upload the 
 
 Here are the commands to perform when using the **Hadoop Filesystem Command** on the command line
 
-```
+```bash
 docker exec -ti namenode hadoop fs -mkdir -p /user/hue/wordcount/
 
 docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/wordcount/big.txt /user/hue/wordcount/
@@ -212,13 +212,13 @@ Of course you can also use **Hue** to upload the data as we have learned in the 
 
 First create a bucket for the data
 
-```
+```bash
 docker exec -ti awscli s3cmd mb s3://wordcount-bucket
 ```
 
 And then copy the `big.txt` into the new bucket 
 
-```
+```bash
 docker exec -ti awscli s3cmd put /data-transfer/wordcount/big.txt s3://wordcount-bucket/raw-data/
 ```
 
@@ -236,25 +236,25 @@ In **Jupyter** make sure to get the connection to spark using the script shown b
 
 For data in HDFS, perform
 
-```
+```python
 lines = sc.textFile("hdfs://namenode:9000/user/hue/wordcount/big.txt")
 ```
 
 and if data is in MinIO object storage, perform
 
-```
+```python
 lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
 ```
 
 Split the line into words and flat map it
 
-```
+```python
 words = lines.flatMap(lambda line: line.split(" "))
 ```
 
 Reduce by key to get the counts by word and number
 
-```
+```python
 counts = words.map(lambda word: (word,1)).reduceByKey(lambda a, b : a + b)
 ```
 
@@ -264,18 +264,18 @@ This is an action and will start execution on Spark. Make sure to remove the out
 
 to write to HDFS:
 
-```
+```python
 counts.saveAsTextFile("hdfs://namenode:9000/user/hue/wordcount/result")
 ```
 to write to MinIO object storage:
 
-```
+```python
 counts.saveAsTextFile("s3a://wordcount-bucket/result-data")
 ```
 
 To view the number of distinct values in counts.
 
-```
+```python
 counts.count()
 ```
 
@@ -283,7 +283,7 @@ To check the results in HDFS or MinIO, perform the following commands.
 
 For HDFS, do an ls and a cat to display the content: 
 
-```
+```bash
 docker exec -ti namenode hadoop fs -ls hdfs://namenode:9000/user/hue/wordcount/result
 
 docker exec -ti namenode hadoop fs -cat hdfs://namenode:9000/user/hue/wordcount/result/part-00000 | more
@@ -291,7 +291,7 @@ docker exec -ti namenode hadoop fs -cat hdfs://namenode:9000/user/hue/wordcount/
 
 For MinIO object storage, do an ls to see the result and use the MinIO browser to download the object to the local machine.
 
-```
+```bash
 docker exec -ti awscli s3cmd ls -r s3://wordcount-bucket/result-data
 ```
 
@@ -309,14 +309,14 @@ The following statements assume that they are used from within Zeppelin, that's 
 
 First let's see the `spark.read`method, which is part of the DataFrameReader, which the following statement shows:
 
-```
+```python
 %pyspark
 spark.read
 ```
 
 We can easily display the methods it eposes, such as `text()`, `json()` and many others:
 
-```
+```python
 %pyspark
 dir (spark.read)
 ```
@@ -324,7 +324,7 @@ in this workshop we will be using the `text()` operation.
 
 Let's start by reading the data from object storage into a `bookDF` DataFrame:
 
-```
+```python
 %pyspark
 bookDF = spark.read.text("s3a://wordcount-bucket/raw-data/big.txt")
 bookDF
@@ -334,28 +334,28 @@ A DataFrame with a single value of type string is returned.
 
 We can easily display the schema in a more readable way:
 
-```
+```python
 %pyspark
 bookDF.printSchema()
 ```
 
 To display the data behind the DataFrame, we can use the `show()` method. If used without any parameters, by default a maximum of 20 rows is shown. 
 
-```
+```python
 %pyspark
 bookDF.show()
 ```
 
 We can also change it to `10` records and truncate them to 50 characters:
 
-```
+```python
 %pyspark
 bookDF.show(10, truncate=50)
 ```
 
 Next we tokenize each word, by splitting on a single space character, return a list of words:
 
-```
+```python
 %pyspark
 from pyspark.sql.functions import split
 
@@ -380,7 +380,7 @@ only showing top 5 rows
 
 Using the `bookDF.value` we are able to select a specific column out from the DataFrame. There are alternative approaches, as shown next. They all get the same result:
 
-```
+```python
 %pyspark
 from pyspark.sql.functions import col
 
@@ -391,14 +391,14 @@ bookDF.select(col("value"))
 
 Print the schema and we can see that a line is an array of string elements, i.e. the single words
 
-```
+```python
 %pyspark
 linesDF.printSchema()
 ```
 
 Not let's reshape the result by exploding the array of words into rows of words. We again show the result using the `show()` method.
 
-```
+```python
 from pyspark.sql.functions import explode, col
 
 wordsDF = linesDF.select(explode(col("line")).alias("word"))
@@ -407,7 +407,7 @@ wordsDF.show(15)
 
 With the table of words, we next use the `lower` function to change the case to all lowercase. 
 
-```
+```python
 %pyspark
 from pyspark.sql.functions import lower 
 wordsLowerDF = wordsDF.select(lower(col("word")).alias("word_lower"))
@@ -417,7 +417,7 @@ wordsLowerDF.show()
 
 Now using `regexp_extract()` function we make sure that only words are kept (only letters a - z). 
 
-```
+```python
 %pyspark
 from pyspark.sql.functions import regexp_extract 
 wordsCleanDF = wordsLowerDF.select( regexp_extract(col("word_lower"), "[a-z]*", 0).alias("word") )
@@ -427,7 +427,7 @@ wordsCleanDF.show()
 
 Next let's remove empty words, by just applying a `where` operation:
 
-```
+```python
 %pyspark
 wordsNonNullDF = wordsCleanDF.where(col("word") != "")
 
@@ -436,7 +436,7 @@ wordsNonNullDF.show()
 
 With that we are finally ready to group by word and return the count by word
 
-```
+```python
 %pyspark
 resultsDF = wordsNonNullDF.groupby(col("word")).count()
 resultsDF
@@ -444,7 +444,7 @@ resultsDF
 
 Finally we order the counts in descending order and only show the top 10 word counts
 
-```
+```python
 %pyspark
 resultsDF.orderBy("count", ascending=False).show(10)
 ```
