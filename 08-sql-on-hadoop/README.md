@@ -14,7 +14,7 @@ In order for us to use Presto with Object Storage or HDFS, we first have to crea
 
 ### Create Airport Table in Hive Metastore
 
-In order to access data in HDFS or Object Stroage using Presto, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined-data/..' points to the data we have uploaded before.
+In order to access data in HDFS or Object Storage using Presto, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined-data/..' points to the data we have uploaded before.
 
 Connect to Hive Metastore CLI
 
