@@ -210,6 +210,9 @@ services:
       YARN_CONF_yarn_nodemanager_webapp_address: ${PUBLIC_IP}:18042
       YARN_CONF_yarn_timeline___service_webapp_address: ${PUBLIC_IP}:18188
       YARN_CONF_yarn_log_server_url: ${PUBLIC_IP}:18188
+      MAPRED_CONF_yarn_app_mapreduce_am_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
+      MAPRED_CONF_mapreduce_map_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
+      MAPRED_CONF_mapreduce_reduce_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -233,6 +236,9 @@ services:
       YARN_CONF_yarn_nodemanager_webapp_address: ${PUBLIC_IP}:18042
       YARN_CONF_yarn_timeline___service_webapp_address: ${PUBLIC_IP}:18188
       YARN_CONF_yarn_log_server_url: ${PUBLIC_IP}:18188
+      MAPRED_CONF_yarn_app_mapreduce_am_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
+      MAPRED_CONF_mapreduce_map_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
+      MAPRED_CONF_mapreduce_reduce_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -253,6 +259,9 @@ services:
     environment:
       CORE_CONF_fs_defaultFS: hdfs://namenode:9000
       SERVICE_PRECONDITION: namenode:9870 datanode-1:9864 resourcemanager:18088
+      MAPRED_CONF_yarn_app_mapreduce_am_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
+      MAPRED_CONF_mapreduce_map_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
+      MAPRED_CONF_mapreduce_reduce_env: HADOOP_MAPRED_HOME=/opt/hadoop-3.2.1/
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
