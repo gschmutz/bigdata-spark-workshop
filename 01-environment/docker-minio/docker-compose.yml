@@ -359,6 +359,7 @@ services:
       SDC_JAVA8_OPTS: -XX:+UseG1GC
       SDC_CONF_MONITOR_MEMORY: 'true'
       SDC_CONF_PIPELINE_MAX_RUNNERS_COUNT: 50
+      SDC_CONF_http_authentication: form
     volumes:
       - ./data-transfer:/data-transfer
 #      - ./streamsets-extras/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/postgresql-42.2.6.jar:/opt/streamsets-datacollector-3.19.0/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/postgresql-42.2.6.jar:Z
@@ -558,7 +559,7 @@ services:
     restart: unless-stopped
   #  ================================== Presto ========================================== #
   presto-1:
-    image: starburstdata/presto:344-e
+    image: starburstdata/presto:332-e.0
     hostname: presto-1
     container_name: presto-1
     labels:
@@ -651,41 +652,3 @@ services:
 #      - './minio/config:/root/.minio'
     command: tail -f /dev/null
     restart: unless-stopped
-  #  ================================== Code-Server IDE (VS Code in Browser) ================= #
-  code-server:
-    image: trivadis/code-server:latest
-    container_name: code-server
-    hostname: code-server
-    labels:
-      com.mdps.service.webui.name: Code-Server UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28140
-    user: 0:0
-    ports:
-      - 28140:8080
-    environment:
-      PASSWORD: abc123!
-    volumes:
-      - ./data-transfer:/home/coder/data-transfer
-    restart: unless-stopped
-  #  ================================== cAdvisor ========================================== #
-  wetty:
-    image: svenihoney/wetty:latest
-    container_name: wetty
-    hostname: wetty
-    ports:
-      - 3001:3000
-    environment:
-      - REMOTE_SSH_SERVER=${DOCKER_HOST_IP}
-      - REMOTE_SSH_PORT=22
-      - REMOTE_SSH_USER=
-      - WETTY_PORT=3000
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
-  #  ================================== data-provisioning ========================================== #
-  data-provisioning:
-    image: trivadis/platys-modern-data-platform-data:latest
-    container_name: data-provisioning
-    hostname: data-provisioning
-    volumes:
-      - ./data-transfer:/data-transfer
