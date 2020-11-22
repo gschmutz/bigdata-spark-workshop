@@ -23,6 +23,8 @@ Scroll down to **Launch script** and add the following script. Make sure to spec
 Optionally change the password from the default value of `ubuntu` to a more secure one. 
 
 ```
+export GITHUB_PROJECT=hadoop-spark-workshop
+export GITHUB_OWNER=gschmutz
 export PLATFORM_FLAVOUR=minio
 export DOCKER_COMPOSE_VERSION=1.25.3
 export PLATYS_VERSION=2.4.0
@@ -67,10 +69,10 @@ sudo sysctl -w vm.max_map_count=262144
 
 # Get the project
 cd /home/${USERNAME} 
-git clone https://github.com/gschmutz/hadoop-spark-workshop.git
-chown -R ${USERNAME}:${PASSWORD} hadoop-spark-workshop
+git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
+chown -R ${USERNAME}:${PASSWORD} ${GITHUB_PROJECT}
 
-cd /home/${USERNAME}/hadoop-spark-workshop/01-environment/docker-${PLATFORM_FLAVOUR}
+cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker-${PLATFORM_FLAVOUR}
 
 # Prepare Environment Variables into .bash_profile file
 printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
