@@ -13,7 +13,7 @@
       ZOOKEEPER_nodes: 1            # either 1 or 3
 
       ZOOKEEPER_navigator_enable: false
-      
+
       # ===== Apache Kafka ========
       KAFKA_enable: true
       # one of enterprise, community
@@ -67,7 +67,7 @@
       # misc spark 'addons'
       SPARK_HISTORY_enable: true
       SPARK_THRIFT_enable: false
-      
+
       # ===== Apache Livy ========
       LIVY_enable: true
 
@@ -134,7 +134,7 @@
       # one of 'oss', 'elastic',
       KIBANA_edition: 'oss'
       KIBANA_enable: false #needs to have elasticsearch enabled to work
-     
+
       SUPERSET_enable: false
 
       # ===== NoSQL ========
@@ -142,7 +142,7 @@
       CASSANDRA_enable: false
       DATASTAX_enable: false
       DATASTAX_nodes: 3
-      
+
       MONGO_enable: false
       MONGO_nodes: 1
 
@@ -157,7 +157,7 @@
       NEO4J_enable: false
       NEO4J_volume_map_data: false
       NEO4J_volume_map_logs: false
-      
+
       # ===== Influx DB 1.x ========
       INFLUXDB_enable: false
       INFLUXDB_volume_map_data: false
@@ -181,7 +181,7 @@
       PROMETHEUS_enable: false
       PROMETHEUS_volume_map_data: false
       PROMETHEUS_PUSHGATEWAY_enable: false
-      
+
       # ===== NoSQL - Tile38 ========
       TILE38_enable: false
 
@@ -212,12 +212,12 @@
       DRILL_enable: false
 
       # ===== MQTT ========
-      MOSQUITTO_enable: false 
+      MOSQUITTO_enable: false
       MOSQUITTO_nodes: 1
       MOSQUITTO_volume_map_data: false
-      HIVEMQ3_enable: false 
-      HIVEMQ4_enable: false 
-      MQTT_UI_enable: false 
+      HIVEMQ3_enable: false
+      HIVEMQ4_enable: false
+      MQTT_UI_enable: false
 
       # ===== ActiveMQ ========
       ACTIVEMQ_enable: false
@@ -239,9 +239,16 @@
       PORTAINER_enable: false
       CADVISOR_enable: false
 
+      # ===== Hawtio ========
+      HAWTIO_enable: false
+
+      # ===== Wetty ========
+      WETTY_enable: true
+
+      # ===== Markdown Viewer ========
+      MARKDOWN_VIEWER_enable: true
+
       # ===== Python image ========
       PYTHON_enable: false
       PYTHON_script_folder: ''
       PYTHON_script: ''
-
-
