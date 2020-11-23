@@ -1,10 +1,12 @@
-# =====================================================
-# Platform: bigdata-platform
-# =====================================================
+# =======================================================================
+# Platform Name            bigdata-minio-platform
+# Platform Stack:          trivadis/platys-modern-data-platform
+# Platform Stack Version:  1.9.0-preview
+# =======================================================================
 version: '3.5'
 networks:
   default:
-    name: bigdata-platform
+    name: bigdata-minio-platform
 # enforce some dependencies
 services:
   #  ================================== Zookeeper ========================================== #
@@ -62,7 +64,8 @@ services:
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
-      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8081
+      com.platys.restapi.title: Schema Registry REST API
+      com.platys.restapi.url: http://${PUBLIC_IP}:8081
     ports:
       - 8081:8081
     environment:
@@ -81,7 +84,8 @@ services:
     container_name: schema-registry-ui
     hostname: schema-registry-ui
     labels:
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28102
+      com.platys.webui.title: Confluent Schema Registry UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28102
     depends_on:
       - kafka-1
       - schema-registry-1
@@ -98,7 +102,8 @@ services:
     container_name: cmak
     hostname: cmak
     labels:
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28104
+      com.platys.webui.title: Cluster Manager for Apache Kafka UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28104
     depends_on:
       - zookeeper-1
       - kafka-1
@@ -119,7 +124,8 @@ services:
     container_name: akhq
     hostname: akhq
     labels:
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28107
+      com.platys.webui.title: Apache Kafka AQ UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28107
     ports:
       - 28107:8080
     environment:
@@ -138,7 +144,7 @@ services:
     restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
-    image: trivadis/apache-spark-master:3.0.0-hadoop2.8
+    image: trivadis/apache-spark-master:2.4.7-hadoop2.8
     container_name: spark-master
     hostname: spark-master
     ports:
@@ -173,7 +179,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-1:
-    image: trivadis/apache-spark-worker:3.0.0-hadoop2.8
+    image: trivadis/apache-spark-worker:2.4.7-hadoop2.8
     container_name: spark-worker-1
     hostname: spark-worker-1
     depends_on:
@@ -211,7 +217,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-2:
-    image: trivadis/apache-spark-worker:3.0.0-hadoop2.8
+    image: trivadis/apache-spark-worker:2.4.7-hadoop2.8
     container_name: spark-worker-2
     hostname: spark-worker-2
     depends_on:
@@ -249,15 +255,15 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-history:
-    image: trivadis/apache-spark-worker:3.0.0-hadoop2.8
+    image: trivadis/apache-spark-worker:2.4.7-hadoop2.8
     command: /spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
     container_name: spark-history
     hostname: spark-history
     labels:
-      com.mdps.service.webui.name: Spark History Server
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28117
-      com.mdps.service.restapi.name: Spark History Server
-      com.mdps.service.restapi.url: http://${PUBLIC_IP}:28117/api/v1
+      com.platys.webui.title: Spark History Server
+      com.platys.webui.url: http://${PUBLIC_IP}:28117
+      com.platys.restapi.title: Spark History Server
+      com.platys.restapi.url: http://${PUBLIC_IP}:28117/api/v1
     expose:
       - 18080
     ports:
@@ -286,10 +292,10 @@ services:
     container_name: livy
     hostname: livy
     labels:
-      com.mdps.service.webui.name: Livy Server UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:8998/ui#
-      com.mdps.service.restapi.name: Livy API
-      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8998/
+      com.platys.webui.title: Livy Server UI
+      com.platys.webui.url: http://${PUBLIC_IP}:8998/ui#
+      com.platys.restapi.title: Livy API
+      com.platys.restapi.url: http://${PUBLIC_IP}:8998/
     env_file:
       - ./conf/hadoop.env
     environment:
@@ -347,10 +353,10 @@ services:
     container_name: streamsets-1
     hostname: streamsets-1
     labels:
-      com.mdps.service.webui.name: StreamSets Data Collector UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:18630
-      com.mdps.service.restapi.name: StreamSets Data Collector REST API
-      com.mdps.service.restapi.url: http://${PUBLIC_IP}:18630/collector/restapi
+      com.platys.webui.title: StreamSets Data Collector UI
+      com.platys.webui.url: http://${PUBLIC_IP}:18630
+      com.platys.restapi.title: StreamSets Data Collector REST API
+      com.platys.restapi.url: http://${PUBLIC_IP}:18630/collector/restapi
     ports:
       - 18630:18630
     environment:
@@ -376,10 +382,10 @@ services:
     container_name: streamsets-transformer-1
     hostname: streamsets-transformer-1
     labels:
-      com.mdps.service.webui.name: StreamSets Transformer UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:19630
-      com.mdps.service.restapi.name: StreamSets Transformer REST API
-      com.mdps.service.restapi.url: http://${PUBLIC_IP}:19630/collector/restapi
+      com.platys.webui.title: StreamSets Transformer UI
+      com.platys.webui.url: http://${PUBLIC_IP}:19630
+      com.platys.restapi.title: StreamSets Transformer REST API
+      com.platys.restapi.url: http://${PUBLIC_IP}:19630/collector/restapi
     ports:
       - 19630:19630
     volumes:
@@ -395,8 +401,8 @@ services:
     container_name: nifi-1
     hostname: nifi-1
     labels:
-      com.mdps.service.webui.name: Apache NiFi UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:18080/nifi
+      com.platys.webui.title: Apache NiFi UI
+      com.platys.webui.url: http://${PUBLIC_IP}:18080/nifi
     ports:
       - 18080:8080
     volumes:
@@ -408,10 +414,10 @@ services:
     container_name: airflow
     hostname: airflow
     labels:
-      com.mdps.service.webui.name: Airflow UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28139
-      com.mdps.service.restapi.name: Airflow REST API
-      com.mdps.service.restapi.url: http://${PUBLIC_IP}:28139/api/experimental/
+      com.platys.webui.title: Airflow UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28139
+      com.platys.restapi.title: Airflow REST API
+      com.platys.restapi.url: http://${PUBLIC_IP}:28139/api/experimental/
     ports:
       - 28139:8080
     environment:
@@ -470,8 +476,8 @@ services:
     container_name: zeppelin
     hostname: zeppelin
     labels:
-      com.mdps.service.webui.name: Apache Zeppelin UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28080
+      com.platys.webui.title: Apache Zeppelin UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28080
     ports:
       - 28080:8080
       - 6060:6060
@@ -529,8 +535,8 @@ services:
     container_name: jupyter
     hostname: jupyter
     labels:
-      com.mdps.service.webui.name: Jupyter UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28888
+      com.platys.webui.title: Jupyter UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28888
     ports:
       - 28888:8888
     environment:
@@ -563,8 +569,8 @@ services:
     hostname: presto-1
     container_name: presto-1
     labels:
-      com.mdps.service.webui.name: Presto UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:28081
+      com.platys.webui.title: Presto UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28081
     ports:
       - 28081:8080
     volumes:
@@ -588,8 +594,8 @@ services:
     container_name: dremio-1
     hostname: dremio-1
     labels:
-      com.mdps.service.webui.name: Dremio UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:9047
+      com.platys.webui.title: Dremio UI
+      com.platys.webui.url: http://${PUBLIC_IP}:9047
     ports:
       - 9047:9047
       - 31010:31010
@@ -603,8 +609,8 @@ services:
     container_name: minio
     hostname: minio
     labels:
-      com.mdps.service.webui.name: MinIO UI
-      com.mdps.service.webui.url: http://${PUBLIC_IP}:9000
+      com.platys.webui.title: MinIO UI
+      com.platys.webui.url: http://${PUBLIC_IP}:9000
     ports:
       - 9000:9000
     environment:
@@ -652,3 +658,49 @@ services:
 #      - './minio/config:/root/.minio'
     command: tail -f /dev/null
     restart: unless-stopped
+  #  ================================== cAdvisor ========================================== #
+  wetty:
+    image: svenihoney/wetty:latest
+    container_name: wetty
+    hostname: wetty
+    labels:
+      com.platys.webui.title: WeTTY UI
+      com.platys.webui.url: http://${PUBLIC_IP}:3001
+    ports:
+      - 3001:3000
+    environment:
+      - REMOTE_SSH_SERVER=${DOCKER_HOST_IP}
+      - REMOTE_SSH_PORT=22
+      - REMOTE_SSH_USER=
+      - WETTY_PORT=3000
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== markdown-viewer ========================================== #
+  markdown-viewer:
+    image: minimum/markdown-web:latest
+    container_name: markdown-viewer
+    hostname: markdown-viewer
+    labels:
+      com.platys.webui.title: Markdown Viewer UI
+      com.platys.webui.url: http://${PUBLIC_IP}
+    ports:
+      - 80:80
+    volumes:
+      - ./documentation:/home/python/markdown
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  markdown-renderer:
+    image: trivadis/jinja2-renderer:latest
+    container_name: markdown-renderer
+    hostname: markdown-renderer
+    environment:
+      PUBLIC_IP: ${PUBLIC_IP}
+      DOCKER_HOST_IP: ${DOCKER_HOST_IP}
+      DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
+    volumes:
+      - ./documentation/templates:/templates
+      - ./documentation/templates:/scripts
+      - .:/variables
+      - ./documentation:/output
+      - ./data-transfer:/data-transfer
