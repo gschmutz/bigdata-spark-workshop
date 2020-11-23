@@ -63,7 +63,7 @@ sudo chown root:root /usr/local/bin/platys
 sudo rm /tmp/platys.tar.gz 
 
 # Install various Utilities
-sudo apt-get install -y curl jq kafkacat
+sudo apt-get install -y curl jq kafkacat tmux
 
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
