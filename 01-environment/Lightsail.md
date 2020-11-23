@@ -79,7 +79,7 @@ printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
 printf "export DOCKER_HOST_IP=$DOCKER_HOST_IP\n" >> /home/$USERNAME/.bash_profile
 printf "export DATAPLATFORM_HOME=$PWD\n" >> /home/$USERNAME/.bash_profile
 printf "\n" >> /home/$USERNAME/.bash_profile
-sudo chown ${USERNAME}:${PASSWORD} /home/$USERNAME/.bash_profile
+sudo chown ${USERNAME}:${USERNAME} /home/$USERNAME/.bash_profile
 
 # Startup Environment
 docker-compose up -d
