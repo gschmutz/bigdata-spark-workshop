@@ -59,7 +59,7 @@ sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VE
 tar zvxf /tmp/platys.tar.gz 
 sudo mv platys /usr/local/bin/
 sudo chown root:root /usr/local/bin/platys
-sudo rm platys.tar.gz 
+sudo rm /tmp/platys.tar.gz 
 
 # Install various Utilities
 sudo apt-get install -y curl jq kafkacat
