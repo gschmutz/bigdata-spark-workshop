@@ -1,5 +1,9 @@
 # Getting Started using Spark RDD and DataFrames
 
+For this workshop you have to start a platform either using the `minio` or  `hdfs` flavour in the init script.
+
+## Introduction
+
 ## Introduction
 
 In this workshop we will work with [Apache Spark](https://spark.apache.org/) and implement some basic operations using the Spark DataFrame API for Python. 
@@ -44,10 +48,10 @@ Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 2.4.5
+   /__ / .__/\_,_/_/ /_/\_\   version 2.4.7
       /_/
 
-Using Python version 2.7.16 (default, Jan 14 2020 07:22:06)
+Using Python version 3.7.9 (default, Aug 18 2020 04:02:05)
 SparkSession available as 'spark'.
 >>>
 ```
@@ -55,8 +59,14 @@ SparkSession available as 'spark'.
 You have an active `SparkSession` available as the `spark` variable. Enter any valid command, just to test we can ask Spark for the version which is installed. 
 
 ```bash
+spark.version
+```
+
+and we should get the version back
+
+```bash
 >>> spark.version
-u'2.4.5'
+u'2.4.7'
 ```
 
 You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
@@ -79,11 +89,7 @@ Navigate to the **Properties** section and enter `1` into the **spark.cores.max*
 
 ![Alt Image Text](./images/zeppelin-spark-interpreter2.png "Zeppelin Interpreter")
 
-Then scroll all the way down to the bottom of the settings where you can see a **Dependency** section. Enter `org.apache.commons:commons-lang3:3.5` into the edit field below **artifact** and click **Save**
-
-![Alt Image Text](./images/zeppelin-spark-interpreter3.png "Zeppelin Interpreter")
-
-When asked to restart the interpreter, click **OK**. 
+Then scroll all the way down to the bottom of the settings page and click **Save**. When asked to restart the interpreter, click **OK**. 
 
 Now let's create a new Notebook to perform some Spark actions. Navigate back to the Zeppelin homepage and click on the **Create new note** link. 
 
@@ -101,7 +107,7 @@ Zeppelin allows for mixing different interpreters in one and the same Notebook, 
 
 You can use the `%sh` interpreter to perform shell actions. We can use it for example to perform a hadoop filesystem action using the `hadoop fs` command (if you have HDFS running) or an `s3cmd` to perform an action on Object Storage, if MinIO is running. 
 
-#### Working with HDFS (if installed)
+#### Working with HDFS (if platform with `hdfs` flavour)
 
 For example to list the files in the `/user/hue/` folder on HDFS, we can perform the following command
 
@@ -112,9 +118,7 @@ hadoop fs -ls hdfs://namenode:9000/user/hue
 
 **Note**: the shell will be executed inside the `zeppelin` container. Therefore to work with HDFS, we have to provide a full HDFS link. 
 
-![Alt Image Text](./images/zeppelin-spark-execute-shell.png "Zeppelin Execute Shell")
-
-#### Working with MinIO (if installed)
+#### Working with MinIO (if platform with `minio` flavour)
 
 To list all the objects within the `flight-bucket`
 
@@ -123,11 +127,15 @@ To list all the objects within the `flight-bucket`
 s3cmd ls -r s3://flight-bucket
 ```
 
+and you should see the output below the cell as shown below
+
+![Alt Image Text](./images/zeppelin-spark-execute-shell.png "Zeppelin Execute Shell")
+
 You can use Apache Zeppelin to perform the workshop below. The other option is to use **Jupyter**. 
 
-### Using Jupyter
+### Using Jupyter (optional)
 
-In a browser window navigate to <http://dataplatform:28888>. 
+In a browser window, navigate to <http://dataplatform:28888>. 
 Enter `abc123!` into the **Password or token** field and click **Log in**. 
 
 You should be forwarded to the **Jupyter** homepage. Click on the **Python 3** icon in the **Notebook** section to create a new notebook using the **Python 3** kernel.
@@ -161,11 +169,11 @@ spark = SparkSession.builder.appName('abc').config(conf=conf).getOrCreate()
 sc = spark.sparkContext
 ```
 
-and execute it by entering **Shift** + **Enter**. 
+Execute it by entering **Shift** + **Enter**. 
 
 If you check the code you can see that we connect to the Spark Master and get a session on the "spark cluster", available through the `spark` variable. The Spark Context is available as variable `sc`.
 
-First execute `spark.version` in another shell to show the Spark version in place. 
+First, execute `spark.version` in another shell to show the Spark version in place. 
 
 Also execute a python command `print ("hello")` just to see that you are executing python. 
 
@@ -183,14 +191,14 @@ It is a distributed collection of elements that is parallelised across the clust
 There are three methods for creating a RDD:
 
  1. Parallelise an existing collection. This means that the data already resides within Spark and can now be operated on in parallel. 
- * Create a RDD by referencing a dataset. This dataset can come from any storage source supported by Hadoop such as HDFS, Cassandra, HBase etc.
- * Create a RDD by transforming an existing RDD to create a new RDD.
+ 2. Create a RDD by referencing a dataset. This dataset can come from any storage source supported by Hadoop such as HDFS, Cassandra, HBase etc.
+ 3. Create a RDD by transforming an existing RDD to create a new RDD.
 
-We will be using the later two methods in this workshop.
+We will be using the 2nd method in this workshop.
 
 First let's upload the data needed for this workshop, using the techniques we have learned in the [HDFS Workshop](../02-hdfs/README.md) when working with HDFS or [Working with MinIO Object Storage](../03-object-storage/README.md) when working with MinIO Object Storage.
 
-### Upload Raw Data to HDFS
+### Upload Raw Data to HDFS (if platform with `hdfs` flavour) 
 
 In the RDD workshop we are working with text data.
 
@@ -208,7 +216,7 @@ docker exec -ti namenode hadoop fs -ls /user/hue/wordcount/
 
 Of course you can also use **Hue** to upload the data as we have learned in the [HDFS Workshop](../02-hdfs/README.md).
 
-### Upload Raw Data to MinIO
+### Upload Raw Data to MinIO (if platform with `minio` flavour)
 
 First create a bucket for the data
 
@@ -234,13 +242,13 @@ Just copy and paste the commands either into the **PySpark** command line or int
 
 In **Jupyter** make sure to get the connection to spark using the script shown before. 
 
-For data in HDFS, perform
+For data in HDFS (if platform with `hdfs` flavour), perform
 
 ```python
 lines = sc.textFile("hdfs://namenode:9000/user/hue/wordcount/big.txt")
 ```
 
-and if data is in MinIO object storage, perform
+and if data is in MinIO object storage (if platform with `minio` flavour), perform
 
 ```python
 lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
@@ -262,12 +270,12 @@ Save the counts to a file on HDFS (in folder output) or on MinIO object storage.
 
 This is an action and will start execution on Spark. Make sure to remove the output folder in case it already exists
 
-to write to HDFS:
+to write to HDFS (if platform with `hdfs` flavour):
 
 ```python
 counts.saveAsTextFile("hdfs://namenode:9000/user/hue/wordcount/result")
 ```
-to write to MinIO object storage:
+to write to MinIO object storage (if platform with `minio` flavour):
 
 ```python
 counts.saveAsTextFile("s3a://wordcount-bucket/result-data")
@@ -281,7 +289,7 @@ counts.count()
 
 To check the results in HDFS or MinIO, perform the following commands. 
 
-For HDFS, do an ls and a cat to display the content: 
+For HDFS (if platform with `hdfs` flavour), do an ls and a cat to display the content: 
 
 ```bash
 docker exec -ti namenode hadoop fs -ls hdfs://namenode:9000/user/hue/wordcount/result
@@ -289,40 +297,45 @@ docker exec -ti namenode hadoop fs -ls hdfs://namenode:9000/user/hue/wordcount/r
 docker exec -ti namenode hadoop fs -cat hdfs://namenode:9000/user/hue/wordcount/result/part-00000 | more
 ```
 
-For MinIO object storage, do an ls to see the result and use the MinIO browser to download the object to the local machine.
+For MinIO object storage (if platform with `minio` flavour), do an ls to see the result and use the MinIO browser to download the object to the local machine.
 
 ```bash
 docker exec -ti awscli s3cmd ls -r s3://wordcount-bucket/result-data
 ```
 
-This finishes this simple Python implementation of the word count in Spark using Spark's Resilient Distributed Datasets (RDD).
+This finishes this simple Python implementation of a word count in Spark using Spark's Resilient Distributed Datasets (RDD).
  
 ## Working with Spark DataFrames
 
-The data needed here has been uploaded to MinIO in the Working with RDD section. 
+The data needed here has been uploaded to MinIO in the **Working with RDD** section. 
 
-You can use either one of the three different ways described above to access the Spark Python environment. 
+You can use either one of the three different ways described above (**Pyspark**, **Apache Zeppelin** or **Jupyter**) to access the Spark Python environment. 
 
-For Zeppelin you can find a complete Notebook under the zeppelin folder. 
+For Zeppelin you can find a complete Notebook inside the [`zeppelin`](https://github.com/gschmutz/hadoop-spark-workshop/tree/master/05-spark-getting-started/zeppelin) folder. 
 
-The following statements assume that they are used from within Zeppelin, that's why you find the `%pyspark` directives: 
+The following statements assume that they are used from within Zeppelin, that's why you find the `%pyspark` directives. Create a new notebook in Zeppelin, as we have learned before. 
 
-First let's see the `spark.read`method, which is part of the DataFrameReader, which the following statement shows:
+First let's see the `spark.read` method, which is part of the `DataFrameReader`. The following statement shows that:
 
 ```python
 %pyspark
 spark.read
 ```
 
-We can easily display the methods it eposes, such as `text()`, `json()` and many others:
+We can easily display the methods it eposes, such as `text()`, `json()` and many others using the `dir` command:
 
 ```python
 %pyspark
 dir (spark.read)
 ```
-in this workshop we will be using the `text()` operation. 
 
-Let's start by reading the data from object storage into a `bookDF` DataFrame:
+and you see the method shown below the cell
+
+![Alt Image Text](./images/zeppelin-dataframe-1.png "Jupyter Execute cell")
+
+In this workshop we will be using the `text()` operation. 
+
+Let's start by reading the data from object storage into a `bookDF` DataFrame, using the `read.text` with the address of the object in minio
 
 ```python
 %pyspark
