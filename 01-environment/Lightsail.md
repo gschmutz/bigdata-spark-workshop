@@ -114,45 +114,28 @@ The initialisation is finished when you see the `Creating xxxxx .... done` lines
 
 ![Alt Image Text](./images/lightsail-create-instance-log-file.png "Lightsail Homepage")
 
-## Connecting from a Terminal window using SSH
+## View Platform Documentation
 
-Optionally you can also SSH into the Lightsail instance using the **SSH key pair** which you can download from the **Account** menu in the top menu bar. 
+The platform contains some web-based documentation, which can be accessed once the platform is running. In a web browser, navigate to the public IP <http://18.196.124.212> (replace the IP address by your Public IP address) and you should see a page similar to the one shown here
 
-For that open a terminal window (on Mac / Linux) or Putty (on Windows) and connect as ubuntu to the **Public IP** address of the instance.   
+![Alt Image Text](./images/platform-overview.png "Platform Overview")
 
-```
-ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.196.124.212 
-```
-
-## Using a Terminal over Web-Browser
-
-Before you can use this option, you either have to open the ports on the Firewall or create an SSH tunnel, documented under **Enable using the Services from your client**.
-
-After the stack is started, you can use your web browser (best is Chrome) to access the terminal in the ligthsail environment. Navigate to <http://18.196.124.212:3001> (replace the IP address by the IP address your IP address and you should see a back terminal window asking to enter the username to connect:
-
-![Alt Image Text](./images/wetty-1.png "Lightsail Homepage")
-
-Enter `ubuntu` for the **username** and enter value you have chosen as your password when creating the lightsail environment (when specifying the **Launch Script**) for the **password** and you should be able to connect. 
-
-![Alt Image Text](./images/wetty-2.png "Lightsail Homepage")
-
-## Enable using the Services from your client
-
-For accessing the services in the cloud, we have to options:
-
-* open the ports on the firewall (with the option to only allow a certain client to connect)
-* Create an SSH Tunnel
-
-Due to the fact, that the lightsail instance is exposed to the public internet, opening the ports is not the best idea. But if you only open it restricted to your IP address the risk can be minimised. 
-
-But of course using an SSH tunnel is more secure, but on the other hand much more difficult to setup.  
-
-### 1) Open Ports on the Firewall
+If you click on the "A list of available services is available here" a page with the list of available services and their IP address will appear
+   
+![Alt Image Text](./images/platform-services.png "Platform Services")
 
 So with all services running, there is one last step to do. We have to configure the Firewall to allow traffic into the Lightsail instance. 
 
+## Open Network Firewall 
 
-Click on the **Networking** tab/link to navigate to the network settings.
+For accessing the services running in the cloud from our machine, we have two options:
+
+1. Open the ports on the firewall (this is what we do here)
+2. Create an SSH Tunnel
+
+Because the Lightsail instance is exposed to the public internet, generally opening the ports is not the best idea. But if you open it to accept only traffic from your own IP address, the risk can be minimised. Using an SSH tunnel is more secure, but also more difficult to setup. 
+
+So let see how we can open the ports on the firewall. Click on the **Networking** tab/link to navigate to the network settings.
 
 ![Alt Image Text](./images/lightsail-image-networking.png "Lightsail Homepage")
 
@@ -171,7 +154,45 @@ Click on **Create** to save this new Firewall rule and it should be added to the
 
 Your instance is now ready to use. Complete the post installation steps documented the [here](README.md).
 
-### 2) Create an SSH Tunnel as a Socks Proxy
+
+## Using the Web-Terminal
+
+Before you can use this option, you either have to open the ports on the Firewall documented under **Open Network Firewall**.
+
+After the stack is started, you can use your web browser (best is Chrome) to access the terminal in the ligthsail environment. Navigate to <http://18.196.124.212:3001> (replace the IP address by the IP address your IP address and you should see a back terminal window asking to enter the username to connect:
+
+![Alt Image Text](./images/wetty-1.png "Lightsail Homepage")
+
+Enter `ubuntu` for the **username** and enter value you have chosen as your password when creating the lightsail environment (when specifying the **Launch Script**) for the **password** and you should be able to connect. 
+
+![Alt Image Text](./images/wetty-2.png "Lightsail Homepage")
+
+This finishes the setup of the Platform. You are now ready to start working on the various workshops!
+
+
+## Further options (optional)
+
+### Connecting from a Terminal window using SSH
+
+Optionally you can also SSH into the Lightsail instance using the **SSH key pair** which you can download from the **Account** menu in the top menu bar or using the username/password you have specified in the initialisation script above.
+
+For that open a terminal window (on Mac / Linux) or Putty (on Windows) and either 
+
+* connect using the **SSH key pair**   
+
+```
+ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.196.124.212 
+```
+
+* connect using username and password (you will be prompted for the password)
+
+```
+ssh ubuntu@18.196.124.212 
+```
+
+In both cases replace the IP address (18.196.124.212) with you own one.
+
+### Creating an SSH Tunnel as a Socks Proxy
 
 Opening an SSH tunnel is different on Windows and Mac. The following short description shows how to create the tunnel on **Windows** and on **Mac OS-X**.
 
