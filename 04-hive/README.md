@@ -1,6 +1,9 @@
 # Data Manipulation with Hive
 
+For this workshop you have to start a platform using the `hdfs` flavour in the init script.
+
 ## Introduction
+
 In this workshop we will work with [Apache Hive](https://hive.apache.org/) to analyse data through SQL.
 
 Hive is an SQL like query language that enables analysts familiar with SQL to run queries on large volumes of data. Hive has three main functions: data summarisation, query and analysis. Hive provides tools that enable easy data extraction, transformation and loading (ETL).

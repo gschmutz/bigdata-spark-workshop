@@ -1,5 +1,9 @@
 # Working with MinIO 	Object Storage
 
+For this workshop you have to start a platform using the `minio` flavour in the init script.
+
+## Introduction
+
 In this workshop we will work with Object Storage for persistence, which can either be [MinIO](https://min.io/) as shown in the workshop, [Amazon S3](https://aws.amazon.com/s3/) or any other cloud Object Storage solution. We will use object storage as a drop-in replacement for Hadoop HDFS.
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible.
