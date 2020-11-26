@@ -8,7 +8,7 @@ For this workshop you have to start a platform using the `minio` flavour in the 
 
 In this workshop we are using Presto to access the data we have available in the Object Storage. 
 
-We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
+We assume that the **Data platform** described [here](../01-environment) is running using the `minio` flavour. 
 
 The docker image we use for the Presto container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Presto. 
 
@@ -26,14 +26,21 @@ Connect to Hive Metastore CLI
 docker exec -ti hive-metastore hive
 ```
 
-and on the command prompt, execute the following `CREATE TABLE` statement.
-
-and create a new database `flight_db` and in that database a table `airport_t`:
+and on the command prompt first create a new database `flight_db` 
 
 ```sql
 CREATE DATABASE flight_db;
-USE flight_db;
+```
 
+switch into that database
+
+```sql
+USE flight_db;
+```
+
+and create a table `airport_t`:
+
+```
 CREATE EXTERNAL TABLE airport_t (iata string
 									, airport string
 									, city string									, state string
@@ -44,9 +51,15 @@ ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 LOCATION 's3a://flight-bucket/refined/airports';
 ```
 
+Exit from the Hive Metastore CLI 
+
+```
+exit;
+```
+
 ### Query Airport Table from Presto
 
-Next let's query the data from Presto. Connect to the Presto CLI using
+Next let's query the data from Presto. Connect to the Presto CLI from a terminal window
 
 ```bash
 docker exec -it presto-1 presto-cli
@@ -116,19 +129,25 @@ FROM minio.flight_db.airport_t;
 
 We will see later, that this becomes handy if we are querying from multiple, different databases.
 
+Exit from the Presto CLI
+
+```sql
+exit;
+```
+
 Presto also provides the [Presto UI](http://dataplatform:28081/ui) for monitoring the queries executed on the presto server. Use the user `admin` on the login page.
 
 With the query on the airports data being successful, let's also create the table for the flights data.
 
 ### Create Flights Table in Hive Metastore
 
-Connect again to Hive Metastore CLI
+In a terminal window, connect again to Hive Metastore CLI
 
 ```bash
 docker exec -ti hive-metastore hive
 ```
 
-change to the database created above
+change to the database created before
 
 ```sql
 USE flight_db;
@@ -159,7 +178,7 @@ STORED AS parquet
 LOCATION 's3a://flight-bucket/refined/flights';
 ```
 
-Before we can query the table using Presto, we also have to repair the table, so that it recognizes the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store / HDFS.
+Before we can query the table using Presto, we also have to repair the table, so that it recognises the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store / HDFS.
 
 ```sql
 MSCK REPAIR TABLE flights_t;
@@ -167,9 +186,15 @@ MSCK REPAIR TABLE flights_t;
 
 Now we are ready to query it. 
 
+Exit from the Hive Metastore CLI 
+
+```
+exit;
+```
+
 ### Query Flights Table from Presto
 
-Again connect to the Presto CLI using
+In a terminal window, again connect to the Presto CLI using
 
 ```bash
 docker exec -it presto-1 presto-cli
@@ -181,7 +206,7 @@ and switch to the correct database
 use minio.flight_db;
 ```
 
-Let's see that the newly created `flight_s` table is available:
+Let's see that the newly created `flight_s` table is also available:
 
 ```sql
 show tables;
