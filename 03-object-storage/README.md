@@ -44,7 +44,7 @@ This can also be found on the [S3cmd usage page](https://s3tools.org/usage).
 
 ### Using MinIO Browser
 
-In a browser window, navigate to <http://dataplatform:9000> and you should see login screen. 
+In a browser window, navigate to <http://dataplatform:9000>. 
 
 Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button.  
 
