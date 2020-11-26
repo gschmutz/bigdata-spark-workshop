@@ -1,5 +1,7 @@
 # Data Reading and Writing using DataFrames
 
+For this workshop you have to start a platform using the `minio` flavour in the init script.
+
 ## Introduction
 
 In this workshop we will work with [Apache Spark](https://spark.apache.org/) DataFrames and 
@@ -11,7 +13,7 @@ We assume that you have done Workshop 5 **Getting Started using Spark RDD and Da
  
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded to MinIO in workshop 03-object-storage. You can skip this section, if you still have the data available in HDFS or MinIO. 
+The data needed here has been uploaded in workshop 3 - [Working with MinIO Object Storage](03-object-storage). You can skip this section, if you still have the data available in MinIO. 
 
 Create the flight bucket:
 
@@ -37,26 +39,14 @@ Carriers:
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
 ```
 
-Flights (upload them one by one):
+Flights:
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/
-```
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/
-```
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/
-```
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/
-```
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
 ## Create a new Zeppelin notebook
@@ -152,14 +142,6 @@ airportsRawDF.count()
 You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
 Let’s create a JSON representation of the data in the refined folder. 
-For HDFS:
-
-```python
-%pyspark
-airportsRawDF.write.json("hdfs://namenode:9000/user/hue/refined/airports")
-```
-	
-For MinIO:
 
 ```python
 %pyspark
@@ -271,15 +253,6 @@ You can also transform data easily into another format, just by writing the Data
 
 Let’s create a Parquet representation of the data in the refined folder. Additionally we partition the data by `year` and `month`. 
 
-For HDFS:
-
-```python
-%pyspark
-flightsRawDF.write.partitionBy("year","month").parquet("hdfs://namenode:9000/user/hue/refined/flights")
-```
-	
-For MinIO:
-
 ```python
 %pyspark
 flightsRawDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/refined/flights")
@@ -297,15 +270,6 @@ s3cmd ls -r s3://flight-bucket/refined/flights
 Should you want to execute the write a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution of the write will throw an error. 
 
 You can directly execute the remove from within Zeppelin, using the `%sh` directive. 
-
-For HDFS:
-
-```python
-%sh
-hadoop fs -rm -R hdfs://namenode:9000/user/hue/refined/flights
-```
-	
-For MinIO:
 
 ```python
 %sh
@@ -474,5 +438,5 @@ Finally let's write the enriched structure as a result to object storage using a
 
 ```python
 %pyspark
-flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result-data/flights")
+flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result/flights")
 ```

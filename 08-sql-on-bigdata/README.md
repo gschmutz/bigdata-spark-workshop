@@ -1,12 +1,16 @@
 # Working with Presto
 
+For this workshop you have to start a platform using the `minio` flavour in the init script.
+
+## Introduction
+
 [Presto](https://prestosql.io/) is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Presto can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
 
 In this workshop we are using Presto to access the data we have available in the Object Storage. 
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
 
-The docker image we use for the Presto container is from [Starbrust Data](https://www.starburstdata.com/), the company offering an Enterprise version of Presto. 
+The docker image we use for the Presto container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Presto. 
 
 ## Using Presto to access Object Storage
 
