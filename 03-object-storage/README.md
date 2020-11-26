@@ -60,7 +60,7 @@ Click on the **+** icon at the lower right corner to either perform an **Create 
 
 Zeppelin is a web-based notebook that enables interactive data analytics. From within the `sh` interpreter the `s3cmd` is available. 
 
-In a browser window navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on the **Login** button  in the top right corner and enter `admin` into the **User Name** field and `abc123!` into the **Password** field. 
+In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on the **Login** button  in the top right corner and enter `admin` into the **User Name** field and `abc123!` into the **Password** field. 
 
 Here you can use `s3cmd` from within a cell in a notebook using the `%sh` interpreter.
 
@@ -143,7 +143,7 @@ We can see the same in the MinIO Browser.
 ![Alt Image Text](./images/minio-list-objects.png "Minio list objects")
 
 
-### Upload the different Carriers JSON file to the new bucket
+### Upload the Carriers JSON file to the new bucket
 
 To upload a file we are going to use the `s3cmd put` command. First for the `carriers.json`
 
