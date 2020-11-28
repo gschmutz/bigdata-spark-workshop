@@ -112,7 +112,9 @@
       STREAMSETS_TRANSFORMER_volume_map_data: false
       STREAMSETS_EDGE_enable: false
       STREAMSETS_EDGE_volume_map_data: false
-
+      # one of 'none', 'basic', 'digest', or 'form'
+      STREAMSETS_http_authentication: ''
+      
       # ===== Nifi ========
       NIFI_enable: true
 
