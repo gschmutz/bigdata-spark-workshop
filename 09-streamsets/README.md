@@ -1,5 +1,9 @@
 # Data Ingestion with StreamSets Data Collector
 
+For this workshop you have to start a platform using the `hdfs` flavour in the init script (for the 2nd part where the data is written to HDFS).
+
+## Introduction
+
 In this workshop we will see how we can use StreamSets Data Collector for retrieving live tweets from Twitter and storing them in HDFS, sending them through Kafka first.  
 
 ## Log into StreamSets
