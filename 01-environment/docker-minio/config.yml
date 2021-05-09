@@ -4,7 +4,7 @@
       platys:
         platform-name: 'bigdata-minio-platform'
         platform-stack: 'trivadis/platys-modern-data-platform'
-        platform-stack-version: '1.9.0-preview'
+        platform-stack-version: '1.12.0-preview'
         structure: 'flat'
 
       # ===== Global configuation, valid for all or a group of services ========
@@ -68,9 +68,27 @@
 
       # ===== Spark ========
       SPARK_enable: true
+      
+      # either 2 or 3
+      SPARK_major_version: 3
+      
       # "hive" or "in-memory"
       SPARK_catalog: in-memory
       SPARK_workers: 2
+      SPARK_master_opts: ''
+      SPAKR_worker_cores:
+      SPAKR_worker_memory:
+      SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
+      SPARK_jars_repositories: ''
+      SPARK_jars_packages: ''
+      SPARK_jars_excludes: ''
+      SPARK_jars: ''
+      SPARK_jars_ivySettings: ''
+      SPARK_driver_extraJavaOptions: ''
+      SPARK_executor_extraJavaOptions: ''
+      SPARK_cores_max:
+      SPARK_executor_memory:
+
 
       # misc spark 'addons'
       SPARK_HISTORY_enable: true
@@ -112,6 +130,8 @@
       STREAMSETS_TRANSFORMER_volume_map_data: false
       STREAMSETS_EDGE_enable: false
       STREAMSETS_EDGE_volume_map_data: false
+      STREAMSETS_stage_libs: ''
+      STREAMSETS_enterprise_stage_libs: ''
       # one of 'none', 'basic', 'digest', or 'form'
       STREAMSETS_http_authentication: ''
       
@@ -209,11 +229,28 @@
       # ===== Event Store ========
       AXON_enable: false
 
+      # ===== Trino ========
+      TRINO_enable: true
+      # "single" or "cluster" install
+      TRINO_install: single
+      TRINO_workers: 3
+      # either starburstdata or oss
+      TRINO_edition: 'starburstdata'
+      TRINO_kafka_table_names: ''
+      
+      # Trino-CLI is enabled by default
+      TRINO_CLI_enable: true
+
       # ===== Presto ========
-      PRESTO_enable: true
-      # one of starburstdata, oss
-      PRESTO_edition: 'starburstdata'
-      PRESTO_version: '332-e.0'
+      PRESTO_enable: false
+      # "single" or "cluster" install
+      PRESTO_install: single
+      PRESTO_workers: 3
+      # either prestodb or ahana
+      PRESTO_edition: 'ahana'
+
+      # Presto-CLI is enabled by default
+      PRESTO_CLI_enable: true
 
       # ===== Dremio ========
       DREMIO_enable: true
