@@ -221,7 +221,7 @@ Navigate to the S3 console <https://s3.console.aws.amazon.com/s3>.
 
 We will first use the browser based UI to create buckets and upload objects.
 
-### Create Bucket
+### Create a Bucket
 
 Before we can upload the files to Minio, we first have to create a bucket.
 
@@ -343,7 +343,7 @@ Click on **Close** and you see the newley created user `s3user` in the list of u
 
 ![Alt Image Text](./images/security-credentials-8.png "S3 Homepage")
 
-### Using the AWS CLI	
+### Using the AWS CLI	to work with S3
 
 Before we can use the AWS CLI, we hav to install it. We can do that on the Ubuntu terminal using
 
