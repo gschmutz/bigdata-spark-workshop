@@ -1,24 +1,24 @@
-# Working with Presto
+# Working with Trino
 
 For this workshop you have to start a platform using the `minio` flavour in the init script.
 
 ## Introduction
 
-[Presto](https://prestosql.io/) is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Presto can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
+[Trino](https://trino.io/) (prevously know as PrestoSQL) Trinois a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
 
-In this workshop we are using Presto to access the data we have available in the Object Storage. 
+In this workshop we are using Trino to access the data we have available in the Object Storage. 
 
 We assume that the **Data platform** described [here](../01-environment) is running using the `minio` flavour. 
 
-The docker image we use for the Presto container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Presto. 
+The docker image we use for the Trino container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Trino. 
 
-## Using Presto to access Object Storage
+## Using Trino to access Object Storage
 
-In order for us to use Presto with Object Storage or HDFS, we first have to create the necessary tables in Hive Metastore. Presto is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage/HDFS)
+In order for us to use Trino with Object Storage or HDFS, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage/HDFS)
 
 ### Create Airport Table in Hive Metastore
 
-In order to access data in HDFS or Object Storage using Presto, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined/..' points to the data we have uploaded before.
+In order to access data in HDFS or Object Storage using Trino, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined/..' points to the data we have uploaded before.
 
 Connect to Hive Metastore CLI
 
@@ -42,11 +42,12 @@ and create a table `airport_t`:
 
 ```
 CREATE EXTERNAL TABLE airport_t (iata string
-									, airport string
-									, city string									, state string
-									, country string
-									, lat double
-									, long double									 )
+                                , airport string
+                                , city string                                
+                                , state string
+                                , country string
+                                , lat double
+                                , long double)
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 LOCATION 's3a://flight-bucket/refined/airports';
 ```
@@ -57,15 +58,15 @@ Exit from the Hive Metastore CLI
 exit;
 ```
 
-### Query Airport Table from Presto
+### Query Airport Table from Trino
 
-Next let's query the data from Presto. Connect to the Presto CLI from a terminal window
+Next let's query the data from Trino. Connect to the Trino CLI from a terminal window
 
 ```bash
-docker exec -it presto-1 presto-cli
+docker exec -it trino-1 trino-cli
 ```
 
-Now on the Presto command prompt, switch to the right database. 
+Now on the Trino command prompt, switch to the right database. 
 
 ```sql
 use minio.flight_db;
@@ -80,7 +81,7 @@ show tables;
 We can see the `airport_t` table we created in the Hive Metastore before
 
 ```sql
-presto:default> show tables;
+trino:default> show tables;
      Table
 ---------------
  airport_t
@@ -96,7 +97,7 @@ DESCRIBE minio.flight_db.airport_t;
 and you should get the following result
 
 ```sql
-presto:flight_db> DESCRIBE minio.flight_db.airport_t;
+trino:flight_db> DESCRIBE minio.flight_db.airport_t;
  Column  |  Type   | Extra | Comment
 ---------+---------+-------+---------
  iata    | varchar |       |
@@ -129,13 +130,13 @@ FROM minio.flight_db.airport_t;
 
 We will see later, that this becomes handy if we are querying from multiple, different databases.
 
-Exit from the Presto CLI
+Exit from the Trino CLI
 
 ```sql
 exit;
 ```
 
-Presto also provides the [Presto UI](http://dataplatform:28081/ui) for monitoring the queries executed on the presto server. Use the user `admin` on the login page.
+Trino also provides the [Trino UI](http://dataplatform:28081/ui) for monitoring the queries executed on the trino server. Use the user `admin` on the login page.
 
 With the query on the airports data being successful, let's also create the table for the flights data.
 
@@ -178,7 +179,7 @@ STORED AS parquet
 LOCATION 's3a://flight-bucket/refined/flights';
 ```
 
-Before we can query the table using Presto, we also have to repair the table, so that it recognises the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store / HDFS.
+Before we can query the table using Trino, we also have to repair the table, so that it recognises the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store / HDFS.
 
 ```sql
 MSCK REPAIR TABLE flights_t;
@@ -192,12 +193,12 @@ Exit from the Hive Metastore CLI
 exit;
 ```
 
-### Query Flights Table from Presto
+### Query Flights Table from Trino
 
-In a terminal window, again connect to the Presto CLI using
+In a terminal window, again connect to the Trino CLI using
 
 ```bash
-docker exec -it presto-1 presto-cli
+docker exec -it trino-1 trino-cli
 ```
 
 and switch to the correct database
@@ -239,11 +240,11 @@ WHERE year = 2008 and month = 04
 GROUP BY origin, destination;
 ```
 
-Of course there is much more. Consult the Presto documentation to learn more about [Presto in general](https://prestodb.io/docs/current/) as well as the available [Functions and Operators](https://prestodb.io/docs/current/functions.html).
+Of course there is much more. Consult the Trino documentation to learn more about [Trino in general](https://trino.io/docs/current/) as well as the available [Functions and Operators](https://trino.io/docs/current/functions.html).
 
 Of course you can also join the `flights_t` table with the `airports_t` table to enrich it, similar than we have done it in the Spark DataFrame workshop. We leave that as an exercise and show a different way of joining data in the next section.
 
-## Using Presto to access a Relational Database
+## Using Trino to access a Relational Database
 
 In this section we create the airports data as a Postgesql table. Let's assume by that, that the Airports data has not been loaded into Object Storage and that the Postgresql database is the leading system for airport data. 
 
@@ -282,15 +283,15 @@ COPY flight_data.pg_airport_t(iata,airport,city,state,country,lat,long)
 FROM '/data-transfer/flight-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
-### Query Table from Presto
+### Query Table from Trino
 
-Next let's query the data from Presto. Once more connect to the Presto CLI using
+Next let's query the data from Trino. Once more connect to the Trino CLI using
 
 ```bash
-docker exec -it presto-1 presto-cli
+docker exec -it trino-1 trino-cli
 ```
 
-Now on the Presto command prompt, switch to the database representing the Postgresql. 
+Now on the Trino command prompt, switch to the database representing the Postgresql. 
 
 ```sql
 use postgresql.flight_data;
@@ -305,7 +306,7 @@ show tables;
 We can see the `pg_airport_t` table we created in the Postgresql RDBMS 
 
 ```sql
-presto:default> show tables;
+trino:default> show tables;
      Table
 ---------------
  pg_airport_t
@@ -326,9 +327,9 @@ FROM pg_airport_t
 GROUP BY country;
 ```
 
-## Query Federation using Presto
+## Query Federation using Trino
 
-With the `pg_airport_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Presto's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
+With the `pg_airport_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Trino's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
 
 
 ```sql
