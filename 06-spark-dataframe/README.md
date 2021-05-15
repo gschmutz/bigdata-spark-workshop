@@ -55,7 +55,7 @@ For this workshop we will be using Zeppelin discussed above.
 
 But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
 
-In a browser window, navigate to <http://dataplatform:28080> and make sure that you configure the **Spark** Interpreter as discussed above.
+In a browser window, navigate to <http://dataplatform:28080>.
 
 Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
 
@@ -81,18 +81,9 @@ First add another title, this time as a Heading-2.
 %md ## Working with the Airport data
 ```
 
-Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. Let's see the data by performing an `%sh` directive
+Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. 
 
-```bash
-%sh
-s3cmd ls -r s3://flight-bucket/raw/airports/
-```
-
-We can see that there is one file for the airports data.
-
-![Alt Image Text](./images/zeppelin-sh-ls-airports.png "Zeppelin Show Files")
-
-Now let’s start using some code. First we have to import the spark python API. 
+First we have to import the spark python API. 
 
 ```python
 %pyspark
@@ -163,16 +154,23 @@ Let’s now start working with the Flights data, which we have uploaded with the
 
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
  
-Make sure that the data is in the right place. You can use the directive `%sh` to execute a shell action.
+Make sure that the data is in the right place. 
 
-```python
-%sh
-s3cmd ls -r s3://flight-bucket/raw/flights/
+```
+docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
 ```
 
 You should see the five files inside the `flights` folder
 
-![Alt Image Text](./images/zeppelin-sh-ls.png "Zeppelin Show Files")
+```
+ubuntu@ip-172-26-3-90:~$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
+
+2021-05-15 15:26       980792  s3://flight-bucket/raw/flights/flights_2008_4_1.csv
+2021-05-15 15:26       981534  s3://flight-bucket/raw/flights/flights_2008_4_2.csv
+2021-05-15 15:26       998020  s3://flight-bucket/raw/flights/flights_2008_5_1.csv
+2021-05-15 15:26      1002531  s3://flight-bucket/raw/flights/flights_2008_5_2.csv
+2021-05-15 15:26       989831  s3://flight-bucket/raw/flights/flights_2008_5_3.csv
+```
 
 The CSV files in this case do not contain a header line, therefore we cannot use the same technique as before with the airports and derive the schema from the header. 
 
@@ -258,22 +256,18 @@ Let’s create a Parquet representation of the data in the refined folder. Addit
 flightsRawDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/refined/flights")
 ```
 
-Check that the file has been written to HDFS or MinIO using either one of the techniques seen before. 
+Check that the file has been written to MinIO using the s3cmd. 
 
-For example for the object storage solution, we can add
-
-```python
-%sh
-s3cmd ls -r s3://flight-bucket/refined/flights
+```bash
+docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
 ```	
 	
 Should you want to execute the write a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution of the write will throw an error. 
 
-You can directly execute the remove from within Zeppelin, using the `%sh` directive. 
+You can remove it using the following s3cmd
 
-```python
-%sh
-s3cmd rm -r s3://flight-bucket/refined/flights
+```bash
+docker exec -ti awscli s3cmd rm -r s3://flight-bucket/refined/flights
 ```
 	
 By now we have imported the airports and flights data and made it available as a Data Frame. 
