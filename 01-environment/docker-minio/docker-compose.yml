@@ -411,43 +411,6 @@ services:
     entrypoint:
       - /pre-docker-entrypoint.sh
     restart: unless-stopped
-  #  ================================== StreamSets Transformer ========================================== #
-  streamsets-transformer-1:
-    image: streamsets/transformer:3.17.0
-    container_name: streamsets-transformer-1
-    hostname: streamsets-transformer-1
-    labels:
-      com.platys.webui.title: StreamSets Transformer UI
-      com.platys.webui.url: http://${PUBLIC_IP}:19630
-      com.platys.restapi.title: StreamSets Transformer REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:19630/collector/restapi
-    ports:
-      - 19630:19630
-    volumes:
-      - ./data-transfer:/data-transfer
-#      - ./container-volume/streamsets-transformer/data:/data:Z
-#      - ./streamsets-extras/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/postgresql-42.2.6.jar:/opt/streamsets-datacollector-3.22.2/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/postgresql-42.2.6.jar:Z
-#      - ./streamsets-extras/libs-common-lib:/opt/streamsets-datacollector-3.22.2/libs-common-lib:Z
-#      - ./streamsets-extras/user-libs:/opt/streamsets-datacollector-user-libs:Z
-    restart: unless-stopped
-  #  ================================== NiFi ========================================== #
-  nifi-1:
-    image: apache/nifi:1.12.1
-    container_name: nifi-1
-    hostname: nifi-1
-    labels:
-      com.platys.webui.title: Apache NiFi UI
-      com.platys.webui.url: http://${PUBLIC_IP}:18080/nifi
-    ports:
-      # HTTP
-      - 18080:8080
-      # Remote Input Socket
-      - 10005:10000/tcp
-    environment:
-      NIFI_WEB_HTTP_PORT: '8080'
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
   #  ================================== Airflow ========================================== #
   airflow:
     image: bitnami/airflow:1.10.13
