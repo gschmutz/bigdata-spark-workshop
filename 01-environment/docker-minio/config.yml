@@ -153,6 +153,7 @@
       # ===== Zeppelin ========
       ZEPPELIN_enable: true
       ZEPPELIN_volume_map_data: false
+      ZEPPELIN_spark_submit_options: '--conf spark.databricks.delta.retentionDurationCheck.enabled=false --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension'
 
       # ===== Jupyter ========
       JUPYTER_enable: true
