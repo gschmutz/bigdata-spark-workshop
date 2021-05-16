@@ -127,7 +127,7 @@
       STREAMSETS_activate_https: false
       STREAMSETS_additional_port_mappings: 0
       STREAMSETS_TRANSFORMER_enable: true
-      STREAMSETS_TRANSFORMER_version: scala-2.12_3.19.0-latest
+      #STREAMSETS_TRANSFORMER_version: scala-2.12_3.19.0-latest
       STREAMSETS_TRANSFORMER_volume_map_data: false
       STREAMSETS_EDGE_enable: false
       STREAMSETS_EDGE_volume_map_data: false
