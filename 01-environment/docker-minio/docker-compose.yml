@@ -595,8 +595,6 @@ services:
       - ./conf/starburstdata/single/config.properties:/usr/lib/presto/etc/config.properties
       - ./conf/starburstdata/cluster/node.properties:/usr/lib/presto/etc/node.properties
       - ./conf/starburstdata/catalog/minio.properties:/usr/lib/presto/etc/catalog/minio.properties
-      - ./conf/starburstdata/catalog/kafka.properties:/usr/lib/presto/etc/catalog/kafka.properties
-      - ./conf/starburstdata/kafka/:/usr/lib/presto/etc/kafka/
       - ./conf/starburstdata/catalog/postgresql.properties:/usr/lib/presto/etc/catalog/postgresql.properties
     restart: unless-stopped
   trino-cli:
