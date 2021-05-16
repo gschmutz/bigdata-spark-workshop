@@ -1,12 +1,13 @@
-# Working with Delta Lake
+# Data Reading and Writing using DataFrames
 
 For this workshop you have to start a platform using the `minio` flavour in the init script.
 
 ## Introduction
 
-In this workshop we will work with [Delta Lake](https://delta.io/), an open-source storage format that brings ACID transactions to Apache Spark™ and big data workloads.. 
+In this workshop we will work with [Apache Spark](https://spark.apache.org/) DataFrames and 
+We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
 
-The same data as in the [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
+The same data as in the [HDFS Workshop](../02-hdfs/README.md) or [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
 We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
  
@@ -56,7 +57,7 @@ But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
 
 In a browser window, navigate to <http://dataplatform:28080>.
 
-Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDeltaLake` and set the **Default Interpreter** to `spark`. 
+Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
 
 Click on **Create Note** and a new Notebook is created with one cell which is empty. 
 
@@ -65,7 +66,7 @@ Click on **Create Note** and a new Notebook is created with one cell which is em
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
 
 ```
-%md # Spark Delta Lake sample with airport data
+%md # Spark DataFrame sample with flights data
 ```
 
 Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
