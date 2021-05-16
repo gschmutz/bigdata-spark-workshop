@@ -274,7 +274,7 @@ By now we have imported the airports and flights data and made it available as a
 
 Additionally we have also stored the data to a file in json format. 
 
-## Let’s use some SQL to work with the data
+## Use SparkSQL to work with the data
 
 First let's read the data from the parquet refined structure just created before. 
 
@@ -345,7 +345,6 @@ usAirportsByStateDF = spark.sql("""
 usAirportsByStateDF.show()
 ```
 
-
 If you perform a SELECT on the flights table using one or more of the partition columns, the query will prune the non-used partitions and only read the necessary files for the needed partitions
 
 ```sql
@@ -356,7 +355,20 @@ WHERE year = 2008
 AND month = 04
 ```
 
-## Use Spark SQL to perform some analytics on the data
+As an alternative to specifying SQL statement as a string, Data Frames provide a domain-specific language for structured data manipulation. These operations are also referred as “untyped transformations” in contrast to “typed transformations” come with strongly typed Scala/Java Datasets.
+
+In Python, it’s possible to access a DataFrame’s columns either by attribute (df.age) or by indexing (df['age']). While the former is convenient for interactive data exploration, users are highly encouraged to use the latter form, which is future proof and won’t break with column names that are also attributes on the DataFrame class.
+
+```
+%pyspark
+airportsRawDF.select(airportsRawDF['country'], airportsRawDF['state']) \
+    .filter(airportsRawDF['country'] == "USA") \
+    .groupBy("country", "state") \
+    .count() \
+    .show()
+```
+
+## Use Spark SQL to perform analytics on the data
 
 Let's see the the 10 longest flights in descending order with `origin` and `destination`
 
