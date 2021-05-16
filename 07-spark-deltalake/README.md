@@ -94,7 +94,7 @@ only showing top 5 rows
 
 ```
 %pyspark
-deltaTableDest = "s3a://flight-bucket/refined/airports"
+deltaTableDest = "s3a://flight-bucket/delta/airports"
 ```
 
 
@@ -121,7 +121,7 @@ docker exec -ti awscli bash
 and execute the `s3cmd`
 
 ```
-s3cmd get s3://flight-bucket/refined/airports/_delta_log/00000000000000000000.json --force
+s3cmd get s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json --force
 ```
 
 Let's view the content downloaded using the `jq` utility, a json pretty-printer

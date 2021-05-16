@@ -18,7 +18,7 @@ In order for us to use Trino with Object Storage or HDFS, we first have to creat
 
 ### Create Airport Table in Hive Metastore
 
-In order to access data in HDFS or Object Storage using Trino, we have to create a table in the Hive metastore. Note that the location 's3a://flight-bucket/refined/..' points to the data we have uploaded before.
+In order to access data in HDFS or Object Storage using Trino, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/refined/..` points to the data we have uploaded before.
 
 Connect to Hive Metastore CLI
 
@@ -63,7 +63,7 @@ exit;
 Next let's query the data from Trino. Connect to the Trino CLI from a terminal window
 
 ```bash
-docker exec -it trino-1 trino-cli
+docker exec -it trino-cli trino --server trino-1:8080
 ```
 
 Now on the Trino command prompt, switch to the right database. 
@@ -198,7 +198,7 @@ exit;
 In a terminal window, again connect to the Trino CLI using
 
 ```bash
-docker exec -it trino-1 trino-cli
+docker exec -it trino-cli trino --server trino-1:8080
 ```
 
 and switch to the correct database
@@ -253,7 +253,7 @@ In this section we create the airports data as a Postgesql table. Let's assume b
 Connect to Postgresql
 
 ```bash
-docker exec -ti postgresql psql -d sample -U sample
+docker exec -ti postgresql psql -d demodb -U demo
 ```
 
 Create a database and the table for the airport data using a different name  `pg_airport_t` to distinguish it to the one in Minio. 
@@ -288,7 +288,7 @@ FROM '/data-transfer/flight-data/airports.csv' DELIMITER ',' CSV HEADER;
 Next let's query the data from Trino. Once more connect to the Trino CLI using
 
 ```bash
-docker exec -it trino-1 trino-cli
+docker exec -it trino-cli trino --server trino-1:8080
 ```
 
 Now on the Trino command prompt, switch to the database representing the Postgresql. 
