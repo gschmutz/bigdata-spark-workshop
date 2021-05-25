@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            bigdata-minio-platform
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.12.0-preview
+# Platform Stack Version:  1.12.0
 # =======================================================================
 version: '3.5'
 networks:
@@ -411,9 +411,9 @@ services:
     entrypoint:
       - /pre-docker-entrypoint.sh
     restart: unless-stopped
-  #  ================================== Airflow ========================================== #
+#  ================================== Airflow ========================================== #
   airflow:
-    image: bitnami/airflow:1.10.13
+    image: bitnami/airflow:2
     container_name: airflow
     hostname: airflow
     labels:
@@ -424,38 +424,44 @@ services:
     ports:
       - 28139:8080
     environment:
-      - AIRFLOW_HOME=/opt/bitnami/airflow
-      - AIRFLOW_EXECUTOR=LocalExecutor
-      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-      - AIRFLOW_DATABASE_HOST=airflow-db
       - AIRFLOW_DATABASE_NAME=bitnami_airflow
-      - AIRFLOW_DATABASE_PORT_NUMBER=5432
       - AIRFLOW_DATABASE_USERNAME=bn_airflow
       - AIRFLOW_DATABASE_PASSWORD=abc123!
+      - AIRFLOW_DATABASE_HOST=airflow-db
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - REDIS_HOST=airflow-redis
+      - REDIS_PORT_NUMBER=6379
+      - AIRFLOW_EXECUTOR=LocalExecutor
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_HOME=/opt/bitnami/airflow
       - AIRFLOW_LOAD_EXAMPLES=no
       - AIRFLOW_PASSWORD=abc123!
       - AIRFLOW_USERNAME=airflow
+      - PYTHONPATH=/bitnami/python
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/bitnami/airflow/dags:Z
       - ./plugins/airflow/:/opt/bitnami/airflow/plugins:Z
     restart: unless-stopped
   airflow-scheduler:
-    image: bitnami/airflow-scheduler:1.10.13
+    image: bitnami/airflow-scheduler:2
     container_name: airflow-scheduler
     hostname: airflow-scheduler
     environment:
-      - AIRFLOW_HOME=/opt/bitnami/airflow
-      - AIRFLOW_EXECUTOR=LocalExecutor
-      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-      - AIRFLOW_DATABASE_HOST=airflow-db
       - AIRFLOW_DATABASE_NAME=bitnami_airflow
-      - AIRFLOW_DATABASE_PORT_NUMBER=5432
       - AIRFLOW_DATABASE_USERNAME=bn_airflow
       - AIRFLOW_DATABASE_PASSWORD=abc123!
+      - AIRFLOW_DATABASE_HOST=airflow-db
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - REDIS_HOST=airflow-redis
+      - REDIS_PORT_NUMBER=6379
+      - AIRFLOW_EXECUTOR=LocalExecutor
+      - AIRFLOW_WEBSERVER_HOST=airflow
+      - AIRFLOW_WEBSERVER_PORT_NUMBER=8080
       - AIRFLOW_LOAD_EXAMPLES=no
-      - AIRFLOW_PASSWORD=abc123!
-      - AIRFLOW_USERNAME=airflow
+      - AIRFLOW_HOME=/opt/bitnami/airflow
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - PYTHONPATH=/bitnami/python
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/bitnami/airflow/dags:Z
@@ -539,7 +545,7 @@ services:
     restart: unless-stopped
   #  ================================== Jupyter ========================================== #
   jupyter:
-    image: jupyter/all-spark-notebook:f9b134f7bd08
+    image: jupyter/all-spark-notebook:spark-3.1.1
     container_name: jupyter
     hostname: jupyter
     labels:
@@ -575,7 +581,7 @@ services:
     restart: unless-stopped
   #  ================================== Trino ========================================== #
   trino-1:
-    image: starburstdata/presto:350-e.7
+    image: starburstdata/starburst-enterprise:356-e.1
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -590,6 +596,8 @@ services:
       S3_PATH_STYLE_ACCESS: 'true'
       POSTGRESQL_USER: demo
       POSTGRESQL_PASSWORD: abc123!
+      # this is only generated to keep the structure valid if no other env variables are present
+      IGNORE: ignore
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/starburstdata/single/config.properties:/usr/lib/presto/etc/config.properties

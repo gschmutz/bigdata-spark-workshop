@@ -4,7 +4,7 @@
       platys:
         platform-name: 'bigdata-minio-platform'
         platform-stack: 'trivadis/platys-modern-data-platform'
-        platform-stack-version: '1.12.0-preview'
+        platform-stack-version: '1.12.0'
         structure: 'flat'
 
       # ===== Global configuation, valid for all or a group of services ========
@@ -159,6 +159,7 @@
       JUPYTER_enable: true
       # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'all-spark'
       JUPYTER_edition: 'all-spark'
+      JUPYTER_ALL_SPARK_version: spark-3.1.1
       JUPYTER_volume_map_data: false
 
       # ===== Visualization ========
