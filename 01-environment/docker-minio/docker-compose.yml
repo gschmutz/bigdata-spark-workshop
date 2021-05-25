@@ -581,7 +581,7 @@ services:
     restart: unless-stopped
   #  ================================== Trino ========================================== #
   trino-1:
-    image: starburstdata/starburst-enterprise:356-e.1
+    image: trinodb/trino:356
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -600,10 +600,10 @@ services:
       IGNORE: ignore
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/starburstdata/single/config.properties:/usr/lib/presto/etc/config.properties
-      - ./conf/starburstdata/cluster/node.properties:/usr/lib/presto/etc/node.properties
-      - ./conf/starburstdata/catalog/minio.properties:/usr/lib/presto/etc/catalog/minio.properties
-      - ./conf/starburstdata/catalog/postgresql.properties:/usr/lib/presto/etc/catalog/postgresql.properties
+      - ./conf/trino/single/config.properties:/etc/trino/config.properties
+      - ./conf/trino/cluster/node.properties:/etc/trino/node.properties
+      - ./conf/trino/catalog/minio.properties:/etc/trino/catalog/minio.properties
+      - ./conf/trino/catalog/postgresql.properties:/etc/trino/catalog/postgresql.properties
     restart: unless-stopped
   trino-cli:
     image: trivadis/trino-cli:latest
