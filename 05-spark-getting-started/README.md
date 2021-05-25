@@ -71,7 +71,7 @@ You can use `pyspark` for this workshop. But there are also two other, browser-b
 
 ### Using Apache Zeppelin
 
-In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
+In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
 
 First let's finish the configuration of the Spark Interpreter. Click on the **admin** drop-down menu and select **Interpreter**
 
@@ -121,20 +121,29 @@ hadoop fs -ls hdfs://namenode:9000/user/hue
 To list all the objects within the `flight-bucket`
 
 ```bash
-%sh
-s3cmd ls -r s3://flight-bucket
+docker exec -ti awscli s3cmd ls -r s3://flight-bucket
 ```
 
 and you should see the output below the cell as shown below
 
-![Alt Image Text](./images/zeppelin-spark-execute-shell.png "Zeppelin Execute Shell")
+```
+ubuntu@ip-172-26-1-118:~$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket
+2021-05-18 11:16       244438  s3://flight-bucket/raw/airports/airports.csv
+2021-05-18 11:17        76537  s3://flight-bucket/raw/carriers/carriers.json
+2021-05-18 11:17       980792  s3://flight-bucket/raw/flights/flights_2008_4_1.csv
+2021-05-18 11:17       981534  s3://flight-bucket/raw/flights/flights_2008_4_2.csv
+2021-05-18 11:17       998020  s3://flight-bucket/raw/flights/flights_2008_5_1.csv
+2021-05-18 11:17      1002531  s3://flight-bucket/raw/flights/flights_2008_5_2.csv
+2021-05-18 11:17       989831  s3://flight-bucket/raw/flights/flights_2008_5_3.csv
+2021-05-18 11:17     55888790  s3://flight-bucket/raw/pdf/pilot_handbook.pdf r
+```
 
 You can use Apache Zeppelin to perform the workshop below. The other option is to use **Jupyter**. 
 
 ### Using Jupyter (optional)
 
 In a browser window, navigate to <http://dataplatform:28888>. 
-Enter `abc123!` into the **Password or token** field and click **Log in**. 
+Enter `changeme` into the **Password or token** field and click **Log in**. 
 
 You should be forwarded to the **Jupyter** homepage. Click on the **Python 3** icon in the **Notebook** section to create a new notebook using the **Python 3** kernel.
 
