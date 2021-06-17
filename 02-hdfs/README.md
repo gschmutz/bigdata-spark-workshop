@@ -113,7 +113,7 @@ To use it, we first have to create the "home directory" in HDFS for the user `hu
 docker exec -ti namenode hadoop fs -mkdir -p /user/hue
 ```
 
-In a browser window navigate to <http://dataplatform:28888> and sign in with user `hue` and password `hue`. You should be forwarded to the **Hue** homepage. 
+In a browser window navigate to <http://dataplatform:8888> and sign in with user `hue` and password `hue`. You should be forwarded to the **Hue** homepage. 
 
 If asked for the tour through Hue, either follow it, or just close the window. You should end up on the Hue homepage.
 

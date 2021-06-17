@@ -71,7 +71,6 @@ Now let's checkout the Workshop project from GitHub:
 # Get the project
 cd /home/${USERNAME} 
 git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
-chown -R ${USERNAME}:${PASSWORD} ${GITHUB_PROJECT}
 
 cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker-${PLATFORM_FLAVOUR}
 ```
