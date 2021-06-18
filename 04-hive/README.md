@@ -709,3 +709,25 @@ Kansas City International       Kansas City     Nashville International Nashvill
 Kansas City International       Kansas City     Baltimore-Washington International      Baltimore       2008    4       3       4       13141240     1621    1605    WN      633     N301SW  127     145     117     16      34      MCI     BWI     967     3       7       N           16       0       0       0       0
 Time taken: 23.654 seconds, Fetched: 5 row(s)
 ```
+
+#### Create a new Table `flights_ref` materializing the join
+
+Let's store the result of the join shown before in a new table
+
+```sql
+CREATE TABLE airports_ref
+STORED AS PARQUET 
+AS
+SELECT ao.airport as airport_origin
+	, ao.city as city_origin
+	, ad.airport as airport_dest
+	, ad.city as city_dest
+	, f.*
+FROM flights_raw  AS f
+LEFT JOIN airports_raw AS ao
+ON (f.origin = ao.iata)
+LEFT JOIN airports_raw AS ad
+ON (f.dest = ad.iata)
+```
+
+We store it in format `Parquet` in the Hive Warehouse (located at `/user/hive/warehouse`).
