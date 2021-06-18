@@ -51,7 +51,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 ## Create a new Zeppelin notebook
 
-For this workshop we will be using Zeppelin discussed above. 
+For this workshop we will be using Zeppelin discussed above. In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
 
 But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
 
