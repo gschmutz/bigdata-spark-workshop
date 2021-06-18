@@ -90,8 +90,8 @@ First we have to import the spark python API.
 from pyspark.sql.types import *
 ```
 
-Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
-
+Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema (replace `s3a://flight-bucket/raw/airports` by `hdfs://namenode:9000/user/hue/flight-data/raw/airports` if using the `hdfs` flavour)
+ 
 ```python
 %pyspark
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
