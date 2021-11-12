@@ -715,7 +715,7 @@ Time taken: 23.654 seconds, Fetched: 5 row(s)
 Let's store the result of the join shown before in a new table
 
 ```sql
-CREATE TABLE airports_ref
+CREATE TABLE flights_ref
 STORED AS PARQUET 
 AS
 SELECT ao.airport as airport_origin

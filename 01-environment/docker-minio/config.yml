@@ -4,7 +4,7 @@
       platys:
         platform-name: 'bigdata-minio-platform'
         platform-stack: 'trivadis/platys-modern-data-platform'
-        platform-stack-version: '1.12.0'
+        platform-stack-version: '1.14.0-preview'
         structure: 'flat'
 
       # ===== Global configuation, valid for all or a group of services ========
@@ -12,6 +12,26 @@
       use_timezone: ''
       # the name of the repository to use for private images, which are not on docker hub (currently only Oracle images)
       private_docker_repository_name: 'trivadis'
+      # the UID to use when using the "user" property in a service to override the user inside the container
+      uid: '1000'
+
+      data_centers: 'dc1,dc2'
+      data_center_idx: 0
+
+      # ========================================================================
+      # External Services
+      # ========================================================================
+      external:
+          KAFKA_enable: false
+          KAFKA_bootstrap_servers:
+          KAFKA_username:
+          KAFKA_password:
+          SCHEMA_REGISTRY_enable: false
+          SCHEMA_REGISTRY_url:
+          S3_enable: false
+          S3_endpoint:
+          S3_default_region:
+          S3_path_style_access: false
 
       PROVISIONING_DATA_enable: true
 
@@ -27,6 +47,7 @@
       # one of enterprise, community
       KAFKA_edition: 'community'
       KAFKA_volume_map_data: false
+      KAFKA_datacenters: 'A,B'
       KAFKA_broker_nodes: 1
       KAFKA_delete_topic_enable: false
       KAFKA_auto_create_topics_enable: false
@@ -95,7 +116,7 @@
       SPARK_THRIFT_enable: false
 
       # ===== Apache Livy ========
-      LIVY_enable: true
+      LIVY_enable: false
 
       # ===== Apache Hive ========
       HIVE_SERVER_enable: false
@@ -147,7 +168,7 @@
       SQOOP_enable: false
 
       # ===== Apache Airflow  ========
-      AIRFLOW_enable: true
+      AIRFLOW_enable: false
       AIRFLOW_provision_examples: false
 
       # ===== Zeppelin ========
@@ -256,7 +277,7 @@
       PRESTO_CLI_enable: true
 
       # ===== Dremio ========
-      DREMIO_enable: true
+      DREMIO_enable: false
 
       # ===== Apache Drill ========
       DRILL_enable: false
