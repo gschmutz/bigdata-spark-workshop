@@ -59,21 +59,25 @@ Running `mc -h` will show the help page of s3cmd.
 docker exec -ti minio-mc mc -h
 ```
 
-**Using MinIO Browser**
+**Using MinIO Console**
 
 In a browser window, navigate to <http://dataplatform:9000>. 
 
 Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker-minio/docker-compose.yml) file. 
 
-The MinIO Browser homepage should now appear.
+The MinIO Console dashboard page should now appear.
  
 ![Alt Image Text](./images/minio-home.png "Minio Homepage")
 
-Click on the **+** icon at the lower right corner to either perform an **Create bucket** or **Upload file** action.
+Now click on the **Buckets** menu item on the left.
 
-![Alt Image Text](./images/minio-action-menu.png "Minio Action Menu")
+![Alt Image Text](./images/minio-buckets.png "Minio Homepage")
 
-### Create a Bucket
+Click on the **Create Bucket** button at the top right corner to create a new bucket.
+
+![Alt Image Text](./images/minio-create-bucket.png "Minio Homepage")
+
+### Create a Bucket using S3cmd
 
 Before we can upload the files to Minio, we first have to create a bucket.
 
@@ -90,7 +94,7 @@ bigdata@bigdata:~$ docker exec -ti awscli s3cmd mb s3://flight-bucket
 Bucket 's3://flight-bucket/' created
 ```
 
-Navigate to the MinIO UI (<http://dataplatform:9000>) and you should see the newly created bucket in the left. 
+Navigate to the MinIO UI (<http://dataplatform:9000/buckets)>) and you should see the newly created bucket. 
 
 ![Alt Image Text](./images/minio-show-bucket.png "Minio show bucket")
 
@@ -170,7 +174,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 All these objects are no available in the flight-bucket under the `raw/flights` path.
 
-![Alt Image Text](./images/minio-flights.png "Minio list objects")
+![Alt Image Text](./images/minio-flights.png "Minio list flights")
 
 ### Upload the Flight Handbook PDF file to the new bucket
 
