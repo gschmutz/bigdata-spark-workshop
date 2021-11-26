@@ -163,7 +163,7 @@ services:
     restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
-    image: trivadis/apache-spark-master:3.1.1-hadoop3.2
+    image: trivadis/apache-spark-master:3.0.1-hadoop3.2
     container_name: spark-master
     hostname: spark-master
     labels:
@@ -208,7 +208,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-1:
-    image: trivadis/apache-spark-worker:3.1.1-hadoop3.2
+    image: trivadis/apache-spark-worker:3.0.1-hadoop3.2
     container_name: spark-worker-1
     hostname: spark-worker-1
     labels:
@@ -251,7 +251,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-2:
-    image: trivadis/apache-spark-worker:3.1.1-hadoop3.2
+    image: trivadis/apache-spark-worker:3.0.1-hadoop3.2
     container_name: spark-worker-2
     hostname: spark-worker-2
     labels:
@@ -294,7 +294,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-history:
-    image: trivadis/apache-spark-worker:3.1.1-hadoop3.2
+    image: trivadis/apache-spark-worker:3.0.1-hadoop3.2
     command: /spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
     container_name: spark-history
     hostname: spark-history
