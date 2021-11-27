@@ -222,6 +222,7 @@ services:
     environment:
       SPARK_MASTER: spark://spark-master:7077
       SPARK_WORKER_WEBUI_PORT: '28111'
+      SPARK_WORKER_CORES: '4'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -265,6 +266,7 @@ services:
     environment:
       SPARK_MASTER: spark://spark-master:7077
       SPARK_WORKER_WEBUI_PORT: '28112'
+      SPARK_WORKER_CORES: '4'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -395,7 +397,7 @@ services:
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: trivadis/apache-zeppelin:0.9.0-spark3.0-hadoop3.2
+    image: trivadis/apache-zeppelin:0.10.0-spark3.0-hadoop3.2
     container_name: zeppelin
     hostname: zeppelin
     labels:
