@@ -98,7 +98,7 @@
       SPARK_catalog: in-memory
       SPARK_workers: 2
       SPARK_master_opts: ''
-      SPAKR_worker_cores:
+      SPAKR_worker_cores: 4
       SPAKR_worker_memory:
       SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
       SPARK_jars_repositories: ''
