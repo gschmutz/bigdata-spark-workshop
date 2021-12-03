@@ -30,11 +30,11 @@ Click on *Save* and an empty canvas for the new pipeline is shown.
 
 ### Designing the pipeline
 
-Select **HTTP Client - Basic** from the **Select Origin...** drop-down. 
+Select **HTTP Client** from the **Select Origin...** drop-down. 
 
 ![Alt Image Text](./images/streamsets-select-http-client.png "Schema Registry UI")
 
-The *HTTP Client** origin will be shown on the canvas. We will configure it later to retrieve the data from Twitter. But first let's add the producer which sends the data to Apache Kafka. 
+The **HTTP Client** origin will be shown on the canvas. We will configure it later to retrieve the data from Twitter. But first let's add the producer which sends the data to Apache Kafka. 
 
 Select **Kafka Producer** from the **Select Destination to connect...** drop-down. 
 
@@ -119,6 +119,7 @@ docker run --tty --network docker_default confluentinc/cp-kafkacat kafkacat -b b
 Optionally you can also use **KafkaHQ** Web application to create the topic as well as listening on the topic once it is created. KafkaHQ can be reached on <http://localhost:28042> (if using the TCP Tunnel with port forwarding) or <http://analyticsplatform:28042> (if ports are open).
 
 ### Running the pipeline
+
 Now we are ready for running the pipeline. 
 
 There are two ways you can run a pipeline in StreamSets, either 

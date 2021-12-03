@@ -23,9 +23,9 @@ Scroll down to **Launch script** and add the following script. Make sure to spec
 Optionally change the password from the default value of `ubuntu` to a more secure one. 
 
 ```
+export PLATFORM_FLAVOUR=minio
 export GITHUB_PROJECT=hadoop-spark-workshop
 export GITHUB_OWNER=gschmutz
-export PLATFORM_FLAVOUR=minio
 export DOCKER_COMPOSE_VERSION=1.25.3
 export PLATYS_VERSION=2.4.0
 export NETWORK_NAME=eth0
