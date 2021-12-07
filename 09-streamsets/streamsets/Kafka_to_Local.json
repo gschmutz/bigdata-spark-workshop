@@ -480,7 +480,7 @@
         "value" : "JSON"
       }, {
         "name" : "kafkaConfigBean.metadataBrokerList",
-        "value" : "broker-1:9092"
+        "value" : "kafka-1:19092"
       }, {
         "name" : "kafkaConfigBean.zookeeperConnect",
         "value" : "zookeeper-1:2181"
