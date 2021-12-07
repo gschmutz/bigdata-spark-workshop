@@ -77,7 +77,7 @@ Increase the value of **Max Object Length (chars)** to `409600`.
 
 Now let's configure the Kafka Producer. Click on the **Kafka Producer 1** component on the canvas and select the **Kafka** tab. 
 
-Enter `broker-1:9092` into the **Broker URI** edit field and `tweet-json-topic` into the **Topic** field.
+Enter `kafka-1:19092` into the **Broker URI** edit field and `tweet-json-topic` into the **Topic** field.
 
 ![Alt Image Text](./images/streamsets-kafka-producer-config-kafka.png "Schema Registry UI")
 
@@ -90,10 +90,10 @@ Fist we need to create the topic in Kafka which will be used to hold/buffer the 
   * using the `kafka-topics` CLI
   * using the Kafka Manager web application
 
-The `kafak-topics` command is available with the Kafka broker. To use it we have to connect into the `broker-1` container first. On the Docker host, exeute the following command
+The `kafak-topics` command is available with the Kafka broker. To use it we have to connect into the `kafka-1` container first. On the Docker host, exeute the following command
 
 ```
-docker exec -ti broker-1 bash
+docker exec -ti kafka-1 bash
 ```
 
 The command prompt should change to reflect that we are now in the context of the running container.
@@ -112,7 +112,7 @@ We are specifying a `replication-factor` of `1` because there is only one broker
 Now with the topic in place, let's start a consumer on the new topic. We are using the `kafkacat` utility here, as it simplifies consuming from Kafka compared to the standard CLI commands provided by Kafka. We can either install `kafkcat` locally or use it as a Docker container, which is shown here:
 
 ```
-docker run --tty --network docker_default confluentinc/cp-kafkacat kafkacat -b broker-1 -t tweet-json-topic
+docker run --tty --network docker_default confluentinc/cp-kafkacat kafkacat -b kafka-1 -t tweet-json-topic
 
 ```
 
@@ -189,7 +189,7 @@ A new empty canvas is shown, ready to be configured.
 
 From the **Select Origin...** drop-down, select `Kafka Consumer`. 
 
-Navigate to the **Kafka** tab, enter `broker-1:9092` into the **Broker URI** field and enter `zookeeper-1:2181` into the **ZooKeeper URI** field. Enter `tweet-json-topic` into the **Topic** field. 
+Navigate to the **Kafka** tab, enter `kafka-1:19092` into the **Broker URI** field and enter `zookeeper-1:2181` into the **ZooKeeper URI** field. Enter `tweet-json-topic` into the **Topic** field. 
 
 ![Alt Image Text](./images/streamsets-consumer-kafka-1.png "Schema Registry UI")
 
