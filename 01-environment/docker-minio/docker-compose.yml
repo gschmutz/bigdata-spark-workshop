@@ -1,18 +1,19 @@
 # =======================================================================
 # Platform Name            bigdata-minio-platform
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.14.0-preview
+# Platform Stack Version:  1.15.0-preview
 # =======================================================================
 version: '3.5'
 networks:
   default:
     name: bigdata-minio-platform
 # enforce some dependencies
+# backward compatiblity to platform < 1.14.0
 # Enable PostgreSQL or MySQL for MLflow server
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.0.0
+    image: confluentinc/cp-zookeeper:7.1.0
     container_name: zookeeper-1
     hostname: zookeeper-1
     labels:
@@ -30,7 +31,7 @@ services:
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
-    image: confluentinc/cp-kafka:7.0.0
+    image: confluentinc/cp-kafka:7.1.0
     container_name: kafka-1
     hostname: kafka-1
     labels:
@@ -41,32 +42,35 @@ services:
       - 9092:9092
       - 19092:19092
       - 29092:29092
+      - 39092:39092
       - 9992:9992
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_BROKER_RACK: rack1
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_DOCKERHOST://kafka-1:29092,LISTENER_EXTERNAL://kafka-1:9092
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_DOCKERHOST://localhost:29092,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_LOCAL://kafka-1:39092,LISTENER_DOCKERHOST://kafka-1:29092,LISTENER_EXTERNAL://kafka-1:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_LOCAL://localhost:39092,LISTENER_DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29092,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_MESSAGE_TIMESTAMP_TYPE: CreateTime
       KAFKA_MIN_INSYNC_REPLICAS: 1
-      KAFKA_DELETE_TOPIC_ENABLE: 'False'
+      KAFKA_DELETE_TOPIC_ENABLE: 'True'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
       KAFKA_JMX_PORT: 9992
       KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9992
       KAFKA_JMX_HOSTNAME: ${PUBLIC_IP:-127.0.0.1}
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: INFO
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
-  #  ================================== Schema Registry ========================================== #
+  #  ================================== Confluent Schema Registry ========================================== #
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:7.0.0
+    image: confluentinc/cp-schema-registry:7.1.0
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
@@ -91,6 +95,7 @@ services:
       SCHEMA_REGISTRY_DEBUG: 'False'
     volumes:
       - ./data-transfer:/data-transfer
+      - ./plugins/opentelemetry/agents:/tmp
     restart: unless-stopped
   #  ================================== Schema Registry UI ========================================== #
   schema-registry-ui:
@@ -101,9 +106,6 @@ services:
       com.platys.name: schema-registry-ui
       com.platys.webui.title: Confluent Schema Registry UI
       com.platys.webui.url: http://${PUBLIC_IP}:28102
-    depends_on:
-      - kafka-1
-      - schema-registry-1
     ports:
       - 28102:8000
     environment:
@@ -121,9 +123,6 @@ services:
       com.platys.name: cmak
       com.platys.webui.title: Cluster Manager for Apache Kafka UI
       com.platys.webui.url: http://${PUBLIC_IP}:28104
-    depends_on:
-      - zookeeper-1
-      - kafka-1
     ports:
       - 28104:9000
     environment:
@@ -156,14 +155,12 @@ services:
               schema-registry:
                 url: "http://schema-registry-1:8081"
                 type: "confluent"
-    depends_on:
-      - kafka-1
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
-    image: trivadis/apache-spark-master:3.0.1-hadoop3.2
+    image: trivadis/apache-spark-master:3.1.3-hadoop3.2
     container_name: spark-master
     hostname: spark-master
     labels:
@@ -192,7 +189,7 @@ services:
       INIT_DAEMON_STEP: setup_spark
       MASTER: spark://spark-master:7077
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:0.8.0,org.apache.spark:spark-avro_2.12:3.0.1
+      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:1.2.0,org.apache.spark:spark-avro_2.12:3.1.3
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       SPARK_DEFAULTS_CONF_spark_jars:
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
@@ -208,7 +205,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-1:
-    image: trivadis/apache-spark-worker:3.0.1-hadoop3.2
+    image: trivadis/apache-spark-worker:3.1.3-hadoop3.2
     container_name: spark-worker-1
     hostname: spark-worker-1
     labels:
@@ -222,7 +219,6 @@ services:
     environment:
       SPARK_MASTER: spark://spark-master:7077
       SPARK_WORKER_WEBUI_PORT: '28111'
-      SPARK_WORKER_CORES: '4'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -236,7 +232,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:0.8.0,org.apache.spark:spark-avro_2.12:3.0.1
+      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:1.2.0,org.apache.spark:spark-avro_2.12:3.1.3
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       SPARK_DEFAULTS_CONF_spark_jars:
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
@@ -252,7 +248,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-2:
-    image: trivadis/apache-spark-worker:3.0.1-hadoop3.2
+    image: trivadis/apache-spark-worker:3.1.3-hadoop3.2
     container_name: spark-worker-2
     hostname: spark-worker-2
     labels:
@@ -266,7 +262,6 @@ services:
     environment:
       SPARK_MASTER: spark://spark-master:7077
       SPARK_WORKER_WEBUI_PORT: '28112'
-      SPARK_WORKER_CORES: '4'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -280,7 +275,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:0.8.0,org.apache.spark:spark-avro_2.12:3.0.1
+      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:1.2.0,org.apache.spark:spark-avro_2.12:3.1.3
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       SPARK_DEFAULTS_CONF_spark_jars:
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
@@ -296,11 +291,12 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-history:
-    image: trivadis/apache-spark-worker:3.0.1-hadoop3.2
+    image: trivadis/apache-spark-worker:3.1.3-hadoop3.2
     command: /spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
     container_name: spark-history
     hostname: spark-history
     labels:
+      com.platys.name: spark-historyserver
       com.platys.webui.title: Spark History Server
       com.platys.webui.url: http://${PUBLIC_IP}:28117
       com.platys.restapi.title: Spark History Server
@@ -311,7 +307,7 @@ services:
       - 28117:18080
     environment:
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:0.8.0,org.apache.spark:spark-avro_2.12:3.0.1
+      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:1.2.0,org.apache.spark:spark-avro_2.12:3.1.3
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -333,6 +329,8 @@ services:
     image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
     container_name: hive-metastore
     hostname: hive-metastore
+    labels:
+      com.platys.name: hive-metastore
     ports:
       - 9083:9083
     env_file:
@@ -346,6 +344,8 @@ services:
       HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+      # necessary for Trino to be able to read from Avro
+      HIVE_SITE_CONF_metastore_storage_schema_reader_impl: org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader
       SERVICE_PRECONDITION: hive-metastore-db:5432
     volumes:
       - ./data-transfer:/data-transfer
@@ -355,6 +355,8 @@ services:
     image: trivadis/apache-hive-metastore-postgresql:3.1.0-postgres9.5.3
     container_name: hive-metastore-db
     hostname: hive-metastore-db
+    labels:
+      com.platys.name: hive-metastore
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -375,15 +377,17 @@ services:
       SDC_OFFSET_DIRECTORY: /data/custom-offset-el
       SDC_INSTALL_STAGES: ''
       SDC_INSTALL_ENTERPRISE_STAGES: ''
-      SDC_JAVA_OPTS: -Xmx2g -Xms2g
+      SDC_JAVA_OPTS: -Xmx2g -Xms2g -Dlog4j2.formatMsgNoLookups=true
       SDC_JAVA8_OPTS: -XX:+UseG1GC
       SDC_CONF_MONITOR_MEMORY: 'true'
       SDC_CONF_PIPELINE_MAX_RUNNERS_COUNT: 50
       SDC_CONF_http_authentication: form
+      SDC_CONF_RUNTIME_CONF_LOCATION: embedded
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/streamsets/pre-docker-entrypoint.sh:/pre-docker-entrypoint.sh
       - ./plugins/streamsets/user-libs:/opt/streamsets-datacollector-user-libs:Z
+      - ./plugins/streamsets/libs-extras/streamsets-datacollector-jdbc-lib/:/opt/streamsets-datacollector-3.22.2/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/:Z
     ulimits:
       nofile:
         soft: 32768
@@ -398,10 +402,11 @@ services:
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: trivadis/apache-zeppelin:0.10.0-spark3.0-hadoop3.2
+    image: trivadis/apache-zeppelin:0.10.0-spark3.1.3-hadoop3.2
     container_name: zeppelin
     hostname: zeppelin
     labels:
+      com.platys.name: zeppelin
       com.platys.webui.title: Apache Zeppelin UI
       com.platys.webui.url: http://${PUBLIC_IP}:28080
     ports:
@@ -430,7 +435,7 @@ services:
       AWS_ENDPOINT: http://minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:0.8.0,org.apache.spark:spark-avro_2.12:3.0.1
+      SPARK_DEFAULTS_CONF_spark_jars_packages: io.delta:delta-core_2.12:1.2.0,org.apache.spark:spark-avro_2.12:3.1.3
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       SPARK_DEFAULTS_CONF_spark_jars:
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
@@ -451,9 +456,10 @@ services:
       ZEPPELIN_USER_PASSWORD: changeme
       # set spark-master for Zeppelin interpreter
       ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
+      ZEPPELIN_NOTEBOOK_DIR: notebook
       ZEPPELIN_NOTEBOOK_CRON_ENABLE: 'True'
       PYSPARK_PYTHON: python3
-      SPARK_SUBMIT_OPTIONS: --conf spark.databricks.delta.retentionDurationCheck.enabled=false --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension --conf spark.ui.port=4050 --conf spark.driver.host=${DOCKER_HOST_IP} --conf spark.driver.port=5050 --conf spark.driver.bindAddress=0.0.0.0 --conf spark.blockManager.port=6060 --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4
+      SPARK_SUBMIT_OPTIONS: ' --conf spark.ui.port=4050 --conf spark.driver.host=zeppelin --conf spark.driver.port=5050 --conf spark.driver.bindAddress=0.0.0.0 --conf spark.blockManager.port=6060 --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4'
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/spark/jars:/extra-jars
@@ -462,10 +468,11 @@ services:
     restart: unless-stopped
   #  ================================== Jupyter ========================================== #
   jupyter:
-    image: jupyter/all-spark-notebook:spark-3.1.1
+    image: jupyter/all-spark-notebook:spark-3.1.3
     container_name: jupyter
     hostname: jupyter
     labels:
+      com.platys.name: jupyter
       com.platys.webui.title: Jupyter UI
       com.platys.webui.url: http://${PUBLIC_IP}:28888
     ports:
@@ -522,7 +529,7 @@ services:
     restart: unless-stopped
   #  ================================== Trino ========================================== #
   trino-1:
-    image: trinodb/trino:364
+    image: starburstdata/starburst-enterprise:377-e
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -542,22 +549,24 @@ services:
       IGNORE: ignore
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/trino/single/config.properties:/etc/trino/config.properties
-      - ./conf/trino/single/node.properties:/etc/trino/node.properties
-      - ./conf/trino/catalog/minio.properties:/etc/trino/catalog/minio.properties
-      - ./conf/trino/catalog/postgresql.properties:/etc/trino/catalog/postgresql.properties
+      - ./conf/starburstdata/single/config.properties:/etc/starburst/config.properties
+      - ./conf/starburstdata/single/node.properties:/etc/starburst/node.properties
+      - ./conf/starburstdata/catalog/minio.properties:/etc/starburst/catalog/minio.properties
+      - ./conf/starburstdata/catalog/postgresql.properties:/etc/starburst/catalog/postgresql.properties
     restart: unless-stopped
   trino-cli:
     image: trivadis/trino-cli:latest
     hostname: trino-cli
     container_name: trino-cli
+    labels:
+      com.platys.name: trino
     volumes:
       - ./data-transfer:/data-transfer
     tty: true
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2021-09-15T04-54-25Z
+    image: minio/minio:RELEASE.2022-05-04T07-45-27Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -571,7 +580,6 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
-      MINIO_BROWSER: 'True'
       #MINIO_PUBLIC_IPS: minio-1
       #MINIO_DOMAIN: minio.io
       #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
@@ -584,14 +592,17 @@ services:
     image: minio/mc:latest
     container_name: minio-mc
     hostname: minio-mc
+    labels:
+      com.platys.name: minio
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/minio/config.json:/root/.mc/config.json
+#      - ./conf/minio/config.json:/root/.mc/config.json
     entrypoint:
       - /bin/sh
       - -c
       - |
         sleep 10
+        mc alias set minio-1 http://minio-1:9000 V42FCGRVMK24JJ8DHUYG bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
         mc mb --ignore-existing minio-1/admin-bucket
            for i in $$(echo "" | sed "s/,/ /g")
         do
@@ -605,9 +616,11 @@ services:
     image: trivadis/awscli-s3cmd:latest
     container_name: awscli
     hostname: awscli
+    labels:
+      com.platys.name: awscli
     environment:
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
       AWS_ENDPOINT: minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
     volumes:
@@ -615,7 +628,7 @@ services:
       - ./conf/s3cfg:/root/.s3cfg.template
     command: tail -f /dev/null
     restart: unless-stopped
-  #  ================================== cAdvisor ========================================== #
+  #  ================================== Wetty ========================================== #
   wetty:
     image: svenihoney/wetty:latest
     container_name: wetty
@@ -646,7 +659,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./doc:/home/python/markdown
+      - ./artefacts:/home/python/markdown
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   markdown-renderer:
@@ -660,16 +673,16 @@ services:
       PUBLIC_IP: ${PUBLIC_IP}
       DOCKER_HOST_IP: ${DOCKER_HOST_IP}
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
+      PLATYS_PLATFORM_NAME: bigdata-minio-platform
+      PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
+      PLATYS_PLATFORM_STACK_VERSION: 1.15.0-preview
+      PLATYS_COPY_COOKBOOK_DATA: 'True'
     volumes:
-      - ./doc/templates:/templates
-      - ./doc/templates:/scripts
+      - ./artefacts/templates:/templates
+      - ./artefacts/templates:/scripts
       - .:/variables
-      - ./doc:/output
+      - ./artefacts:/output
       - ./data-transfer:/data-transfer
-  #  ================================== data-provisioning ========================================== #
-  data-provisioning:
-    image: trivadis/platys-modern-data-platform-data:latest
-    container_name: data-provisioning
-    hostname: data-provisioning
-    volumes:
-      - ./data-transfer:/data-transfer
+volumes:
+  data-transfer-vol:
+    name: data_transfer_vol
