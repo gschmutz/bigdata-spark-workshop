@@ -50,24 +50,26 @@ CREATE SOURCE CONNECTOR ORDERS WITH (
     'value.converter'				       = 'org.apache.kafka.connect.json.JsonConverter',
     'value.converter.schemas.enable'    = 'false',
 
-    'genkp.customer-key.with'				= '#{Code.isbn10}',
+    'genkp.customerkey.with'				= '#{Code.isbn10}',
 
     'genkp.inventory.sometimes.with'		= '#{Code.asin}',
     'genkp.inventory.sometimes.matching' = 'inventory.key',
+    'genv.inventory.id.with'             = 'inventory.key',
     'genv.inventory.amount_in_stock.with' = '#{number.number_between ''5'',''15''}',
     'genv.inventory.product_name.with'	= '#{Commerce.product_name}',
     'genv.inventory.last_updated.with'	= '#{date.past ''10'',''SECONDS''}',
 
-    'genkp.customer.with'					= 'customer-key.key',
-    'genv.customer.id.matching'         = 'customer-key.key',
-    'genv.customer.name.with'				= '#{Name.full_name}',
+    'genkp.customer.with'					= '#{Code.isbn10}',
+    'genv.customer.id.matching'         = 'customer.key',
+    'genv.customer.firstName.with'		= '#{Name.first_name}',
+    'genv.customer.lastName.with'			= '#{Name.last_name}',
     'genv.customer.gender.with'			= '#{Demographic.sex}',
     'genv.customer.favorite_beer.with'	= '#{Beer.name}',
     'genv.customer.state.with'			= '#{Address.state}',
 
     'genkp.order.matching'					= 'inventory.key',
     'genv.order.quantity.with'			= '#{number.number_between ''1'',''5''}',
-    'genv.order.customer_id.matching'	= 'customer-key.key',
+    'genv.order.customer_id.matching'	= 'customer.key',
 
     'global.throttle.ms'			= '1000',
     'global.history.records.max'	= '10000'
