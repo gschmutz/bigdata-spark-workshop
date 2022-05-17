@@ -127,22 +127,57 @@ docker exec -ti minio-mc mc ls minio-1/flight-bucket/
 We can see that the bucket contains a directory with the name `raw`, which is the prefix we have used when uploading the data above. 
 
 ```bash
-bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls s3://flight-bucket/
-                       DIR   s3://flight-bucket/raw/
+bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1/flight-bucket/
+[2022-05-17 12:15:01 UTC]     0B raw/
 ```
 
 If we use the `-r` argument
 
 ```bash
-docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
+docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
 ```
 
 we can see the objects with the hierarchy as well. 
 
 ```bash
-bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
-2020-05-04 21:00    244438   s3://flight-bucket/raw/airports/airports.csv
-2020-05-04 21:01    428558   s3://flight-bucket/raw/planes/plane-data.csv
+bigdata@bigdata:~$ docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
+[2022-05-17 12:13:15 UTC] 239KiB STANDARD raw/airports/airports.csv
+[2022-05-17 12:13:35 UTC] 418KiB STANDARD raw/planes/plane-data.csv
+```
+
+you can also use the `tree` command to display it as a tree
+
+```bash
+docker exec -ti minio-mc mc tree minio-1/flight-bucket/
+```
+
+we can see the folder hierarchy as well. 
+
+```bash
+bigdata@bigdata:~$ docker exec -ti minio-mc mc tree minio-1/flight-bucket/
+minio-1/flight-bucket/
+└─ raw
+   ├─ airports
+   └─ planes
+```
+
+if we use the `--files` option we can see the files as well
+
+```bash
+docker exec -ti minio-mc mc tree --files minio-1/flight-bucket/
+```
+
+we can see the folder hierarchy as well. 
+
+```bash
+bigdata@bigdata:~$ docker exec -ti minio-mc mc tree --files minio-1/flight-bucket/
+minio-1/flight-bucket/
+minio-1/flight-bucket/
+└─ raw
+   ├─ airports
+   │  └─ airports.csv
+   └─ planes
+      └─ plane-data.csv
 ```
 
 We can see the same in the MinIO Browser.  
