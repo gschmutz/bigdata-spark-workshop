@@ -84,14 +84,14 @@ Before we can upload the files to Minio, we first have to create a bucket.
 Here are the commands to perform when using the **S3cmd** on the command line
 
 ```bash
-docker exec -ti awscli s3cmd mb s3://flight-bucket
+docker exec -ti minio-mc mc mb minio-1/flight-bucket
 ```
 
 and you should get the bucket created method as shown below
 
 ```bash
-bigdata@bigdata:~$ docker exec -ti awscli s3cmd mb s3://flight-bucket
-Bucket 's3://flight-bucket/' created
+bigdata@bigdata:~$ docker exec -ti minio-mc mc mb minio-1/flight-bucket
+Bucket created successfully `minio-1/flight-bucket`.
 ```
 
 Navigate to the MinIO UI (<http://dataplatform:9000/buckets)>) and you should see the newly created bucket. 
@@ -101,48 +101,83 @@ Navigate to the MinIO UI (<http://dataplatform:9000/buckets)>) and you should se
 or you could also use `s3cmd ls` to list all buckets.
 
 ```bash
-docker exec -ti awscli s3cmd ls s3://
+docker exec -ti minio-mc mc ls minio-1
 ```
 
 ### Upload the Airport and Plane-Data CSV files to the new bucket
 
-To upload a file we are going to use the `s3cmd put` command. First for the `airports.csv`
+To upload a file we are going to use the `cp` command of the `minio-mc`. First for the `airports.csv`
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 and then also for the `plane-data.csv` file. 
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
 ```
 
 Let's use the `s3cmd ls` command once more but now to display the content of the `flight-bucket`
 
 ```bash
-docker exec -ti awscli s3cmd ls s3://flight-bucket/
+docker exec -ti minio-mc mc ls minio-1/flight-bucket/
 ```
 
 We can see that the bucket contains a directory with the name `raw`, which is the prefix we have used when uploading the data above. 
 
 ```bash
-bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls s3://flight-bucket/
-                       DIR   s3://flight-bucket/raw/
+bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1/flight-bucket/
+[2022-05-17 12:15:01 UTC]     0B raw/
 ```
 
 If we use the `-r` argument
 
 ```bash
-docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
+docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
 ```
 
 we can see the objects with the hierarchy as well. 
 
 ```bash
-bigdata@bigdata:~$ docker exec -ti awscli s3cmd ls -r  s3://flight-bucket/
-2020-05-04 21:00    244438   s3://flight-bucket/raw/airports/airports.csv
-2020-05-04 21:01    428558   s3://flight-bucket/raw/planes/plane-data.csv
+bigdata@bigdata:~$ docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
+[2022-05-17 12:13:15 UTC] 239KiB STANDARD raw/airports/airports.csv
+[2022-05-17 12:13:35 UTC] 418KiB STANDARD raw/planes/plane-data.csv
+```
+
+you can also use the `tree` command to display it as a tree
+
+```bash
+docker exec -ti minio-mc mc tree minio-1/flight-bucket/
+```
+
+we can see the folder hierarchy as well. 
+
+```bash
+bigdata@bigdata:~$ docker exec -ti minio-mc mc tree minio-1/flight-bucket/
+minio-1/flight-bucket/
+└─ raw
+   ├─ airports
+   └─ planes
+```
+
+if we use the `--files` option we can see the files as well
+
+```bash
+docker exec -ti minio-mc mc tree --files minio-1/flight-bucket/
+```
+
+we can see the folder hierarchy as well. 
+
+```bash
+bigdata@bigdata:~$ docker exec -ti minio-mc mc tree --files minio-1/flight-bucket/
+minio-1/flight-bucket/
+minio-1/flight-bucket/
+└─ raw
+   ├─ airports
+   │  └─ airports.csv
+   └─ planes
+      └─ plane-data.csv
 ```
 
 We can see the same in the MinIO Browser.  
@@ -181,7 +216,7 @@ All these objects are no available in the flight-bucket under the `raw/flights` 
 Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` we should have a `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw/pdf/
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
 ```
 
 You can see by the output that a multi-part upload has been performed:
