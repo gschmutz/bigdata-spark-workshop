@@ -291,7 +291,7 @@
       SPARK_catalog: in-memory
       SPARK_workers: 2
       # to restrict the default cores, use '-Dspark.deploy.defaultCores=6'
-      SPARK_master_opts: ''
+      SPARK_master_opts: '-Dspark.deploy.defaultCores=2'
       SPARK_worker_cores:
       SPARK_worker_memory:
       SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
