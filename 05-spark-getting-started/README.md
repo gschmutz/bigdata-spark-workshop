@@ -37,8 +37,8 @@ and you should end up on the **pyspark** command prompt `>>>` as shown below
 ```bash
 bigdata@bigdata:~$ docker exec -ti spark-master pyspark
 
-Python 2.7.16 (default, Jan 14 2020, 07:22:06)
-[GCC 8.3.0] on linux2
+Python 3.7.13 (default, Apr  7 2022, 05:58:59)
+[GCC 10.3.1 20211027] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -46,10 +46,12 @@ Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 2.4.7
+   /__ / .__/\_,_/_/ /_/\_\   version 3.1.3
       /_/
 
-Using Python version 3.7.9 (default, Aug 18 2020 04:02:05)
+Using Python version 3.7.13 (default, Apr  7 2022 05:58:59)
+Spark context Web UI available at http://192.168.1.162:4040
+Spark context available as 'sc' (master = spark://spark-master:7077, app id = app-20220523154800-0000).
 SparkSession available as 'spark'.
 >>>
 ```
@@ -64,7 +66,7 @@ and we should get the version back
 
 ```bash
 >>> spark.version
-u'2.4.7'
+'3.1.3'
 ```
 
 You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
