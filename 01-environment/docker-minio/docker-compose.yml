@@ -178,8 +178,8 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: V42FCGRVMK24JJ8DHUYG
-      HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      HIVE_SITE_CONF_fs_s3a_access_key: minio
+      HIVE_SITE_CONF_fs_s3a_secret_key: 1234567890
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -224,8 +224,8 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: V42FCGRVMK24JJ8DHUYG
-      HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      HIVE_SITE_CONF_fs_s3a_access_key: minio
+      HIVE_SITE_CONF_fs_s3a_secret_key: 1234567890
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -267,8 +267,8 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: V42FCGRVMK24JJ8DHUYG
-      HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      HIVE_SITE_CONF_fs_s3a_access_key: minio
+      HIVE_SITE_CONF_fs_s3a_secret_key: 1234567890
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -340,8 +340,8 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: V42FCGRVMK24JJ8DHUYG
-      HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      HIVE_SITE_CONF_fs_s3a_access_key: minio
+      HIVE_SITE_CONF_fs_s3a_secret_key: 1234567890
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       # necessary for Trino to be able to read from Avro
@@ -420,18 +420,18 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: V42FCGRVMK24JJ8DHUYG
-      HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      HIVE_SITE_CONF_fs_s3a_access_key: minio
+      HIVE_SITE_CONF_fs_s3a_secret_key: 1234567890
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
-      SPARK_HADOOP_FS_S3A_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
-      SPARK_HADOOP_FS_S3A_SECRET_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      SPARK_HADOOP_FS_S3A_ACCESS_KEY: minio
+      SPARK_HADOOP_FS_S3A_SECRET_KEY: 1234567890
       # for awscli & s3cmd
-      AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-1234567890}
       AWS_ENDPOINT: http://minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -485,18 +485,18 @@ services:
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: V42FCGRVMK24JJ8DHUYG
-      HIVE_SITE_CONF_fs_s3a_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      HIVE_SITE_CONF_fs_s3a_access_key: minio
+      HIVE_SITE_CONF_fs_s3a_secret_key: 1234567890
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
-      SPARK_HADOOP_FS_S3A_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
-      SPARK_HADOOP_FS_S3A_SECRET_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      SPARK_HADOOP_FS_S3A_ACCESS_KEY: minio
+      SPARK_HADOOP_FS_S3A_SECRET_KEY: 1234567890
       # for awscli & s3cmd
-      AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-1234567890}
       AWS_ENDPOINT: http://minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
     volumes:
@@ -540,8 +540,8 @@ services:
       - 28082:8080
     environment:
       S3_ENDPOINT: http://minio-1:9000
-      S3_AWS_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
-      S3_AWS_SECRET_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      S3_AWS_ACCESS_KEY: minio
+      S3_AWS_SECRET_KEY: 1234567890
       S3_PATH_STYLE_ACCESS: 'true'
       POSTGRESQL_USER: postgres
       POSTGRESQL_PASSWORD: abc123!
@@ -577,8 +577,8 @@ services:
       - 9000:9000
       - 9010:9010
     environment:
-      MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
-      MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: 1234567890
       MINIO_REGION_NAME: us-east-1
       MINIO_SERVER_URL: http://${PUBLIC_IP}
       #MINIO_PUBLIC_IPS: minio-1
@@ -603,7 +603,7 @@ services:
       - -c
       - |
         sleep 10
-        mc alias set minio-1 http://minio-1:9000 V42FCGRVMK24JJ8DHUYG bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+        mc alias set minio-1 http://minio-1:9000 minio 1234567890
         mc mb --ignore-existing minio-1/admin-bucket
            for i in $$(echo "" | sed "s/,/ /g")
         do
@@ -620,8 +620,8 @@ services:
     labels:
       com.platys.name: awscli
     environment:
-      AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-1234567890}
       AWS_ENDPOINT: minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
     volumes:
@@ -683,6 +683,15 @@ services:
       - ./artefacts/templates:/scripts
       - .:/variables
       - ./artefacts:/output
+      - ./data-transfer:/data-transfer
+  #  ================================== data-provisioning ========================================== #
+  data-provisioning:
+    image: trivadis/platys-modern-data-platform-data:latest
+    container_name: data-provisioning
+    hostname: data-provisioning
+    labels:
+      com.platys.name: data-provisioning
+    volumes:
       - ./data-transfer:/data-transfer
 volumes:
   data-transfer-vol:
