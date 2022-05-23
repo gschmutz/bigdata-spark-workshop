@@ -105,41 +105,6 @@ By default the Spark Zeppelin interpreter will be using the Scala API. To switch
 
 Zeppelin allows for mixing different interpreters in one and the same Notebook, whereas one interpreter always being the default (the one chosen when creating the notebook, **spark** in our case). 
 
-You can use the `%sh` interpreter to perform shell actions. We can use it for example to perform a hadoop filesystem action using the `hadoop fs` command (if you have HDFS running) or an `s3cmd` to perform an action on Object Storage, if MinIO is running. 
-
-#### Working with HDFS (if platform with `hdfs` flavour)
-
-For example to list the files in the `/user/hue/` folder on HDFS, we can perform the following command
-
-```bash
-%sh
-hadoop fs -ls hdfs://namenode:9000/user/hue 
-```
-
-**Note**: the shell will be executed inside the `zeppelin` container. Therefore to work with HDFS, we have to provide a full HDFS link. 
-
-#### Working with MinIO (if platform with `minio` flavour)
-
-To list all the objects within the `flight-bucket`
-
-```bash
-docker exec -ti awscli s3cmd ls -r s3://flight-bucket
-```
-
-and you should see the output below the cell as shown below
-
-```
-ubuntu@ip-172-26-1-118:~$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket
-2021-05-18 11:16       244438  s3://flight-bucket/raw/airports/airports.csv
-2021-05-18 11:17        76537  s3://flight-bucket/raw/carriers/carriers.json
-2021-05-18 11:17       980792  s3://flight-bucket/raw/flights/flights_2008_4_1.csv
-2021-05-18 11:17       981534  s3://flight-bucket/raw/flights/flights_2008_4_2.csv
-2021-05-18 11:17       998020  s3://flight-bucket/raw/flights/flights_2008_5_1.csv
-2021-05-18 11:17      1002531  s3://flight-bucket/raw/flights/flights_2008_5_2.csv
-2021-05-18 11:17       989831  s3://flight-bucket/raw/flights/flights_2008_5_3.csv
-2021-05-18 11:17     55888790  s3://flight-bucket/raw/pdf/pilot_handbook.pdf r
-```
-
 You can use Apache Zeppelin to perform the workshop below. The other option is to use **Jupyter**. 
 
 ### Using Jupyter (optional)

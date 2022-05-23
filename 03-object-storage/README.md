@@ -77,11 +77,11 @@ Click on the **Create Bucket** button at the top right corner to create a new bu
 
 ![Alt Image Text](./images/minio-create-bucket.png "Minio Homepage")
 
-### Create a Bucket using S3cmd
+### Create a Bucket using Mino MC
 
 Before we can upload the files to Minio, we first have to create a bucket.
 
-Here are the commands to perform when using the **S3cmd** on the command line
+Here are the commands to perform when using the Minio **mc** utility on the command line
 
 ```bash
 docker exec -ti minio-mc mc mb minio-1/flight-bucket
