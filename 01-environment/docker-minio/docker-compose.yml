@@ -580,7 +580,6 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
-      MINIO_SERVER_URL: http://${PUBLIC_IP}
       #MINIO_PUBLIC_IPS: minio-1
       #MINIO_DOMAIN: minio.io
       #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
