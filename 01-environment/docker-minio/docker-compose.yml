@@ -95,7 +95,7 @@ services:
       SCHEMA_REGISTRY_DEBUG: 'False'
     volumes:
       - ./data-transfer:/data-transfer
-      - ./plugins/opentelemetry/agents:/tmp
+      - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   #  ================================== Schema Registry UI ========================================== #
   schema-registry-ui:
@@ -529,7 +529,7 @@ services:
     restart: unless-stopped
   #  ================================== Trino ========================================== #
   trino-1:
-    image: starburstdata/starburst-enterprise:377-e
+    image: starburstdata/starburst-enterprise:380-e.0
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -566,7 +566,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2022-05-04T07-45-27Z
+    image: minio/minio:RELEASE.2022-05-19T18-20-59Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -580,6 +580,7 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
+      MINIO_SERVER_URL: http://${PUBLIC_IP}
       #MINIO_PUBLIC_IPS: minio-1
       #MINIO_DOMAIN: minio.io
       #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
@@ -620,12 +621,12 @@ services:
       com.platys.name: awscli
     environment:
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
-      SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
       AWS_ENDPOINT: minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/s3cfg:/root/.s3cfg.template
+      - ./conf/s3cfg:/root/.s3cfg
     command: tail -f /dev/null
     restart: unless-stopped
   #  ================================== Wetty ========================================== #
@@ -682,6 +683,15 @@ services:
       - ./artefacts/templates:/scripts
       - .:/variables
       - ./artefacts:/output
+      - ./data-transfer:/data-transfer
+  #  ================================== data-provisioning ========================================== #
+  data-provisioning:
+    image: trivadis/platys-modern-data-platform-data:latest
+    container_name: data-provisioning
+    hostname: data-provisioning
+    labels:
+      com.platys.name: data-provisioning
+    volumes:
       - ./data-transfer:/data-transfer
 volumes:
   data-transfer-vol:
