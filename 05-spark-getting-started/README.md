@@ -195,13 +195,13 @@ Of course you can also use **Hue** to upload the data as we have learned in the 
 First create a bucket for the data
 
 ```bash
-docker exec -ti awscli s3cmd mb s3://wordcount-bucket
+docker exec -ti minio-mc mc mb minio-1/wordcount-bucket
 ```
 
 And then copy the `big.txt` into the new bucket 
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/wordcount/big.txt s3://wordcount-bucket/raw-data/
+docker exec -ti minio-mc mc cp /data-transfer/wordcount/big.txt minio-1/wordcount-bucket/raw-data/
 ```
 
 Now with the data either available in HDFS or MinIO, let's use the data using Spark RDDs.
