@@ -13,7 +13,7 @@ We assume that you have done Workshop 5 **Getting Started using Spark RDD and Da
  
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 3 - [Working with MinIO Object Storage](03-object-storage). You can skip this section, if you still have the data available in MinIO. 
+The data needed here has been uploaded in workshop 3 - [Working with MinIO Object Storage](03-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
@@ -21,25 +21,49 @@ Create the flight bucket:
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
-Airports:
+or with `mc`
+ 
+```bash
+docker exec -ti minio-mc mc mb minio-1/flight-bucket
+```
+
+**Airports:**
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
 ```
 
-Plane-Data:
+or with `mc`
+
+```bash
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+```
+
+**Plane-Data:**
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
 ```
 
-Carriers:
+or with `mc`
+
+```bash
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
+```
+
+**Carriers:**
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
 ```
 
-Flights:
+or with `mc`
+
+```bash
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/carriers.json minio-1/flight-bucket/raw/carriers/carriers.json
+```
+
+**Flights:**
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
@@ -47,6 +71,16 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
+```
+
+or with `mc`
+
+```bash
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_1.csv minio-1/flight-bucket/raw/flights/ &&
+   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_2.csv minio-1/flight-bucket/raw/flights/ &&
+   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_1.csv minio-1/flight-bucket/raw/flights/ &&
+   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_2.csv minio-1/flight-bucket/raw/flights/ &&
+   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_3.csv minio-1/flight-bucket/raw/flights/
 ```
 
 ## Create a new Zeppelin notebook
