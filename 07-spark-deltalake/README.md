@@ -19,11 +19,22 @@ Create the flight bucket:
 ```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
+or with `mc`
+ 
+```bash
+docker exec -ti minio-mc mc mb minio-1/flight-bucket
+```
 
-Airports:
+**Airports**:
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+```
+
+or with `mc`
+
+```bash
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 ## Create a new Zeppelin notebook

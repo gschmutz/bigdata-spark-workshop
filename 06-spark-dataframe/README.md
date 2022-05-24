@@ -36,7 +36,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://fl
 or with `mc`
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 **Plane-Data:**
@@ -48,7 +48,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://
 or with `mc`
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
 ```
 
 **Carriers:**
