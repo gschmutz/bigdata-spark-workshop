@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            bigdata-minio-platform
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.15.0-preview
+# Platform Stack Version:  1.16.0-preview
 # =======================================================================
 version: '3.5'
 networks:
@@ -13,7 +13,7 @@ networks:
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.1.0
+    image: confluentinc/cp-zookeeper:7.2.2
     container_name: zookeeper-1
     hostname: zookeeper-1
     labels:
@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
-    image: confluentinc/cp-kafka:7.1.0
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-1
     hostname: kafka-1
     labels:
@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
   #  ================================== Confluent Schema Registry ========================================== #
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:7.1.0
+    image: confluentinc/cp-schema-registry:7.2.2
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
@@ -478,11 +478,12 @@ services:
       com.platys.webui.url: http://${PUBLIC_IP}:28888
     ports:
       - 28888:8888
+      - 14040-14044:4040-4044
+    user: root
     environment:
-      JUPYTER_ENABLE_LAB: 'true'
-      JUPYTER_TOKEN: abc123!
-      GRANT_SUDO: 'true'
-      TINI_SUBREAPER: 'true'
+      JUPYTER_ENABLE_LAB: "'yes'"
+      GRANT_SUDO: "'yes'"
+      DOCKER_STACKS_JUPYTER_CMD: lab
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -505,6 +506,14 @@ services:
       - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
       - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
       - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
+    # - ./custom-conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf
+    #  - "./conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf"
+    command:
+      # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
+      - bash
+      - -c
+      - |
+        start-notebook.sh
     restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
   postgresql:
@@ -522,6 +531,7 @@ services:
       - POSTGRES_MULTIPLE_DATABASES=demodb
       - POSTGRES_MULTIPLE_USERS=demo
       - POSTGRES_MULTIPLE_PASSWORDS=abc123!
+      - POSTGRES_MULTIPLE_ADDL_ROLES=
       - PGDATA=/var/lib/postgresql/data/pgdata
       - DB_SCHEMA=demo
     volumes:
@@ -530,7 +540,7 @@ services:
     restart: unless-stopped
   #  ================================== Trino ========================================== #
   trino-1:
-    image: starburstdata/starburst-enterprise:380-e.0
+    image: starburstdata/starburst-enterprise:399-e
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -544,8 +554,11 @@ services:
       S3_AWS_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
       S3_AWS_SECRET_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       S3_PATH_STYLE_ACCESS: 'true'
-      POSTGRESQL_USER: postgres
-      POSTGRESQL_PASSWORD: abc123!
+      HIVE_STORAGE_FORMAT: ORC
+      HIVE_COMPRESSION_CODEC: GZIP
+      POSTGRESQL_DATABASE:
+      POSTGRESQL_USER:
+      POSTGRESQL_PASSWORD:
       # this is only generated to keep the structure valid if no other env variables are present
       IGNORE: ignore
     volumes:
@@ -553,7 +566,11 @@ services:
       - ./conf/starburstdata/single/config.properties:/etc/starburst/config.properties
       - ./conf/starburstdata/single/node.properties:/etc/starburst/node.properties
       - ./conf/starburstdata/catalog/minio.properties:/etc/starburst/catalog/minio.properties
+      - ./conf/starburstdata/catalog/iceberg.properties:/etc/starburst/catalog/iceberg.properties
+      - ./conf/starburstdata/catalog/delta.properties:/etc/starburst/catalog/delta.properties
       - ./conf/starburstdata/catalog/postgresql.properties:/etc/starburst/catalog/postgresql.properties
+      - ./security/starburstdata/password-authenticator.properties:/etc/starburst/password-authenticator.properties
+      - ./security/starburstdata/password.db:/etc/starburst/password.db
     restart: unless-stopped
   trino-cli:
     image: trivadis/trino-cli:latest
@@ -567,7 +584,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2022-05-19T18-20-59Z
+    image: minio/minio:RELEASE.2022-08-08T18-34-09Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -631,7 +648,7 @@ services:
     restart: unless-stopped
   #  ================================== Wetty ========================================== #
   wetty:
-    image: svenihoney/wetty:latest
+    image: wettyoss/wetty:latest
     container_name: wetty
     hostname: wetty
     labels:
@@ -641,10 +658,12 @@ services:
     ports:
       - 3001:3000
     environment:
-      - REMOTE_SSH_SERVER=${DOCKER_HOST_IP}
-      - REMOTE_SSH_PORT=22
-      - REMOTE_SSH_USER=
-      - WETTY_PORT=3000
+      - SSHHOST=${DOCKER_HOST_IP}
+      - SSHPORT=22
+      - SSHUSER=
+      - SSHAUTH=password
+      - PORT=3000
+      - BASE=/
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -676,7 +695,7 @@ services:
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: bigdata-minio-platform
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
-      PLATYS_PLATFORM_STACK_VERSION: 1.15.0-preview
+      PLATYS_PLATFORM_STACK_VERSION: 1.16.0-preview
       PLATYS_COPY_COOKBOOK_DATA: 'True'
     volumes:
       - ./artefacts/templates:/templates

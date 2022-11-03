@@ -2,6 +2,63 @@
 
 See [Upgrade to a new platform stack version](https://github.com/TrivadisPF/platys/blob/master/documentation/upgrade-platform-stack) for how to upgrade to newer version.
 
+## What's new in 1.16.0
+
+The Modern Data Platform version 1.16.0 contains the following bug fixes and enhancements:
+
+### New Services
+
+ * Kong API Gateway
+ * Kong decK
+ * Konga
+ * Kong Map
+ * Kong Admin UI
+ * Tyk API Gateway
+ * Tyk Dashboard
+ * Tyk Pump
+ * Kafka Connector Board
+ * Kaskade
+ * kpow
+ * JupyterHub
+ * Conduktor Platform
+
+### New Cookbook Recipes
+
+ * [Handle Serialization Errors in ksqlDB](../cookbooks/recipes/ksqldb-handle-deserializaion-error/README) 
+ * [Using Jupyter notebook with Spark and Avro](../cookbooks/recipes/jupyter-spark/README)
+
+### New Tutorial
+
+ * [IoT Vehicle Tracking](../tutorials/iot-vehicle-tracking/README)
+
+### Version upgrades
+
+ * Update `DataHub` to `v0.9.0`
+ * Update `Trino` to `401`
+ * Update `Starburst Enterprise` to `397-e`
+ * Update `Jikkou` to `0.12.2`
+ * Update `Hasura` to `v2.11.1`
+ * Update `Confluent Platform` to `7.2.2`
+ * Update `ksqldb` to `0.28.2`
+ * Update `datastax` to `6.8.28`
+ * Update `datastax-opscenter` to `6.8.19`
+
+### Bug Fixes
+
+ * ksqlDB processing log now also works with the open source edition (`      KAFKA_KSQLDB_edition: 'oss'`).
+
+### Breaking Changes
+
+ * if markdown viewer cannot run on port 80 (`MARKDOWN_VIEWER_use_port_80` is set to `false`), port 8008 is used and no longer port 8000
+ 
+### Enhancements
+
+ * make `spark.sql.warehouse.dir` configurable in `config.yml`
+ * added first tutorials showing more complete walk-through of using Playts
+ * allow to add roles when specifying multiple databases and users with PostgreSQL
+ * allow to specify that the Starburstdata license file should be mapped into the containers, when `TRINO_edition` is set to `starburstdata`. This enables the additional security features, more connectors, a cost-based query optimizer and much more.
+ * added catalog for `iceberg`, `delta-lake`, `elasticsearch`, `mongo`, `mysql`, `sqlserver`, `pinot` and `druid` to trino/starburst
+ 
 ## What's new in 1.15.0
 
 The Modern Data Platform version 1.15.0 contains the following bug fixes and enhancements:
@@ -17,33 +74,43 @@ The Modern Data Platform version 1.15.0 contains the following bug fixes and enh
  * Oracle SQLcl
  * MockServer
  * Kafka WebView
+ * OpenSearch & OpenSearch Dashboards
+ * ElasticVue
+ * NocoDB
+ * Azure CLI
+ * Azure Storage Explorer
+ * Zilla
+ * NocoDB
+ * kafkactl
 
 ### New Cookbook Recipes
 
- *
+ * [Querying data in Azure Data Lake Storage Gen2 from Trino](../cookbooks/recipes/querying-adls-with-trino)
 
 ### Version upgrades
 
  * Update `Apache NiFi` to `1.15.3` and `Apache NiFi Registry` to `1.15.3`
- * Update `Trino` to `381`
- * Update `Starburst Enterprise` to `380-e.0`
+ * Update `Trino` to `391`
+ * Update `Starburst Enterprise` to `391-e`
  * Update `dremio` to `20.1`
  * Update `Debezium Server` to `1.9`
- * Update `DataHub` to `v0.8.34`
- * Update `ksqldb` to `0.26.0`
+ * Update `DataHub` to `v0.8.40`
+ * Update `ksqldb` to `0.27.1`
  * Update `spring-cloud-dataflow-server` to `2.9.3`
  * Update `spring-cloud-skipper-server` to `2.8.3`
  * Update `streamsheet` to `2.5.3-milestone`
  * Update `thingsboard` to `3.3.4.1`
  * Update `datahub` to `v0.8.31`
- * Update `nifi` to `1.16.1` and `nifi-registry` to `1.16.1`
- * Update `minio` to `RELEASE.2022-05-19T18-20-59Z`
+ * Update `nifi` to `1.17.0` and `nifi-registry` to `1.17.0`
+ * Update `minio` to `RELEASE.2022-08-08T18-34-09Z`
  * Update `spark` to `3.1.3`
  * Update `zeppelin` to `0.10.1`
- * Update `Confluent Platform` to `7.1.0`
+ * Update `Confluent Platform` to `7.1.2`
  * Update `Materialize` to `v0.26.0`
  * Update `lakeFS` to `0.63.0`
  * Update `Pinot` to `0.10.0`
+ * Update `Marquez` to `0.23.0`
+ * Update `DataStax` to `6.8.25`
 
 ### Breaking Changes
 
@@ -58,11 +125,13 @@ The Modern Data Platform version 1.15.0 contains the following bug fixes and enh
  * Option for installing Adventureworks demo database with SQL Server
  * Externalize version of the container used when `PROVISIONING_DATA_enable` is activated
  * Support external property file for configuration values in `streamsets`
+ * Support for Cassandra cluster and set default major version to `4`
 
 ### Bug Fixes
 
  * fix bug in `markdown-renderer` on Apple Silicon (M1)
  * fix bug if a kafka-connect cluster is used
+ * update zeppelin docker container to download spark without hadoop to fix a bug when writing to S3
 
 ## What's new in 1.14.0
 
