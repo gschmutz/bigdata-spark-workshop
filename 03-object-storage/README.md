@@ -87,6 +87,8 @@ Here are the commands to perform when using the Minio **mc** utility on the comm
 docker exec -ti minio-mc mc mb minio-1/flight-bucket
 ```
 
+**Note**: add the `--with-lock` if you want to enable object locking on the bucket.
+
 and you should get the bucket created method as shown below
 
 ```bash

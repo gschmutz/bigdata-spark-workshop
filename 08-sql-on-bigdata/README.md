@@ -4,7 +4,7 @@ For this workshop you have to start a platform using the `minio` flavour in the 
 
 ## Introduction
 
-[Trino](https://trino.io/) (prevously know as PrestoSQL) Trinois a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
+[Trino](https://trino.io/) (prevously know as PrestoSQL) Trino is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
 
 In this workshop we are using Trino to access the data we have available in the Object Storage. 
 
