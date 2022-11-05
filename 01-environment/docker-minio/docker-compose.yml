@@ -556,9 +556,9 @@ services:
       S3_PATH_STYLE_ACCESS: 'true'
       HIVE_STORAGE_FORMAT: ORC
       HIVE_COMPRESSION_CODEC: GZIP
-      POSTGRESQL_DATABASE:
-      POSTGRESQL_USER:
-      POSTGRESQL_PASSWORD:
+      POSTGRESQL_DATABASE: postgres
+      POSTGRESQL_USER: demo
+      POSTGRESQL_PASSWORD: abc123!
       # this is only generated to keep the structure valid if no other env variables are present
       IGNORE: ignore
     volumes:

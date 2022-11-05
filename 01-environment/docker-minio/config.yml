@@ -939,6 +939,9 @@
       TRINO_event_listener: ''
       TRINO_oracle_user: ''
       TRINO_oracle_password: ''
+      TRINO_postgresql_database: 'postgres'
+      TRINO_postgresql_user: 'demo'
+      TRINO_postgresql_password: 'abc123!'
       # Trino-CLI is enabled by default
       TRINO_CLI_enable: true
       #
