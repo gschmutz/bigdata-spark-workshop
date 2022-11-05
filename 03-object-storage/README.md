@@ -236,13 +236,13 @@ upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/r
  8702870 of 8702870   100% in    0s    66.63 MB/s  done
 ```
 
-The file has been upload which you can again check in the Minio browser.
+The file has been upload, which you can again check using the Minio browser.
 
-The Minio browser also allows you to get a sharable link for this object. Click on the 3 dots right to the object name and then click on the first icon:
+The Minio browser also allows you to get a sharable link for this object. Click on the **Share** action in the menu to the right of the object:
 
 ![Alt Image Text](./images/minio-share-link.png "Minio list objects")
 
-A pop-up window will appear from where you can copy the link by clicking on the **Copy Link** button:
+A pop-up window will appear from where you can copy the link by clicking on the **Copy** icon:
 
 ![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
 
@@ -378,13 +378,13 @@ Back on the **Add user** page, click **Next: Tags** and **Next: Review** and **C
 
 Click on the **show** link to show view the **Secret access key**. It is important to save that value in a safe place, as it can never be displayed after the page is closed. You will need **Access key ID** and **Secret access key** for accessing S3 from external.
 
-Click on **Close** and you see the newley created user `s3user` in the list of users.
+Click on **Close** and you see the newly created user `s3user` in the list of users.
 
 ![Alt Image Text](./images/security-credentials-8.png "S3 Homepage")
 
 ### Using the AWS CLI	to work with S3
 
-Before we can use the AWS CLI, we hav to install it. We can do that on the Ubuntu terminal using
+Before we can use the AWS CLI, we have to install it. We can do that on the Ubuntu terminal using
 
 ```
 sudo apt-get install awscli
