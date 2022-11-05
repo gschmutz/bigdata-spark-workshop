@@ -934,7 +934,7 @@
       TRINO_install: single
       TRINO_workers: 3
       # either starburstdata or oss
-      TRINO_edition: 'starburstdata'
+      TRINO_edition: 'oss'
       TRINO_kafka_table_names: ''
       TRINO_event_listener: ''
       TRINO_oracle_user: ''
