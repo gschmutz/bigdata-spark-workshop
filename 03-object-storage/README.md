@@ -246,11 +246,11 @@ A pop-up window will appear from where you can copy the link by clicking on the 
 
 ![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
 
-Copy the link into a Web-browser window and you should get the PDF rendered as shown in the image below
+Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:9000` by `<public-ip-address>:9010` and you should get the PDF rendered as shown in the image below
 
 ![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
 
-We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over their URLs. 
+We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over this URLs. 
 
 ## Working with Amazon S3
 
