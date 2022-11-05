@@ -13,7 +13,7 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://dataplatform:7474> to use the Neo4J Browser.
+Navigate to <http://127.0.0.1:7474> to use the Neo4J Browser.
 
 To use the `cypher-shell`, in a terminal window execute
 
