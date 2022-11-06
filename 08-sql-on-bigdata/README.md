@@ -246,14 +246,14 @@ Of course you can also join the `flights_t` table with the `airports_t` table to
 
 ## Using Trino to access a Relational Database
 
-In this section we create the airports data as a Postgesql table. Let's assume by that, that the Airports data has not been loaded into Object Storage and that the Postgresql database is the leading system for airport data. 
+In this section we create the airports data as a Postgresql table. Let's assume by that, that the Airports data has not been loaded into Object Storage and that the Postgresql database is the leading system for airport data. 
 
 ### Create the table in Postgresql RDBMS
 
 Connect to Postgresql
 
 ```bash
-docker exec -ti postgresql psql -d demodb -U demo
+docker exec -ti postgresql psql -d postgres -U postgres
 ```
 
 Create a database and the table for the airport data using a different name  `pg_airport_t` to distinguish it to the one in Minio. 

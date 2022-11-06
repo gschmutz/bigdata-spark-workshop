@@ -2,7 +2,7 @@
 
 | Platform Stack | Platform Stack Version | Public IP | Docker-Host IP
 |-------------- |------|------------|------------
-| [ trivadis/platys-modern-data-platform ](https://hub.docker.com/repository/docker/trivadis/platys-modern-data-platform) | 1.16.0-preview | 127.0.0.1 | 127.0.0.1
+| [ trivadis/platys-modern-data-platform ](https://hub.docker.com/repository/docker/trivadis/platys-modern-data-platform) | 1.16.0-preview | 192.168.1.160 | 192.168.1.112
 
 This environment has been generated using the [Platys](http://github.com/trivadispf/platys) toolkit.
 

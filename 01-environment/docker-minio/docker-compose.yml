@@ -644,7 +644,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/s3cfg:/root/.s3cfg
+      - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
     command: tail -f /dev/null
     restart: unless-stopped
   #  ================================== Wetty ========================================== #
