@@ -101,7 +101,7 @@ The command prompt should change to reflect that we are now in the context of th
 ```
 kafka-topics --create \
 			--if-not-exists \
-			--zookeeper zookeeper-1:2181 \
+			--bootstrap-server kafka-1:19092 \
 			--topic tweet-json-topic \
 			--partitions 6 \
 			--replication-factor 1
