@@ -336,7 +336,7 @@ you can also specify multiple source file to be loaded into the destination in H
 docker exec -ti namenode hadoop fs -copyFromLocal /data-transfer/flight-data/flights-small/flights_2008_4_2.csv /data-transfer/flight-data/flights-small/flights_2008_5_1.csv /data-transfer/flight-data/flights-small/flights_2008_5_2.csv /data-transfer/flight-data/flights-small/flights_2008_5_3.csv  /user/hue/flight-data/raw/flights
 ```
 
-All these files are no available in the HDFS under the `/user/hue/flight-data/raw/flights` folder.
+All these files are now available in the HDFS under the `/user/hue/flight-data/raw/flights` folder.
 
 ![Alt Image Text](./images/hdfs-flights.png "HDFS flights")
 

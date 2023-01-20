@@ -4,8 +4,9 @@ For this workshop you have to start a platform using the `minio` flavour in the 
 
 ## Introduction
 
-In this workshop we will work with [Apache Spark](https://spark.apache.org/) DataFrames and 
-We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
+In this workshop we will work with [Apache Spark](https://spark.apache.org/) DataFrames and Spark SQL.
+
+We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
 
 The same data as in the [HDFS Workshop](../02-hdfs/README.md) or [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
