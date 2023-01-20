@@ -31,58 +31,7 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 **Airports:**
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
-```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
-```
-
-**Plane-Data:**
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
-```
-
-**Carriers:**
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/carriers.json minio-1/flight-bucket/raw/carriers/carriers.json
-```
-
-**Flights:**
-
-```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
-   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
-   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
-   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/ &&
-   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_3.csv minio-1/flight-bucket/raw/flights/
-```
 
 
 ## Using Trino to access Object Storage
@@ -202,6 +151,20 @@ FROM minio.flight_db.airport_t;
 ```
 
 We will see later, that this becomes handy if we are querying from multiple, different databases.
+
+We can use everything SQL provides, so for example let's see the airports in state California ('CA')
+
+```sql
+SELECT * FROM airport_t 
+WHERE state = 'CA' AND country = 'USA';
+```
+
+if you just want to know how many, then let's use `COUNT(*)` 
+
+```sql
+SELECT count(*) FROM airport_t 
+WHERE state = 'CA' AND country = 'USA';
+```
 
 Exit from the Trino CLI
 
@@ -334,7 +297,7 @@ Create a database and the table for the airport data using a different name  `pg
 ```sql
 CREATE SCHEMA flight_data;
 
-DROP TABLE flight_data.pg_airport_t;
+DROP TABLE IF EXISTS flight_data.pg_airport_t;
 
 CREATE TABLE flight_data.pg_airport_t
 (
@@ -404,7 +367,6 @@ GROUP BY country;
 
 With the `pg_airport_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Trino's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
 
-
 ```sql
 SELECT ao.airport, ao.city, ad.airport, ad.city, f.*
 FROM minio.flight_db.flights_t  AS f
@@ -413,4 +375,7 @@ ON (f.origin = ao.iata)
 LEFT JOIN postgresql.flight_data.pg_airport_t AS ad
 ON (f.destination = ad.iata);
 ```
+
+
+Trino supports among the Hive and PostgreSQL (RDBMS) we have seen so far many more data sources. Find [here the list of connectors](https://trino.io/docs/current/connector.html) Trino provides to connect to the various data sources.
 
