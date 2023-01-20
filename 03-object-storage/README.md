@@ -12,9 +12,9 @@ In this workshop, we will use the flight-data available in the `data-transfer` f
 
 The files prepared in `minio` by this workshop will be used later by other workshops. 
 
-## Working with Minio
+## Working with MinIO
 
-### Volume Map data for Minio container
+### Volume Map data for MinIO container
 
 If you want the data to persist even after you shutdown the docker-compose stack, then you might want to add an additional value mapping to the `minio` service (this is of less use if you have provisioned the stack on **AWS Lightsail**). 
 
@@ -23,14 +23,14 @@ If you want the data to persist even after you shutdown the docker-compose stack
       - './container-volume/minio/data/:/data'
 ```
 
-###	 Accessing MinIO
+### Accessing MinIO
 
 [MinIO](https://min.io/) is an object storage server released under Apache License v2.0. It is compatible with Amazon S3 cloud storage service. It is best suited for storing unstructured data such as photos, videos, log files, backups and container / VM images. Size of an object can range from a few KBs to a maximum of 5TB.
 
 There are various ways for accessing MinIO
 
  * **S3cmd** - a command line S3 client for working with S3 compliant object stores
- * **Minio MC** - the Minio command line utility
+ * **MinIO MC** - the MinIO command line utility
  * **MinIO UI** - a browser based GUI for working with MinIO
 
 These are only a few of the tools available to work with S3. And because an Object Store is in fact a drop-in replacement for HDFS, we can also use it from the tools in the Big Data ecosystem such as Hadoop Hive, Spark, ...
@@ -49,7 +49,7 @@ docker exec -ti awscli s3cmd -h
 
 This can also be found on the [S3cmd usage page](https://s3tools.org/usage).
 
-**Using Minio MC**
+**Using MinIO MC**
 
 In our environment, `mc` is accessible inside the `minio-mcs`.  
 
@@ -77,11 +77,11 @@ Click on the **Create Bucket** button at the top right corner to create a new bu
 
 ![Alt Image Text](./images/minio-create-bucket.png "Minio Homepage")
 
-### Create a Bucket using Mino MC
+### Create a Bucket using MinIO MC
 
-Before we can upload the files to Minio, we first have to create a bucket.
+Before we can upload the files to MinIO, we first have to create a bucket.
 
-Here are the commands to perform when using the Minio **mc** utility on the command line
+Here are the commands to perform when using the MinIO **mc** utility on the command line
 
 ```bash
 docker exec -ti minio-mc mc mb minio-1/flight-bucket
@@ -184,7 +184,7 @@ minio-1/flight-bucket/
 
 We can see the same in the MinIO Browser.  
 
-![Alt Image Text](./images/minio-list-objects.png "Minio list objects")
+![Alt Image Text](./images/MinIO-list-objects.png "MinIO list objects")
 
 
 ### Upload the Carriers JSON file to the new bucket
@@ -211,14 +211,14 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 All these objects are no available in the flight-bucket under the `raw/flights` path.
 
-![Alt Image Text](./images/minio-flights.png "Minio list flights")
+![Alt Image Text](./images/MinIO-flights.png "MinIO list flights")
 
 ### Upload the Flight Handbook PDF file to the new bucket
 
 Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` we should have a `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
+docker exec -ti MinIO-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf MinIO-1/flight-bucket/raw/pdf/
 ```
 
 You can see by the output that a multi-part upload has been performed:
@@ -238,9 +238,9 @@ upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/r
  8702870 of 8702870   100% in    0s    66.63 MB/s  done
 ```
 
-The file has been upload, which you can again check using the Minio browser.
+The file has been upload, which you can again check using the MinIO browser.
 
-The Minio browser also allows you to get a sharable link for this object. Click on the **Share** action in the menu to the right of the object:
+The MinIO browser also allows you to get a sharable link for this object. Click on the **Share** action in the menu to the right of the object:
 
 ![Alt Image Text](./images/minio-share-link.png "Minio list objects")
 
@@ -264,7 +264,7 @@ We will first use the browser based UI to create buckets and upload objects.
 
 ### Create a Bucket
 
-Before we can upload the files to Minio, we first have to create a bucket.
+Before we can upload the files to MinIO, we first have to create a bucket.
 
 Click on **Create bucket** 
 
@@ -296,9 +296,9 @@ Let's upload our first objects by clicking on **Upload**.
 
 You can either click on **Add files** to add single files or **Add folder** to upload the complete folder with all the files within.
 
-Let's upload the whole `flight-data`folder created by unziping the file downloaded before. 
+Let's upload the whole `flight-data` folder created by unzipping the file downloaded before. 
 
-Click on **Add folder** and the file browser will appear. Navigate to the place you have unziped the data, select the `flight-data`folder and click **Upload**. 
+Click on **Add folder** and the file browser will appear. Navigate to the place you have unzipped the data, select the `flight-data` folder and click **Upload**. 
 
 ![Alt Image Text](./images/s3-upload-folder.png "S3 Homepage")
 
@@ -314,7 +314,7 @@ You can see the folder `flight-data` which we have successfully uploaded. To vie
 
 ![Alt Image Text](./images/s3-delete-object.png "S3 Homepage")
 
-and click on **Delete**. When deleting an obejct or folder throught the S3 console, you have to confirm it. After entering the "passphrase" `permanently delete` into the **To confirm deletion, ...**, the **Delete objects** button will appear. 
+and click on **Delete**. When deleting an object or folder through the S3 console, you have to confirm it. After entering the "passphrase" `permanently delete` into the **To confirm deletion, ...**, the **Delete objects** button will appear. 
 
 ![Alt Image Text](./images/s3-delete-object-2.png "S3 Homepage")
  
@@ -324,9 +324,9 @@ Click on it and the object will get deleted. You will see a confirmation page li
 
 ### Using S3 Select
 
-With Amazon S3 we can not only access objects over the key and get the full object, but we can also use a query language to only return part of the content. This only works if the content is structured and the format is either CSV, JSON or Apache Parquet. 
+With Amazon S3 we cannot only access objects over the key and get the full object, but we can also use a query language to only return part of the content. This only works if the content is structured and the format is either CSV, JSON or Apache Parquet. 
 
-Let's test that with the `carriers.csv` object. Naviage to `flight-data` folder and select the `carriers.csv` object. Select **Query with S3 Select** from the **Actions** drop down list.
+Let's test that with the `carriers.csv` object. Navigate to `flight-data` folder and select the `carriers.csv` object. Select **Query with S3 Select** from the **Actions** drop down list.
 
 ![Alt Image Text](./images/s3-select.png "S3 Homepage")
 
@@ -334,7 +334,7 @@ On the **Query with S3 Select** page, select **CSV** as the **Format**, **Comma*
 
 Scroll down to the **SQL Query** area and extend the SQL statement shown with a where clause, so that only United Airlines is returned: `SELECT * FROM s3object s where s.code='UA'`.
 
-Click on **Run SQL query** and the result will be shwon in the **Query results** section.
+Click on **Run SQL query** and the result will be shown in the **Query results** section.
 
 ![Alt Image Text](./images/s3-select-2.png "S3 Homepage")
 
@@ -368,7 +368,7 @@ Enter `s3user`into the **User name** field and select the **Programmatic access*
 
 The **Add user to group** is selected by default, but there is not yet a group we can use. Click on **Create group** to create one. 
 
-Enter `s3access` into the **Group name** and enter `s3`into **Filter policies**. 
+Enter `s3access` into the **Group name** and enter `s3` into **Filter policies**. 
 
 ![Alt Image Text](./images/security-credentials-6.png "S3 Homepage")
 
@@ -401,7 +401,7 @@ ubuntu@ip-172-26-3-90:~$ aws --version
 aws-cli/1.18.69 Python/3.8.5 Linux/5.4.0-1018-aws botocore/1.16.19
 ```
 
-To use the AWS CLI, make sure that you have the necessary access credentials avialable. You can create them as shown in the previous section. Configure the CLI using the `configure` command. 
+To use the AWS CLI, make sure that you have the necessary access credentials available. You can create them as shown in the previous section. Configure the CLI using the `configure` command. 
 
 ```
 aws configure
