@@ -211,10 +211,10 @@
       #
       # ===== Cluster Manager for Apache Kafka ========
       #
-      KAFKA_CMAK_enable: true
-      KAFKA_CMAK_auth_enabled: "'false'"
-      KAFKA_CMAK_username: admin
-      KAFKA_CMAK_password: abc123!
+      CMAK_enable: true
+      CMAK_auth_enabled: "'false'"
+      CMAK_username: admin
+      CMAK_password: abc123!
       #
       # ===== Kafdrop ========
       #
@@ -226,7 +226,7 @@
       #
       # ===== Apache Kafka HQ ========
       #
-      KAFKA_AKHQ_enable: true
+      AKHQ_enable: true
       #
       # ===== Kafka UI ========
       #
