@@ -14,25 +14,19 @@ The docker image we use for the Trino container is from [Starburst Data](https:/
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 3 - [Working with MinIO Object Storage](03-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
+The data needed here has been uploaded in workshop 6 - [Data Reading and Writing using DataFrames](06-spark-dataframe). You can skip this section, if you still have the data available in MinIO.
 
 Create the flight bucket:
-
-```bash
-docker exec -ti awscli s3cmd mb s3://flight-bucket
-```
-
-or with `mc`
  
 ```bash
 docker exec -ti minio-mc mc mb minio-1/flight-bucket
 ```
 
-**Airports:**
+and then copy the refined data 
 
 ```bash
-
-
+docker exec -ti minio-mc mc cp --recursive /data-transfer/flight-data/refined minio-1/flight-bucket/
+```
 
 ## Using Trino to access Object Storage
 
