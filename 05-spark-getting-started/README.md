@@ -110,7 +110,7 @@ You can use Apache Zeppelin to perform the workshop below. The other option is t
 ### Using Jupyter (optional)
 
 In a browser window, navigate to <http://dataplatform:28888>. 
-Enter `changeme` into the **Password or token** field and click **Log in**. 
+Enter `abc123!` into the **Password or token** field and click **Log in**. 
 
 You should be forwarded to the **Jupyter** homepage. Click on the **Python 3** icon in the **Notebook** section to create a new notebook using the **Python 3** kernel.
 
@@ -124,8 +124,9 @@ Add the following code to the first cell
 
 ```python
 import os
-# make sure pyspark tells workers to use python3 not 2 if both are installed
-#os.environ['PYSPARK_PYTHON'] = '/usr/bin/python3'
+# get the accessKey and secretKey from Environment
+accessKey = os.environ['SPARK_HADOOP_FS_S3A_ACCESS_KEY']
+secretKey = os.environ['SPARK_HADOOP_FS_S3A_SECRET_KEY']
 
 import pyspark
 conf = pyspark.SparkConf()
@@ -137,6 +138,12 @@ conf.setMaster("spark://spark-master:7077")
 conf.set("spark.executor.memory", "8g")
 conf.set("spark.executor.cores", "1")
 conf.set("spark.core.connection.ack.wait.timeout", "1200")
+conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
+conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
+conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
+conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 
 from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName('abc').config(conf=conf).getOrCreate()
