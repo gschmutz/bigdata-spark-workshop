@@ -23,7 +23,6 @@ Scroll down to **Launch script** and add the following script. Make sure to spec
 Optionally change the password from the default value of `ubuntu` to a more secure one. 
 
 ```
-export PLATFORM_FLAVOUR=minio
 export GITHUB_PROJECT=hadoop-spark-workshop
 export GITHUB_OWNER=gschmutz
 export DOCKER_COMPOSE_VERSION=1.25.3
@@ -73,7 +72,7 @@ cd /home/${USERNAME}
 git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
 chown -R ${USERNAME}:${PASSWORD} ${GITHUB_PROJECT}
 
-cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker-${PLATFORM_FLAVOUR}
+cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker
 
 # Make Environment Variables persistent
 sudo echo "export PUBLIC_IP=$PUBLIC_IP" | sudo tee -a /etc/profile.d/platys-platform-env.sh
