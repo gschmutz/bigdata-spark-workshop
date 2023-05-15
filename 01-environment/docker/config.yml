@@ -304,8 +304,8 @@
       SPARK_driver_extraJavaOptions: ''
       SPARK_executor_extraJavaOptions: ''
       SPARK_sql_warehouse_dir: 's3a://admin-bucket/hive/warehouse'
-      SPARK_cores_max:
-      SPARK_executor_memory:
+      SPARK_cores_max: 2
+      SPARK_executor_memory: 2048mb 
       SPARK_table_format_type: 'delta'
       # misc spark 'addons'
       SPARK_HISTORY_enable: true

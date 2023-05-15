@@ -15,17 +15,12 @@ Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and s
 
 ![Alt Image Text](./images/lightsail-create-instance-2.png "Lightsail Homepage")
 
-Scroll down to **Launch script** and add the following script. Make sure to specify the flavour in the first line with either
-
-* `hdfs` - if you want to have Hadoop HDFS on a Hadoop cluster 
-* `minio` (default) - if you want to have a stack with a local object store and no Hadoop 
-
+Scroll down to **Launch script** and add the following script. 
 Optionally change the password from the default value of `ubuntu` to a more secure one. 
 
 ```
-export GITHUB_PROJECT=hadoop-spark-workshop
+export GITHUB_PROJECT=bigdata-spark-workshop
 export GITHUB_OWNER=gschmutz
-export DOCKER_COMPOSE_VERSION=1.25.3
 export PLATYS_VERSION=2.4.0
 export NETWORK_NAME=eth0
 export USERNAME=ubuntu
@@ -44,15 +39,26 @@ sudo service sshd restart
 echo "$DOCKER_HOST_IP     dataplatform" | sudo tee -a /etc/hosts
 
 # Install Docker
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge"
-apt-get install -y docker-ce
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+sudo mkdir -p /etc/apt/keyrings    
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo usermod -aG docker $USERNAME
 
-# Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+# Install Docker Compose Switch
+sudo curl -fL https://github.com/docker/compose-switch/releases/latest/download/docker-compose-linux-amd64 -o /usr/local/bin/compose-switch
+chmod +x /usr/local/bin/compose-switch
+sudo update-alternatives --install /usr/local/bin/docker-compose docker-compose /usr/local/bin/compose-switch 99
 
 # Install Platys
 sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VERSION}/platys_${PLATYS_VERSION}_linux_x86_64.tar.gz" -o /tmp/platys.tar.gz
