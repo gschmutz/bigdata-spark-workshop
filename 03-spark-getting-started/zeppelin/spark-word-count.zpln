@@ -1,0 +1,2047 @@
+﻿{
+  "paragraphs": [
+    {
+      "text": "%md # Spark Getting Started with the Spark Wordcount using Resilient Distributed Datasets (RDD) and Spark DataFrames\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:40+0000",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194724_1662370339",
+      "id": "20200518-175845_834541067",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "focus": true,
+      "$$hashKey": "object:7158",
+      "dateFinished": "2023-05-16T13:44:40+0000",
+      "dateStarted": "2023-05-16T13:44:40+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "<div class=\"markdown-body\">\n<h1>Spark Getting Started with the Spark Wordcount using Resilient Distributed Datasets (RDD) and Spark DataFrames</h1>\n\n</div>"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Check for the data",
+      "text": "%sh\nls /data-transfer",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:40+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sh",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194724_1048829673",
+      "id": "20200518-175803_2038737979",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:40+0000",
+      "dateFinished": "2023-05-16T13:44:40+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7159",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "adventureworks\ncookbook-data\nflight-data\ngraphdb-news\nimdb-movies\nreadme.txt\nsynthetic-load-generator\nwordcount\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%md ## Spark Wordcount using Resilient Distributed Datasets (RDDs)\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:40+0000",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194724_938238201",
+      "id": "20200518-165107_438204899",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7160",
+      "dateFinished": "2023-05-16T13:44:40+0000",
+      "dateStarted": "2023-05-16T13:44:40+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "<div class=\"markdown-body\">\n<h2>Spark Wordcount using Resilient Distributed Datasets (RDDs)</h2>\n\n</div>"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nlines = sc.textFile(\"s3a://namenode:9000/user/hue/wordcount/big.txt\")",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:40+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194724_792062693",
+      "id": "20190526-111936_1173697145",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7161",
+      "dateFinished": "2023-05-16T13:44:41+0000",
+      "dateStarted": "2023-05-16T13:44:40+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      }
+    },
+    {
+      "text": "%pyspark\nlines = sc.textFile(\"s3a://wordcount-bucket/raw-data/big.txt\")\nlines",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_646068166",
+      "id": "20200518-173844_887544576",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7162",
+      "dateFinished": "2023-05-16T13:44:41+0000",
+      "dateStarted": "2023-05-16T13:44:41+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "s3a://wordcount-bucket/raw-data/big.txt MapPartitionsRDD[80] at textFile at NativeMethodAccessorImpl.java:0\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nlines.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=22",
+              "$$hashKey": "object:11346"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1075320804",
+      "id": "20200518-175240_46374484",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7163",
+      "dateFinished": "2023-05-16T13:44:41+0000",
+      "dateStarted": "2023-05-16T13:44:41+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "['The Project Gutenberg EBook of The Adventures of Sherlock Holmes', 'by Sir Arthur Conan Doyle', '(#15 in our series by Sir Arthur Conan Doyle)', '', 'Copyright laws are changing all over the world. Be sure to check the', 'copyright laws for your country before downloading or redistributing', 'this or any other Project Gutenberg eBook.', '', 'This header should be the first thing seen when viewing this Project', 'Gutenberg file.  Please do not remove it.  Do not change or edit the']\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nlinesAndWords = lines.map(lambda line: line.split(\" \"))\nlinesAndWords\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1034274087",
+      "id": "20190526-112258_1234595247",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7164",
+      "dateFinished": "2023-05-16T13:44:41+0000",
+      "dateStarted": "2023-05-16T13:44:41+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "PythonRDD[82] at RDD at PythonRDD.scala:53\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nlinesAndWords.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=23",
+              "$$hashKey": "object:11401"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1889593863",
+      "id": "20200518-182228_1390045510",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7165",
+      "dateFinished": "2023-05-16T13:44:41+0000",
+      "dateStarted": "2023-05-16T13:44:41+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[['The', 'Project', 'Gutenberg', 'EBook', 'of', 'The', 'Adventures', 'of', 'Sherlock', 'Holmes'], ['by', 'Sir', 'Arthur', 'Conan', 'Doyle'], ['(#15', 'in', 'our', 'series', 'by', 'Sir', 'Arthur', 'Conan', 'Doyle)'], [''], ['Copyright', 'laws', 'are', 'changing', 'all', 'over', 'the', 'world.', 'Be', 'sure', 'to', 'check', 'the'], ['copyright', 'laws', 'for', 'your', 'country', 'before', 'downloading', 'or', 'redistributing'], ['this', 'or', 'any', 'other', 'Project', 'Gutenberg', 'eBook.'], [''], ['This', 'header', 'should', 'be', 'the', 'first', 'thing', 'seen', 'when', 'viewing', 'this', 'Project'], ['Gutenberg', 'file.', '', 'Please', 'do', 'not', 'remove', 'it.', '', 'Do', 'not', 'change', 'or', 'edit', 'the']]\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nwords = linesAndWords.flatMap(lambda line: line)\nwords",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1094772012",
+      "id": "20200518-182204_1281039414",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7166",
+      "dateFinished": "2023-05-16T13:44:41+0000",
+      "dateStarted": "2023-05-16T13:44:41+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "PythonRDD[84] at RDD at PythonRDD.scala:53\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nwords.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=24",
+              "$$hashKey": "object:11456"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1511266865",
+      "id": "20200518-175208_379739701",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7167",
+      "dateFinished": "2023-05-16T13:44:42+0000",
+      "dateStarted": "2023-05-16T13:44:41+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "['The', 'Project', 'Gutenberg', 'EBook', 'of', 'The', 'Adventures', 'of', 'Sherlock', 'Holmes']\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nwordsAndOne = words.map(lambda word: (word,1))\nwordsAndOne\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:42+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1638286243",
+      "id": "20190526-113109_1190767150",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7168",
+      "dateFinished": "2023-05-16T13:44:42+0000",
+      "dateStarted": "2023-05-16T13:44:42+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "PythonRDD[86] at RDD at PythonRDD.scala:53\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\nwordsAndOne.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:42+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=25",
+              "$$hashKey": "object:11511"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_908420370",
+      "id": "20200518-175727_349831255",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7169",
+      "dateFinished": "2023-05-16T13:44:42+0000",
+      "dateStarted": "2023-05-16T13:44:42+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[('The', 1), ('Project', 1), ('Gutenberg', 1), ('EBook', 1), ('of', 1), ('The', 1), ('Adventures', 1), ('of', 1), ('Sherlock', 1), ('Holmes', 1)]\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\ncounts = wordsAndOne.reduceByKey(lambda a, b : a + b)\ncounts",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:42+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_2011484240",
+      "id": "20200518-174021_1482718084",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7170",
+      "dateFinished": "2023-05-16T13:44:42+0000",
+      "dateStarted": "2023-05-16T13:44:42+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "PythonRDD[92] at RDD at PythonRDD.scala:53\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\ncounts.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:42+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=26",
+              "$$hashKey": "object:11566"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_417702392",
+      "id": "20200518-175745_1021573760",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7171",
+      "dateFinished": "2023-05-16T13:44:43+0000",
+      "dateStarted": "2023-05-16T13:44:42+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[('The', 6139), ('Project', 205), ('EBook', 5), ('of', 39169), ('Sir', 30), ('Arthur', 18), ('Conan', 3), ('in', 19515), ('series', 88), ('', 69285)]\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\n#counts.saveAsTextFile(\"hdfs://namenode:9000/user/hue/wordcount/result\")\ncounts.saveAsTextFile(\"s3a://wordcount-bucket/result-data\")\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:43+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=27",
+              "$$hashKey": "object:11586"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1023226386",
+      "id": "20190526-113115_1825852289",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7172",
+      "dateFinished": "2023-05-16T13:44:44+0000",
+      "dateStarted": "2023-05-16T13:44:43+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      }
+    },
+    {
+      "text": "%pyspark\nlines = sc.textFile(\"s3a://wordcount-bucket/raw-data/big.txt\")\nwords = lines.flatMap(lambda line: line.split(\" \"))\nwordsAndOne = words.map(lambda word: (word,1))\ncounts = wordsAndOne.reduceByKey(lambda a, b : a + b)\ncounts.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:44+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=28",
+              "$$hashKey": "object:11622"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1808623248",
+      "id": "20200518-184511_1196352893",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7173",
+      "dateFinished": "2023-05-16T13:44:46+0000",
+      "dateStarted": "2023-05-16T13:44:44+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[('The', 6139), ('Project', 205), ('EBook', 5), ('of', 39169), ('Sir', 30), ('Arthur', 18), ('Conan', 3), ('in', 19515), ('series', 88), ('', 69285)]\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\ncounts = sc.textFile(\"s3a://wordcount-bucket/raw-data/big.txt\") \\\n            .flatMap(lambda line: line.split(\" \")) \\\n            .map(lambda word: (word,1)) \\\n            .reduceByKey(lambda a, b : a + b)\ncounts.take(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:46+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=29",
+              "$$hashKey": "object:11663"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1050850393",
+      "id": "20200518-184733_1226547339",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7174",
+      "dateFinished": "2023-05-16T13:44:47+0000",
+      "dateStarted": "2023-05-16T13:44:46+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[('footman', 35), ('dressed', 73), ('in', 19515), ('knee', 53), ('shoes,', 16), ('swallow-tail', 6), ('ran', 307), ('looked', 750), ('', 69285), ('The', 6139)]\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\ncounts.count()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:47+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=30",
+              "$$hashKey": "object:11704"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_2118125200",
+      "id": "20190526-113123_1697605617",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7175",
+      "dateFinished": "2023-05-16T13:44:47+0000",
+      "dateStarted": "2023-05-16T13:44:47+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "81410\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%md ## Spark Wordcount using DataFrames\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:47+0000",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_1025572282",
+      "id": "20190526-113042_869867834",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7176",
+      "dateFinished": "2023-05-16T13:44:47+0000",
+      "dateStarted": "2023-05-16T13:44:47+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "<div class=\"markdown-body\">\n<h2>Spark Wordcount using DataFrames</h2>\n\n</div>"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Reading data is done with spark.read which is part of DataFrameReader",
+      "text": "%pyspark\nspark.read",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:47+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_940937783",
+      "id": "20200518-165156_440548441",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:47+0000",
+      "dateFinished": "2023-05-16T13:44:47+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7177",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "<pyspark.sql.readwriter.DataFrameReader object at 0x7f56e57f7df0>\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Display methods it exposes, such as text(), json(), ...",
+      "text": "%pyspark\ndir (spark.read)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:47+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_315094210",
+      "id": "20200518-165213_2076782577",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7178",
+      "dateFinished": "2023-05-16T13:44:47+0000",
+      "dateStarted": "2023-05-16T13:44:47+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_df', '_jreader', '_set_opts', '_spark', 'csv', 'format', 'jdbc', 'json', 'load', 'option', 'options', 'orc', 'parquet', 'schema', 'table', 'text']\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Use text to read plain text and a DataFrame of string is returned",
+      "text": "%pyspark\nbookDF = spark.read.text(\"s3a://wordcount-bucket/raw-data/big.txt\")\nbookDF",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194725_670762022",
+      "id": "20200518-173736_1635582827",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7179",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "DataFrame[value: string]\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Let's display the schema in more readable way",
+      "text": "%pyspark\nbookDF.printSchema()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_163417870",
+      "id": "20200518-174156_854280327",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7180",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- value: string (nullable = true)\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Show a sample of the dat, by default 20 rows",
+      "text": "%pyspark\nbookDF.show()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+--------------------+\n|               value|\n+--------------------+\n|The Project Guten...|\n|by Sir Arthur Con...|\n|(#15 in our serie...|\n|                    |\n|Copyright laws ar...|\n|copyright laws fo...|\n|this or any other...|\n|                    |\n|This header shoul...|\n|Gutenberg file.  ...|\n|header without wr...|\n|                    |\n|Please read the \"...|\n|eBook and Project...|\n|important informa...|\n|how the file may ...|\n|donation to Proje...|\n|                    |\n|                    |\n|**Welcome To The ...|\n+--------------------+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=31",
+              "$$hashKey": "object:11820"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_1162593978",
+      "id": "20200518-174209_1123172832",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7181"
+    },
+    {
+      "title": "Show a sample of 10 rows, truncating them to 50 characters ",
+      "text": "%pyspark\nbookDF.show(10, truncate=50)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+--------------------------------------------------+\n|                                             value|\n+--------------------------------------------------+\n|The Project Gutenberg EBook of The Adventures o...|\n|                         by Sir Arthur Conan Doyle|\n|     (#15 in our series by Sir Arthur Conan Doyle)|\n|                                                  |\n|Copyright laws are changing all over the world....|\n|copyright laws for your country before download...|\n|        this or any other Project Gutenberg eBook.|\n|                                                  |\n|This header should be the first thing seen when...|\n|Gutenberg file.  Please do not remove it.  Do n...|\n+--------------------------------------------------+\nonly showing top 10 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=32",
+              "$$hashKey": "object:11860"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_1535700936",
+      "id": "20200518-174227_1091238933",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7182"
+    },
+    {
+      "title": "To tokenize each word, we need to split each string into a list of distinct words, using a single space character to split",
+      "text": "%pyspark\nfrom pyspark.sql.functions import split\n\nlinesDF = bookDF.select(split(bookDF.value, \" \").alias(\"line\"))\nlinesDF.show(5)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=33",
+              "$$hashKey": "object:11901"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_595379586",
+      "id": "20200518-174321_96996376",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7183",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+--------------------+\n|                line|\n+--------------------+\n|[The, Project, Gu...|\n|[by, Sir, Arthur,...|\n|[(#15, in, our, s...|\n|                  []|\n|[Copyright, laws,...|\n+--------------------+\nonly showing top 5 rows\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Selecting a specific colum using select()",
+      "text": "%pyspark\nbookDF.select(bookDF.value)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "DataFrame[value: string]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_595375563",
+      "id": "20200518-174344_537415683",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7184"
+    },
+    {
+      "title": "Alternative ways to select a column",
+      "text": "%pyspark\nfrom pyspark.sql.functions import col\n\nbookDF.select(bookDF.value) \nbookDF.select(bookDF[\"value\"]) \nbookDF.select(col(\"value\"))",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "DataFrame[value: string]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_1490601385",
+      "id": "20200518-174358_421875708",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:48+0000",
+      "dateFinished": "2023-05-16T13:44:48+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7185"
+    },
+    {
+      "text": "%pyspark\nfrom pyspark.sql.functions import split\nlinesDF = bookDF.select(split(bookDF.value, \" \").alias(\"line\"))",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:46:11+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243589689_821716510",
+      "id": "paragraph_1684243589689_821716510",
+      "dateCreated": "2023-05-16T13:26:29+0000",
+      "dateStarted": "2023-05-16T13:45:22+0000",
+      "dateFinished": "2023-05-16T13:45:22+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7186",
+      "title": "Remove empty words"
+    },
+    {
+      "title": "print the schema",
+      "text": "%pyspark\nlinesDF.printSchema()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:46:19+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- line: array (nullable = true)\n |    |-- element: string (containsNull = true)\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_1637754280",
+      "id": "20200518-174440_208374350",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:46:19+0000",
+      "dateFinished": "2023-05-16T13:46:19+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7187"
+    },
+    {
+      "text": "%pyspark\nlinesDF.show(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:45:28+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+--------------------+\n|                line|\n+--------------------+\n|[The, Project, Gu...|\n|[by, Sir, Arthur,...|\n|[(#15, in, our, s...|\n|                  []|\n|[Copyright, laws,...|\n|[copyright, laws,...|\n|[this, or, any, o...|\n|                  []|\n|[This, header, sh...|\n|[Gutenberg, file....|\n+--------------------+\nonly showing top 10 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=43",
+              "$$hashKey": "object:12340"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243694175_1608825829",
+      "id": "paragraph_1684243694175_1608825829",
+      "dateCreated": "2023-05-16T13:28:14+0000",
+      "dateStarted": "2023-05-16T13:45:28+0000",
+      "dateFinished": "2023-05-16T13:45:28+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7188"
+    },
+    {
+      "title": "Now we can use the line column and reshape it by exploding the list into rows",
+      "text": "%pyspark\nfrom pyspark.sql.functions import explode, col\n\nwordsDF = linesDF.select(explode(col(\"line\")).alias(\"word\"))\nwordsDF.show(15)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:46:23+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----------+\n|      word|\n+----------+\n|       The|\n|   Project|\n| Gutenberg|\n|     EBook|\n|        of|\n|       The|\n|Adventures|\n|        of|\n|  Sherlock|\n|    Holmes|\n|        by|\n|       Sir|\n|    Arthur|\n|     Conan|\n|     Doyle|\n+----------+\nonly showing top 15 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=45",
+              "$$hashKey": "object:12444"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_1910967275",
+      "id": "20200518-174613_5383299",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:46:23+0000",
+      "dateFinished": "2023-05-16T13:46:23+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7189"
+    },
+    {
+      "title": "Change case to all lowercase",
+      "text": "%pyspark\nfrom pyspark.sql.functions import lower \nwordsLowerDF = wordsDF.select(lower(col(\"word\")).alias(\"word_lower\"))\n\nwordsLowerDF.show()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:46:27+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----------+\n|word_lower|\n+----------+\n|       the|\n|   project|\n| gutenberg|\n|     ebook|\n|        of|\n|       the|\n|adventures|\n|        of|\n|  sherlock|\n|    holmes|\n|        by|\n|       sir|\n|    arthur|\n|     conan|\n|     doyle|\n|      (#15|\n|        in|\n|       our|\n|    series|\n|        by|\n+----------+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=46",
+              "$$hashKey": "object:12483"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194726_1687656609",
+      "id": "20200518-174704_1249179179",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:46:27+0000",
+      "dateFinished": "2023-05-16T13:46:27+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7190"
+    },
+    {
+      "title": "Using regexp_extract to only keep what looks like a word",
+      "text": "%pyspark\nfrom pyspark.sql.functions import regexp_extract \nwordsCleanDF = wordsLowerDF.select( regexp_extract(col(\"word_lower\"), \"[a-z]*\", 0).alias(\"word\") )\n\nwordsCleanDF.show()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:50+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----------+\n|      word|\n+----------+\n|       the|\n|   project|\n| gutenberg|\n|     ebook|\n|        of|\n|       the|\n|adventures|\n|        of|\n|  sherlock|\n|    holmes|\n|        by|\n|       sir|\n|    arthur|\n|     conan|\n|     doyle|\n|          |\n|        in|\n|       our|\n|    series|\n|        by|\n+----------+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=37",
+              "$$hashKey": "object:12094"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194727_29249835",
+      "id": "20200518-174722_281675159",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:50+0000",
+      "dateFinished": "2023-05-16T13:44:50+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7191"
+    },
+    {
+      "text": "%pyspark\nwordsCleanDF.printSchema()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:50+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- word: string (nullable = true)\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243871257_1249665150",
+      "id": "paragraph_1684243871257_1249665150",
+      "dateCreated": "2023-05-16T13:31:11+0000",
+      "dateStarted": "2023-05-16T13:44:50+0000",
+      "dateFinished": "2023-05-16T13:44:50+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7192"
+    },
+    {
+      "title": "Filter rows that are empty",
+      "text": "%pyspark\nwordsNonNullDF = wordsCleanDF.where(col(\"word\") != \"\")\n\nwordsNonNullDF.show()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:50+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----------+\n|      word|\n+----------+\n|       the|\n|   project|\n| gutenberg|\n|     ebook|\n|        of|\n|       the|\n|adventures|\n|        of|\n|  sherlock|\n|    holmes|\n|        by|\n|       sir|\n|    arthur|\n|     conan|\n|     doyle|\n|        in|\n|       our|\n|    series|\n|        by|\n|       sir|\n+----------+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=38",
+              "$$hashKey": "object:12145"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194728_734090350",
+      "id": "20200518-174748_355120738",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:50+0000",
+      "dateFinished": "2023-05-16T13:44:50+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7193"
+    },
+    {
+      "title": "Counting word frequencies using groupby() ",
+      "text": "%pyspark\ngroupsDF = wordsNonNullDF.groupby(col(\"word\"))\n\ngroupsDF\n\n\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:46:38+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194728_100354062",
+      "id": "20200518-174834_1399709700",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7194",
+      "dateFinished": "2023-05-16T13:46:38+0000",
+      "dateStarted": "2023-05-16T13:46:38+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "<pyspark.sql.group.GroupedData object at 0x7f56e57f5cf0>\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "and count()",
+      "text": "%pyspark\nresultsDF = wordsNonNullDF.groupby(col(\"word\")).count()\nresultsDF\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:50+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "DataFrame[word: string, count: bigint]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194728_1338677376",
+      "id": "20200518-174918_1870296873",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "dateStarted": "2023-05-16T13:44:50+0000",
+      "dateFinished": "2023-05-16T13:44:50+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7195"
+    },
+    {
+      "text": "%pyspark\nresultsDF.show()",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:50+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=39",
+              "$$hashKey": "object:12226"
+            },
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=40",
+              "$$hashKey": "object:12227"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194728_1329132773",
+      "id": "20200518-175015_1795604915",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7196",
+      "dateFinished": "2023-05-16T13:44:53+0000",
+      "dateStarted": "2023-05-16T13:44:50+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------------+-----+\n|        word|count|\n+------------+-----+\n|       inner|   60|\n|        some| 1517|\n|       those| 1178|\n|     flashed|   17|\n|   sokolniki|    8|\n|         few|  458|\n|        hope|  149|\n|       still|  896|\n|      deftly|    4|\n|    vladimir|    5|\n|  commanders|   64|\n|   connected|   52|\n|   traveling|   20|\n|  kirilovich|    6|\n|      bazaar|    5|\n|submissively|    7|\n|     barrier|   24|\n|        foxy|    1|\n|      poetry|   10|\n|    everyday|   14|\n+------------+-----+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Finally order the counts in descending order and only show the top 10 word counts",
+      "text": "%pyspark\nresultsDF.orderBy(\"count\", ascending=False).show(10)",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:53+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=41",
+              "$$hashKey": "object:12275"
+            },
+            {
+              "jobUrl": "http://zeppelin:4050/jobs/job?id=42",
+              "$$hashKey": "object:12276"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194728_1998698374",
+      "id": "20200518-175023_70603665",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7197",
+      "dateFinished": "2023-05-16T13:44:55+0000",
+      "dateStarted": "2023-05-16T13:44:53+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----+-----+\n|word|count|\n+----+-----+\n| the|78176|\n|  of|39956|\n| and|37619|\n|  to|28550|\n|  in|21669|\n|   a|20666|\n|that|12102|\n|  he|12047|\n| was|11346|\n|  it|10170|\n+----+-----+\nonly showing top 10 rows\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "text": "%pyspark\n",
+      "user": "admin",
+      "dateUpdated": "2023-05-16T13:44:55+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1684243194729_363620852",
+      "id": "20200518-175104_279346841",
+      "dateCreated": "2023-05-16T13:19:54+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:7198",
+      "dateFinished": "2023-05-16T13:44:55+0000",
+      "dateStarted": "2023-05-16T13:44:55+0000",
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      }
+    }
+  ],
+  "name": "spark-word-count",
+  "id": "2HZJ8NA6K",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.10.1",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": true,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {},
+  "path": "/spark-word-count"
+}
