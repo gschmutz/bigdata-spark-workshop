@@ -1,9 +1,5 @@
 # Working with	Object Storage
 
-For this workshop you have to start a platform using the `minio` flavour in the init script.
-
-## Introduction
-
 In this workshop we will work with Object Storage for persistence, which can either be [MinIO](https://min.io/) which is part of the platform and used in this workshop, [Amazon S3](https://aws.amazon.com/s3/) which is also used in this workshop or any other cloud Object Storage solution. We will use object storage as a drop-in replacement for Hadoop HDFS.
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible.
@@ -63,7 +59,7 @@ docker exec -ti minio-mc mc -h
 
 In a browser window, navigate to <http://dataplatform:9000>. 
 
-Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker-minio/docker-compose.yml) file. 
+Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker/docker-compose.yml) file. 
 
 The MinIO Console dashboard page should now appear.
  
