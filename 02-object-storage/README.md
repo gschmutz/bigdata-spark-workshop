@@ -220,7 +220,7 @@ docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf min
 You can see by the output that a multi-part upload has been performed:
 
 ```bash
-$ docker exec -ti awscli s3cmd put /data-transfer/flight-data/pilot_handbook.pdf s3://flight-bucket/raw/pdf/
+$ docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
 WARNING: pilot_handbook.pdf: Owner username not known. Storing UID=1000 instead.
 WARNING: pilot_handbook.pdf: Owner groupname not known. Storing GID=1000 instead.
 WARNING: Module python-magic is not available. Guessing MIME types based on file extensions.
