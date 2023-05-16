@@ -214,7 +214,7 @@ All these objects are no available in the flight-bucket under the `raw/flights` 
 Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` we should have a `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
 
 ```bash
-docker exec -ti MinIO-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf MinIO-1/flight-bucket/raw/pdf/
+docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
 ```
 
 You can see by the output that a multi-part upload has been performed:
