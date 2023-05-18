@@ -125,10 +125,11 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Update `nodered` to `2.2.3`
  * Update `dataiku-dss` to `11.2.0`
  * Update `postgres` to `15`
- * Update `Airflow` to `2.5.3`
+ * Update `Airflow` to `2.6.1` with default python `3.10`
  * Update `TimescaleDB` to `2.10.2-pg15`
  * Update `Pinot` to `0.12.1`
  * Update `Jupyter-spark` to `spark-3.3.2` and `spark-3.4.0`
+ * Update `Hue` to `4.11.0`
 
 ### Bug Fixes
 
@@ -161,6 +162,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * support Trino security with password file and access control file
  * support for multiple Airflow workers if `celery` executor mode is used
  * support for custom Trino catalogs and connectors
+ * add concept of an environment to a platys stack, so that the same docker-compose can be run multiple time on different machines, but having a separate environment.
  
 ## What's new in 1.15.0
 

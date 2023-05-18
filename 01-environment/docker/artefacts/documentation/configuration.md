@@ -11,6 +11,7 @@ There are some overall settings which will control the behaviour for all or a gr
 | `use_timezone`                             	|  	| 1.5.0 | The timezone to use for the whole stack. By default is empty so the timezone of the docker engine is not changed and it will run as `Etc/UTC`. If you want to set it to another timezone, then specify a Unix timezone string, such as `Europe/Zurich` or `America/New_York`. An overview on the valid timezones can be found here: <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones> |  
 | `private_docker_repository_name`                             	| `trivadis` 	| 1.5.0 | Docker images not available on public Docker Hub will be retrieved using this private repository. By default it points to `trivadis` and you have to login first, before you can use the generated stack, if you have selected a private image. Use this config to point to your own private docker registry if needed. |  
 | `uid`                             	| `1000` 	| 1.9.0 | The UID to use when using the "user" property in a service to override the user inside the container. |  
+| `env`           | ${PLATYS_ENV} 	| 1.16.0 | Optional environment identifier of this platys instance, by default take it from the environment variable (can be specified in the `.env` file), but can be changed to hardcoded value. Allowed values (taken from [DataHub](https://datahubproject.io/docs/graphql/enums/#fabrictype)): `dev`, `test`, `qa`, `uat`, `ei`, `pre`, `non_prod`, `prod`, `corp` |  
 | `data_centers`                             	| `dc1,dc2` 	| 1.14.0 | A comma-separated list of data-center names, to use if the property `data_center_to_use` has a value != 0. |  
 | `data_center_to_use`                             	| `0` 	| 1.14.0 | The data-center to use, if multiple DC should be simulated for a Kafka setup. |  
 | `copy_cookbook_data_folder`                             	| `true` 	| 1.14.0 | Copy all the `data` folders of the various cookbook recipes into the `data-transfer/cookbook-data` folder. |  
@@ -32,6 +33,8 @@ There are some overall settings which will control the behaviour for all or a gr
 | `S3_path_style_access`                             	| `false` | 1.9.0 | Use Path Style Access if set to `true`, otherwise the default of virtual hosted-style access is used. |
 | `ADLS_enable`                             	| `false` | 1.15.0 | Use external Azure Data Lake Storage Gen2 service. You have to configure two environment variables, `PLATYS_AZURE_ADLS_ACCESS_KEY` with the access key. This can be done on the on the docker host or in the `.env` file in the platform home (same folder where the `docker-compose.yml` is located). |  
 | `ADLS_storage_account`                             	| `` | 1.15.0 | The name of the storage account for the ADLS service. |  
+| `DATAHUB_enable`                             	| `false` | 1.16.0 | Use external DataHub service. Specify the DataHub GMS service through the `DATAHUB_gms_url` property.  |  
+| `DATAHUB_gms_url`                             	| `` 	| 1.16.0 | the web url of the external DataHub GMS service instance to connect to. |  
 
 ## Platform Services
 
