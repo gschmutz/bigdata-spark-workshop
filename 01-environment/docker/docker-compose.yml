@@ -210,8 +210,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__a5a1ddfb78af65b9b9f91b3e62278dedd971d39e
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__a5a1ddfb78af65b9b9f91b3e62278dedd971d39e
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__09ecd153e8351925abffed180cff54310a338e77
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__09ecd153e8351925abffed180cff54310a338e77
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -443,17 +443,17 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Apache Avro Tools ========================================== #
-  avrotools-cli:
+  avro-tools:
     image: trivadis/apache-avro-tools:latest
-    hostname: avrotools-cli
-    container_name: avrotools-cli
+    hostname: avro-tools
+    container_name: avro-tools
     labels:
-      com.platys.name: avrotools-cli
+      com.platys.name: avro-tools
     volumes:
       - ./data-transfer:/data-transfer
-    entrypoint: tail -f /dev/null
+#    entrypoint: "tail -f /dev/null"
     tty: true
-    restart: unless-stopped
+#    restart: unless-stopped
   #  ================================== Apache Parquet Tools ========================================== #
   parquet-tools:
     image: nathanhowell/parquet-tools:latest
@@ -463,9 +463,9 @@ services:
       com.platys.name: parquet-tools
     volumes:
       - ./data-transfer:/data-transfer
-    entrypoint: tail -f /dev/null
+#    entrypoint: "tail -f /dev/null"
     tty: true
-    restart: unless-stopped
+#    restart: unless-stopped
   #  ================================== StreamSets DataCollector ========================================== #
   streamsets-1:
     image: streamsets/datacollector:3.22.2
