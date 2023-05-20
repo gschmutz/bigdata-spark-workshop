@@ -362,13 +362,20 @@ By default, Delta tables retain the commit history for 30 days. This means that 
 
 You can remove files no longer referenced by a Delta table and are older than the retention threshold by running the vacuum command on the table. vacuum is not triggered automatically. The default retention threshold for the files is 7 days.
 
-``` 
+```python
 %pyspark
 from delta.tables import *
 
-deltaTable = DeltaTable.forPath(spark, deltaTableDest)  
+deltaTable = DeltaTable.forPath(spark, deltaTableDest) 
+```
 
-deltaTable.vacuum()        # vacuum files not required by versions older than the default retention period
+vacuum files not required by versions older than the default retention period
 
-deltaTable.vacuum(1)     # vacuum files not required by versions more than 1 hours old
+```python
+deltaTable.vacuum()        # vacuum files not required by versions older than the default 
+```
+vacuum files not required by versions more than 1 hours old
+
+```python
+deltaTable.vacuum(1)
 ``` 
