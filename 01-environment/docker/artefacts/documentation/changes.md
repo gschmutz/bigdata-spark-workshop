@@ -42,6 +42,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Oracle Database Free
  * Kafka CLI (Kafka software without a running broker)
  * Kafkistry
+ * Parquet Tools
 
 ### New/Updated Cookbook Recipes
 
@@ -150,6 +151,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Rename `SPARK_THRIFT_enable` to `SPARK_THRIFTSERVER_enable`
  * Rename folder `./init/oraclexe` to `./init/oracle-xe`
  * Spark Master UI now runs on port `28304` and no longer on standard `8080`
+ * Change `FLINK_NUSSKNACKER_enable` to `NUSSKNACKER_enable`
 
 ### Enhancements
 

@@ -338,7 +338,11 @@
       #
       # ===== Apache Avro Tools ========
       #
-      AVRO_TOOLS_enable: false
+      AVRO_TOOLS_enable: true
+      #
+      # ===== Apache Parquet Tools ========
+      #
+      PARQUET_TOOLS_enable: true
       #
       # ===== Apache Ranger ========
       #

@@ -210,8 +210,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__7f65875a35a922ba57b9ff3796b8112ffd288467
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__7f65875a35a922ba57b9ff3796b8112ffd288467
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__94b1b078bb05cca441e914f4fd41dbe4b9b6ea53
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__94b1b078bb05cca441e914f4fd41dbe4b9b6ea53
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -442,6 +442,30 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+  #  ================================== Apache Avro Tools ========================================== #
+  avrotools-cli:
+    image: trivadis/apache-avro-tools:latest
+    hostname: avrotools-cli
+    container_name: avrotools-cli
+    labels:
+      com.platys.name: avrotools-cli
+    volumes:
+      - ./data-transfer:/data-transfer
+    entrypoint: tail -f /dev/null
+    tty: true
+    restart: unless-stopped
+  #  ================================== Apache Parquet Tools ========================================== #
+  parquet-tools:
+    image: nathanhowell/parquet-tools:latest
+    hostname: parquet-tools
+    container_name: parquet-tools
+    labels:
+      com.platys.name: parquet-tools
+    volumes:
+      - ./data-transfer:/data-transfer
+    entrypoint: tail -f /dev/null
+    tty: true
+    restart: unless-stopped
   #  ================================== StreamSets DataCollector ========================================== #
   streamsets-1:
     image: streamsets/datacollector:3.22.2
@@ -608,11 +632,12 @@ services:
       SPARK_DEFAULTS_CONF_spark_jars:
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
-      CORE_CONF_fs_defaultFS: s3a://admin-bucket
-      SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /spark/conf/hive-site.xml
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
+        ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
+      CORE_CONF_fs_defaultFS: s3a://admin-bucket
+      SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       ZEPPELIN_ADDR: 0.0.0.0
       ZEPPELIN_PORT: '8080'
       ZEPPELIN_MEM: -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
@@ -623,7 +648,6 @@ services:
       ZEPPELIN_USER_USERNAME: zeppelin
       ZEPPELIN_USER_PASSWORD: changeme
       # set spark-master for Zeppelin interpreter
-      ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
       ZEPPELIN_NOTEBOOK_DIR: notebook
       ZEPPELIN_NOTEBOOK_CRON_ENABLE: 'True'
       PYSPARK_PYTHON: python3
