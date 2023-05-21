@@ -8,7 +8,6 @@ networks:
   default:
     name: bigdata-minio-platform
 #  
-# enforce some dependencies
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
@@ -25,45 +24,6 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
-#  ================================== Kafka ========================================== #
-  kafka-1:
-    image: confluentinc/cp-kafka:7.4.0
-    container_name: kafka-1
-    hostname: kafka-1
-    labels:
-      com.platys.name: kafka
-    depends_on:
-      - zookeeper-1
-    ports:
-      - 9092:9092
-      - 19092:19092
-      - 29092:29092
-      - 39092:39092
-      - 9992:9992
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_BROKER_RACK: rack1
-      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_LOCAL://kafka-1:39092,LISTENER_DOCKERHOST://kafka-1:29092,LISTENER_EXTERNAL://kafka-1:9092
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_LOCAL://localhost:39092,LISTENER_DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29092,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_MESSAGE_TIMESTAMP_TYPE: CreateTime
-      KAFKA_MIN_INSYNC_REPLICAS: 1
-      KAFKA_DELETE_TOPIC_ENABLE: 'True'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
-      KAFKA_JMX_PORT: 9992
-      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9992
-      KAFKA_JMX_HOSTNAME: ${PUBLIC_IP:-127.0.0.1}
-      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
-      KAFKA_TOOLS_LOG4J_LOGLEVEL: INFO
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -113,63 +73,6 @@ services:
       - ./data-transfer:/data-transfer
       - ./conf/resolv.conf:/etc/resolv.conf:ro
     restart: unless-stopped
-  #  ================================== Cluster Manager for Apache Kafka (CMAK) ========================================== #
-  cmak:
-    image: trivadis/cmak:latest
-    container_name: cmak
-    hostname: cmak
-    labels:
-      com.platys.name: cmak
-      com.platys.webui.title: Cluster Manager for Apache Kafka UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28104
-    ports:
-      - 28104:9000
-    environment:
-      ZK_HOSTS: zookeeper-1:2181
-      APPLICATION_SECRET: abc123!
-      KAFKA_MANAGER_AUTH_ENABLED: 'false'
-      KAFKA_MANAGER_USERNAME: admin
-      KAFKA_MANAGER_PASSWORD: abc123!
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
-  #  ================================== Apache Kafka HQ (AKHQ) ========================================== #
-  akhq:
-    image: tchiotludo/akhq:latest
-    container_name: akhq
-    hostname: akhq
-    labels:
-      com.platys.name: akhq
-      com.platys.webui.title: Apache Kafka AQ UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28107
-    ports:
-      - 28107:8080
-    environment:
-      AKHQ_CONFIGURATION: |
-        akhq:
-          pagination.page-size: 25
-          topic-data:
-            size: 50
-            poll-timeout: 1000
-            kafka-max-message-length: 1000000
-          ui-options:
-            topic:
-              default-view: HIDE_INTERNAL
-              skip-consumer-groups: false
-              skip-last-record: true
-              show-all-consumer-groups: true
-            topic-data:
-              sort: OLDEST
-          connections:
-            docker-kafka-server:
-              properties:
-                bootstrap.servers: 'kafka-1:19092'
-              schema-registry:
-                url: "http://schema-registry-1:8081"
-                type: "confluent"
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
     image: trivadis/apache-spark-master:3.2.4-hadoop3.3
@@ -210,8 +113,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__a60536eb72efc132f0cd33f683bb0f1d18acd186
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__a60536eb72efc132f0cd33f683bb0f1d18acd186
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__14959eb6b010df4d1b89f5a1d9fe27e6ef90901f
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__14959eb6b010df4d1b89f5a1d9fe27e6ef90901f
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -765,16 +668,6 @@ services:
       - ./conf/trino/catalog/delta.properties:/etc/trino/catalog/delta.properties
       - ./conf/trino/catalog/postgresql.properties:/etc/trino/catalog/postgresql.properties
       - ./custom-conf/trino/security:/etc/trino/security
-    restart: unless-stopped
-  trino-cli:
-    image: trivadis/trino-cli:latest
-    hostname: trino-cli
-    container_name: trino-cli
-    labels:
-      com.platys.name: trino
-    volumes:
-      - ./data-transfer:/data-transfer
-    tty: true
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
