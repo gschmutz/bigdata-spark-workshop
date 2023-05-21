@@ -1,4 +1,4 @@
-# Working with Delta Lake
+# Working with Delta Lake Table Format
 
 For this workshop you have to start a platform using the `minio` flavour in the init script.
 

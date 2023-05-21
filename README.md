@@ -5,3 +5,15 @@ Big Data Workshops with hands-on tutorials for working with S3, Spark, Delta Lak
 This workshop is part of the Trivadis course [Hadoop and Spark Ecosystem](https://www.trivadis.com/en/training/apache-hadoop-mapreduce-and-hadoop-ecosystem-bd-amh) as well as the [Big Data and Spark Ecosystem Module of the Data Engineering CAS](https://www.bfh.ch/ti/de/weiterbildung/cas/big-data/) at the Berner Fachhochschule.
 
 All the workshops can be done on a container-based infrastructure using Docker Compose for the container orchestration. It can be run on a local machine or in a cloud environment. Check [01-environment](https://github.com/gschmutz/hadoop-workshop/tree/master/01-environment) for instructions on how to setup the infrastructure.
+
+## Workshops
+
+  * [Working with Object Storage](./02-object-storage)
+  * [Getting Started using Spark RDD and DataFrames](./03-spark-getting-started)
+  * [Data Reading and Writing using DataFrames](./04-spark-dataframe)
+  * [Graph Analysis using Spark GraphFrames](./05-spark-graphframe)
+  * [Working with different data types](./06-data-types)
+  * [Working with Delta Lake Table Format](./07-spark-deltalake)
+  * [Working with Trino](./08-sql-on-bigdata)
+  * [Data Ingestion with Apache NiFi](./09-data-ingestion-with-nifi)
+

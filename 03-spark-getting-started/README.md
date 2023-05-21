@@ -1,9 +1,5 @@
 # Getting Started using Spark RDD and DataFrames
 
-For this workshop you have to start a platform.
-
-## Introduction
-
 In this workshop we will work with [Apache Spark](https://spark.apache.org/) and implement some basic operations using the Spark DataFrame API for Python. 
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
