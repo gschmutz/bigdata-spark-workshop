@@ -27,52 +27,6 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
-  #  ================================== Confluent Schema Registry ========================================== #
-  schema-registry-1:
-    image: confluentinc/cp-schema-registry:7.4.0
-    hostname: schema-registry-1
-    container_name: schema-registry-1
-    labels:
-      com.platys.name: schema-registry
-      com.platys.restapi.title: Schema Registry REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:8081
-    ports:
-      - 8081:8081
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry-1
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:19092
-      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
-      SCHEMA_REGISTRY_GROUP_ID: schema-registry
-      SCHEMA_REGISTRY_LEADER_ELIGIBILITY: 'True'
-      SCHEMA_REGISTRY_MODE_MUTABILITY: 'True'
-      SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL: backward
-      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
-      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
-      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,OPTIONS
-      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: info
-      SCHEMA_REGISTRY_DEBUG: 'False'
-    volumes:
-      - ./data-transfer:/data-transfer
-      - ./plugins/opentelemetry/agents:/otel
-    restart: unless-stopped
-  #  ================================== Schema Registry UI ========================================== #
-  schema-registry-ui:
-    image: landoop/schema-registry-ui:latest
-    container_name: schema-registry-ui
-    hostname: schema-registry-ui
-    labels:
-      com.platys.name: schema-registry-ui
-      com.platys.webui.title: Confluent Schema Registry UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28102
-    ports:
-      - 28102:8000
-    environment:
-      SCHEMAREGISTRY_URL: http://${PUBLIC_IP}:8081
-    volumes:
-      - ./data-transfer:/data-transfer
-      - ./conf/resolv.conf:/etc/resolv.conf:ro
-    restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
     image: trivadis/apache-spark-master:3.2.4-hadoop3.3
@@ -113,8 +67,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__14959eb6b010df4d1b89f5a1d9fe27e6ef90901f
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__14959eb6b010df4d1b89f5a1d9fe27e6ef90901f
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__c16b365c88ab5f76623bbae6b2ce4ae6c6fe85eb
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__c16b365c88ab5f76623bbae6b2ce4ae6c6fe85eb
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:

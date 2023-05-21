@@ -135,7 +135,7 @@
       #
       # ===== Schema Registry ========
       #
-      SCHEMA_REGISTRY_enable: true
+      SCHEMA_REGISTRY_enable: false
       # either "confluent", "apicurio"
       SCHEMA_REGISTRY_flavour: confluent
       SCHEMA_REGISTRY_nodes: 1
@@ -167,7 +167,7 @@
       #
       # ===== Schema Registry UI ========
       #
-      SCHEMA_REGISTRY_UI_enable: true
+      SCHEMA_REGISTRY_UI_enable: false
       SCHEMA_REGISTRY_UI_use_public_ip: true
       SCHEMA_REGISTRY_UI_map_resolv_conf: true
       #
