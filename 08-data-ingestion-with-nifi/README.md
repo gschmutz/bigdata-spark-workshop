@@ -94,6 +94,8 @@ The **Configure Processor** should look as shown below.
 
 **Note**: NiFi does not display username and password values, they are instead shown as `Sensitive value set` when they hold a value.
 
+**Note2**: you can also use an [AWSCredentialsProviderControllerService](https://nifi.apache.org/docs/nifi-docs/components/org.apache.nifi/nifi-aws-nar/current/org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService/index.html) to define the credentials for S3. This also allows for externalising the AWS access key and secret key in properties file format.
+
 Click **APPLY** to close the window.
 
 We also use a variable `ingestionTime` in the **Object Key** expression, which we need to set to the current timestamp when a file is processed. We will do that now by adding an additional **UpdateAttribute** processor.
@@ -195,4 +197,9 @@ minio-1/flight-nifi-bucket/
             └─ airports.csv
 ```
 
-We can see that the file has been loaded under a folder with the timestamp of the file ingestion.            
+We can see that the file has been loaded under a folder with the timestamp of the file ingestion.
+
+### Additional steps
+
+ * stop one of the processors and check the flow file in the buffer
+ * check that the new file is uploaded under a different folder (ingestion timestamp) 

@@ -1,8 +1,10 @@
 # Working with different data types
 
-In this workshop we will working with various data types.
+In this workshop we will working with various data types. To make it not more complex then necessary, we just use the local filesystem to store the data using different data types and not S3 object storage.
 
 ## Read CSV File
+
+Let's read the raw airport data in CSV file format. 
 
 ```python
 %pyspark
@@ -14,6 +16,8 @@ airportsRawDF.show(5)
 
 ## Write as JSON
 
+Store the data using the `json` data type:
+
 ```python
 %pyspark
 airportsRawDF.write.json("file:///data-transfer/tmp/json")
@@ -21,10 +25,14 @@ airportsRawDF.write.json("file:///data-transfer/tmp/json")
 
 ## Write as Avro
 
+Store the data using the `avro` data type:
+
 ```python
 %pyspark
 airportsRawDF.write.format("avro").save("file:///data-transfer/tmp/avro")
 ```
+
+check for the output using the `tree` command
 
 ```bash
 $ tree data-transfer/tmp/avro
@@ -43,7 +51,6 @@ Objavro.schema�{"type":"record","name":"topLevelRecord","fields":[{"name":"iat
                                                                                                       TX	B@[
                                                                                                                    �>@�2��%�W�B\VMeadow Lake Colorado�CO	?<�c�LyC@im�!y$Z?D1GPerry-Warsaw
 ```
-
 
 Let's use the Avro tools to inspect the Avro files.
 
@@ -92,7 +99,7 @@ To see how many records are in an Avro file, use the `count` tool
 $ docker compose run --rm  avro-tools count /data-transfer/tmp/avro/part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
 23/05/20 20:16:42 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 3376
-``
+```
 
 Let's use `tojson`to dump the Avro file as JSON, one line per record and only showing the first 10 records (using the `--head` option)
 
@@ -156,10 +163,14 @@ $ docker compose run --rm avro-tools getschema /data-transfer/tmp/avro/part-0000
 
 ## Write as Parquet
 
+Store the data using the `parquet` data type:
+
 ```python
 %pyspark
 airportsRawDF.write.parquet("file:///data-transfer/tmp/parquet")
 ```
+
+check for the output using the `tree` command
 
 ```bash
 $ tree data-transfer/tmp/parquet
