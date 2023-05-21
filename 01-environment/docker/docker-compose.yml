@@ -67,8 +67,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__c16b365c88ab5f76623bbae6b2ce4ae6c6fe85eb
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__c16b365c88ab5f76623bbae6b2ce4ae6c6fe85eb
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__b870f9ec41f05c97222583276ecf8f09e3b7e2da
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__b870f9ec41f05c97222583276ecf8f09e3b7e2da
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -689,6 +689,23 @@ services:
       - ./data-transfer:/data-transfer
       - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
     command: tail -f /dev/null
+    restart: unless-stopped
+  #  ================================== File Browser ================= #
+  filebrowser:
+    image: hurlenko/filebrowser:latest
+    container_name: filebrowser
+    hostname: filebrowser
+    labels:
+      com.platys.name: filebrowser
+      com.platys.webui.title: File Browser UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28178/filebrowser
+    ports:
+      - 28178:8080
+    environment:
+      - FB_BASEURL=/filebrowser
+    volumes:
+      - ./data-transfer:/data
+    user: 1000:1000
     restart: unless-stopped
   #  ================================== Wetty ========================================== #
   wetty:
