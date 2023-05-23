@@ -1,6 +1,8 @@
 # Working with different data types
 
-In this workshop we will working with various data types. To make it not more complex then necessary, we just use the local filesystem to store the data using different data types and not S3 object storage.
+In this workshop we will working with various data types. To make it not more complex than necessary, we just use the local filesystem to store the data using different data types and not S3 object storage.
+
+We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
 
 ## Read CSV File
 
