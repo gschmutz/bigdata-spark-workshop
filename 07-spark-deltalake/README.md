@@ -37,6 +37,17 @@ or with `mc`
 docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
+## If you want to use `pyspark` instead of Zeppelin
+
+This workshop is written for Zeppelin, if you want to use `pyspark` instead, you have to specify the dependencies for Delta Lake.
+
+```python
+spark.sparkContext.addPyFile("/spark/jars/delta-core_2.12-2.0.2.jar")
+spark.sparkContext.addPyFile("/spark/jars/delta-storage-2.0.2.jar")
+```
+
+For Apache Zeppelin, this is not necessary and the configuration in `spark.jars` is used.
+
 ## Create a new Zeppelin notebook
 
 For this workshop we will be using Zeppelin discussed above. 
