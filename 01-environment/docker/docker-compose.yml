@@ -67,8 +67,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__b870f9ec41f05c97222583276ecf8f09e3b7e2da
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__b870f9ec41f05c97222583276ecf8f09e3b7e2da
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__5397aee08683fa202de6a66e4a356b0792c24b82
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__5397aee08683fa202de6a66e4a356b0792c24b82
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -323,46 +323,6 @@ services:
 #    entrypoint: "tail -f /dev/null"
     tty: true
 #    restart: unless-stopped
-  #  ================================== StreamSets DataCollector ========================================== #
-  streamsets-1:
-    image: streamsets/datacollector:3.22.2
-    container_name: streamsets-1
-    hostname: streamsets-1
-    labels:
-      com.platys.name: streamsets
-      com.platys.webui.title: StreamSets Data Collector UI
-      com.platys.webui.url: http://${PUBLIC_IP}:18630
-      com.platys.restapi.title: StreamSets Data Collector REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:18630/collector/restapi
-    ports:
-      - 18630:18630
-    environment:
-      SDC_OFFSET_DIRECTORY: /data/custom-offset-el
-      SDC_INSTALL_STAGES: ''
-      SDC_INSTALL_ENTERPRISE_STAGES: ''
-      SDC_JAVA_OPTS: -Xmx2g -Xms2g -Dlog4j2.formatMsgNoLookups=true
-      SDC_JAVA8_OPTS: -XX:+UseG1GC
-      SDC_CONF_MONITOR_MEMORY: 'true'
-      SDC_CONF_PIPELINE_MAX_RUNNERS_COUNT: 50
-      SDC_CONF_http_authentication: form
-      SDC_CONF_RUNTIME_CONF_LOCATION: embedded
-    volumes:
-      - ./data-transfer:/data-transfer
-      - ./conf/streamsets/pre-docker-entrypoint.sh:/pre-docker-entrypoint.sh
-      - ./plugins/streamsets/user-libs:/opt/streamsets-datacollector-user-libs:Z
-      - ./plugins/streamsets/libs-extras/streamsets-datacollector-jdbc-lib/:/opt/streamsets-datacollector-3.22.2/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/:Z
-    ulimits:
-      nofile:
-        soft: 32768
-        hard: 32768
-    user: '1000'
-    command:
-      - dc
-      - -exec
-      - -verbose
-    entrypoint:
-      - /pre-docker-entrypoint.sh
-    restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
     image: apache/nifi:1.21.0
@@ -415,35 +375,6 @@ services:
       - |
         eval "echo \"$(cat /tmp/s3-credentials.properties.templ)\"" >> s3-credentials.properties
         ../scripts/start.sh
-    restart: unless-stopped
-  #  ================================== NiFi Registry ========================================== #
-  nifi-registry:
-    image: apache/nifi-registry:1.21.0
-    container_name: nifi-registry
-    hostname: nifi-registry
-    labels:
-      com.platys.name: nifi-registry
-      com.platys.webui.title: NiFi Registry UI
-      com.platys.webui.url: http://${PUBLIC_IP}:19090/nifi-registry
-      com.platys.restapi.title: NiFi Registry REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:19090/nifi-registry-api/about
-    ports:
-      - 19090:19090
-    user: root
-    environment:
-      NIFI_REGISTRY_WEB_HTTP_PORT: 19090
-      NIFI_REGISTRY_DB_URL: ''
-      NIFI_REGISTRY_DB_CLASS: org.h2.Driver
-      NIFI_REGISTRY_DB_DIR: /opt/nifi-registry/nifi-registry-current/database
-      NIFI_REGISTRY_DB_USER: nifireg
-      NIFI_REGISTRY_DB_PASS: nifireg
-      NIFI_REGISTRY_FLOW_PROVIDER: file
-      NIFI_REGISTRY_FLOW_STORAGE_DIR: /opt/nifi-registry/nifi-registry-current/file-flow_storage
-      NIFI_REGISTRY_BUNDLE_PROVIDER: file
-      NIFI_REGISTRY_BUNDLE_STORAGE_DIR: ./extension_bundles
-      LOG_LEVEL: INFO
-    volumes:
-      - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
   zeppelin:
