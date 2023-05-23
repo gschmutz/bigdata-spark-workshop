@@ -7,7 +7,6 @@ version: '3.5'
 networks:
   default:
     name: bigdata-minio-platform
-#  
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
@@ -67,14 +66,14 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__5397aee08683fa202de6a66e4a356b0792c24b82
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__5397aee08683fa202de6a66e4a356b0792c24b82
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__b5efa54f58a361d0d6a850e8e1a1121c74ec8936
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__b5efa54f58a361d0d6a850e8e1a1121c74ec8936
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar,,
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -121,9 +120,9 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar,,
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -169,9 +168,9 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar,,
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -196,8 +195,9 @@ services:
     environment:
       SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.1.0,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar,,
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
@@ -252,9 +252,9 @@ services:
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar,,
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -415,9 +415,9 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.1.0,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar,,
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /spark/conf/hive-site.xml
