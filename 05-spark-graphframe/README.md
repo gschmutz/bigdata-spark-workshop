@@ -1,6 +1,6 @@
 # Graph Analysis using Spark GraphFrames
 
-In this workshop we will work with [Apache Spark GraphFrames](https://graphframes.github.io/graphframes/docs/_site/index.html) to to build and execute graph queries.
+In this workshop we will work with [Apache Spark GraphFrames](https://graphframes.github.io/graphframes/docs/_site/index.html) to build and execute graph queries.
 
 We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
 
