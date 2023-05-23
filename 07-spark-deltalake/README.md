@@ -66,7 +66,7 @@ The markdown code should now be rendered as a Heading-1 title.
 First add another title, this time as a Heading-2.
 
 ```
-%md ## Working with the Airport data
+%md ## Read the airport data and store it as a Delta Lake Table
 ```
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. 
@@ -372,10 +372,12 @@ deltaTable = DeltaTable.forPath(spark, deltaTableDest)
 vacuum files not required by versions older than the default retention period
 
 ```python
+%pyspark
 deltaTable.vacuum()        # vacuum files not required by versions older than the default 
 ```
 vacuum files not required by versions more than 1 hours old
 
 ```python
+%pyspark
 deltaTable.vacuum(1)
 ``` 
