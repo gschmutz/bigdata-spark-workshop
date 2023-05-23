@@ -306,18 +306,17 @@ select * from airports where iata IN ("00M","ADD")
 
 ## Compaction of small files
 
+Delta Lake can improve the speed of read queries from a table by coalescing small files into larger ones.
+
 ```
 %pyspark
-numFiles = 4
+%pyspark
+from delta.tables import *
 
-spark.read.format("delta") \
- .load(deltaTableDest) \
- .repartition(numFiles) \
- .write \
- .option("dataChange", "false") \
- .format("delta")  \
- .mode("overwrite") \
- .save(deltaTableDest)
+deltaTable = DeltaTable.forPath(spark, deltaTableDest)  # For path-based tables
+# For Hive metastore-based tables: deltaTable = DeltaTable.forName(spark, tableName)
+
+deltaTable.optimize().executeCompaction()
 ```
 
 ## Read older versions of data using time travel
