@@ -66,8 +66,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__cdcfd62d894bafa04c44f9899eb3d5014aebaf60
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__cdcfd62d894bafa04c44f9899eb3d5014aebaf60
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__14a4b9f3d6f2867ff4a0ed7da10469b4e8f27349
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__14a4b9f3d6f2867ff4a0ed7da10469b4e8f27349
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -406,11 +406,13 @@ services:
       - _PIP_ADDITIONAL_REQUIREMENTS=
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=300
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+      - SPARK_HOME=/opt/spark
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
+      - spark-vol:/opt/spark
     user: ${AIRFLOW_UID:-50000}:0
     restart: unless-stopped
   airflow-scheduler:
