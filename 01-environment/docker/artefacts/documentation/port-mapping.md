@@ -1,4 +1,4 @@
-# `modern-data-platform` - Port Mappings - 1.16.0
+# `modern-data-platform` - Port Mappings - 1.17.0
 
 This table reserves the external ports for the various services. Not all services have to be used in the platform at a given time. But by reserving, we can assure that there are no conflicts if a service is added at a later time.
 
@@ -418,6 +418,8 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28210 | 9000 | pinot-controller |
 28211 | 8099 | pinot-broker-1 |
 28212 | 8098 | pinot-server-1 |
+28213 | 8098 | pinot-server-2 |
+28214 | 8098 | pinot-server-3 |
 28220 | 8000 | lakefs |
 28221 | 8081 | emqx-1 |
 28222 | 8083 | emqx-1 |
@@ -500,6 +502,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28302 | 8081 | nussknacker-designer |
 28303 | 8080 | kafkistry |
 28304 | 8080 | spark-master |
+28305 | 3000 | sqlchat |
 
 ## Ports > 28500
 

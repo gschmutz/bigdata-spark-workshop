@@ -2,6 +2,20 @@
 
 See [Upgrade to a new platform stack version](https://github.com/TrivadisPF/platys/blob/master/documentation/upgrade-platform-stack) for how to upgrade to newer version.
 
+## What's new in 1.17.0
+
+The Modern Data Platform version 1.16.0 contains the following bug fixes and enhancements:
+
+### New Services
+
+ * 
+
+### Version upgrades
+
+ * Update `zeebe` to `8.2.5`
+ * Update `druid` to `26.0.0`
+ 
+
 ## What's new in 1.16.0
 
 The Modern Data Platform version 1.16.0 contains the following bug fixes and enhancements:
@@ -43,6 +57,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Kafka CLI (Kafka software without a running broker)
  * Kafkistry
  * Parquet Tools
+ * SQL Chat
 
 ### New/Updated Cookbook Recipes
 
@@ -65,7 +80,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
 
 ### Version upgrades
 
- * Update `DataHub` to `v0.10.2`
+ * Update `DataHub` to `v0.10.3`
  * Update `Trino` to `418`
  * Update `Starburst Enterprise` to `413-e`
  * Update `dremio` to `24.0`
@@ -115,7 +130,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Update `drill` to `1.20.2`
  * Update `hasura` to `v2.23.0`
  * Update `cedalo-management-center` to `2.5.8`
- * Update `lakefs` to `0.100.0`
+ * Update `lakefs` to `0.101.0`
  * Update `vault` to `1.13.1`
  * Update `portainer` to `2.16.2-alpine`
  * Update `watchtower` to `1.5.1`
@@ -152,6 +167,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Rename folder `./init/oraclexe` to `./init/oracle-xe`
  * Spark Master UI now runs on port `28304` and no longer on standard `8080`
  * Change `FLINK_NUSSKNACKER_enable` to `NUSSKNACKER_enable`
+ * Change `MINIO_default_buckets` to `MINIO_buckets`
 
 ### Enhancements
 
