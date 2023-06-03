@@ -66,8 +66,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__14a4b9f3d6f2867ff4a0ed7da10469b4e8f27349
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__14a4b9f3d6f2867ff4a0ed7da10469b4e8f27349
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__6287cb5d571035346ea59f996981ad81d9a148ed
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__6287cb5d571035346ea59f996981ad81d9a148ed
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -412,7 +412,7 @@ services:
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-      - spark-vol:/opt/spark
+      - spark-vol:/opt/spark:RO
     user: ${AIRFLOW_UID:-50000}:0
     restart: unless-stopped
   airflow-scheduler:
@@ -601,6 +601,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
+      SPARK_HOME: /opt/spark
       CORE_CONF_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       ZEPPELIN_ADDR: 0.0.0.0
@@ -622,6 +623,7 @@ services:
       - ./plugins/spark/jars:/extra-jars
       - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
+      - spark-vol:/opt/spark:RO
     restart: unless-stopped
   #  ================================== Jupyter ========================================== #
   jupyter:
