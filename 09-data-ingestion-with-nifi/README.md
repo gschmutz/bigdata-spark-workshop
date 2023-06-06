@@ -15,7 +15,7 @@ docker exec -ti minio-mc mc mb minio-1/flight-nifi-bucket
 In a terminal, navigate to the `data-transfer` folder. 
 
 ```bash
-cd $DATAPLAFORM_HOME/data-transfer
+cd $DATAPLATFORM_HOME/data-transfer
 ```
 
 now perform a `chown` to change the owner of all subfolders
