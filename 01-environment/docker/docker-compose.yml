@@ -66,8 +66,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__cbc5c6f007a9b1e10f1ac374f00dc6bedc1015b9
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__cbc5c6f007a9b1e10f1ac374f00dc6bedc1015b9
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__6bccd403ab9e3d58093ad0ad848ebca3e25920ca
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__6bccd403ab9e3d58093ad0ad848ebca3e25920ca
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
@@ -401,7 +401,7 @@ services:
       - AIRFLOW__CORE__FERNET_KEY= ''
       - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__LOAD_EXAMPLES=True
 #      - AIRFLOW__API__AUTH_BACKENDS='airflow.api.auth.backend.basic_auth'
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-apache-spark,apache-airflow[amazon]
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
@@ -437,7 +437,7 @@ services:
       - AIRFLOW__CORE__FERNET_KEY= ''
       - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__LOAD_EXAMPLES=True
 #      - AIRFLOW__API__AUTH_BACKENDS='airflow.api.auth.backend.basic_auth'
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-apache-spark,apache-airflow[amazon]
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
@@ -541,7 +541,7 @@ services:
       - AIRFLOW__CORE__FERNET_KEY= ''
       - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__LOAD_EXAMPLES=True
 #      - AIRFLOW__API__AUTH_BACKENDS='airflow.api.auth.backend.basic_auth'
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-apache-spark,apache-airflow[amazon]
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
