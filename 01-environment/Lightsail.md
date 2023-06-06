@@ -105,7 +105,7 @@ The new instance will show up in the Instances list on the Lightsail homepage.
 
 ![Alt Image Text](./images/lightsail-image-started.png "Lightsail Homepage")
 
-Click on the instance to navigate to the image details page. On the right you can find the Public IP address of the newly created instance, which is **18.196.124.212** in this example, of course your Public IP will be different.
+Click on the instance to navigate to the image details page. On the right you can find the Public IP address of the newly created instance, which is **18.194.105.133** in this example, of course your Public IP will be different.
 
 ![Alt Image Text](./images/lightsail-image-details.png "Lightsail Homepage")
 
@@ -121,7 +121,7 @@ The initialisation is finished when you see the `Creating xxxxx .... done` lines
 
 ## View Platform Documentation
 
-The platform contains some web-based documentation, which can be accessed once the platform is running. In a web browser, navigate to the public IP <http://18.196.124.212> (replace the IP address by your Public IP address) and you should see a page similar to the one shown here
+The platform contains some web-based documentation, which can be accessed once the platform is running. In a web browser, navigate to the public IP <http://18.194.105.133> (replace the IP address by your Public IP address) and you should see a page similar to the one shown here
 
 ![Alt Image Text](./images/platform-overview.png "Platform Overview")
 
@@ -151,7 +151,7 @@ To increase security, you should restrict incoming traffic to one or more IP add
 
 ![Alt Image Text](./images/lightsail-image-networking-add-firewall-rule-1.png "Lightsail Homepage")
 
-To find out your IP address, browse to <https://www.whatismyip.com/> and use the `XXX.XXX.XXX.XXX` value shown right to **My Public IPv4 is:** to replace the `188.60.35.196` value in the image above.
+To find out your IP address, browse to <https://www.whatismyip.com/> and use the `XXX.XXX.XXX.XXX` value shown right to **My Public IPv4 is:** to replace the `188.60.35.196` value in the image above. Also add the Public IP of the Lightsail VM (`18.194.105.133` in this example, replace it with your one) as a second address to restrict on/allow. 
 
 Click on **Create** to save this new Firewall rule and it should be added to the list of rules. 
 
@@ -186,16 +186,16 @@ For that open a terminal window (on Mac / Linux) or Putty (on Windows) and eithe
 * connect using the **SSH key pair**   
 
 ```
-ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.196.124.212 
+ssh -i LightsailDefaultKey-eu-central-1.pem ubuntu@18.194.105.133 
 ```
 
 * connect using username and password (you will be prompted for the password)
 
 ```
-ssh ubuntu@18.196.124.212 
+ssh ubuntu@18.194.105.133
 ```
 
-In both cases replace the IP address (18.196.124.212) with you own one.
+In both cases replace the IP address (18.194.105.133) with you own one.
 
 ### Creating an SSH Tunnel as a Socks Proxy
 
