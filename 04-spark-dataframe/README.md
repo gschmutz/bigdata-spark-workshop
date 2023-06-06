@@ -1,9 +1,5 @@
 # Data Reading and Writing using DataFrames
 
-For this workshop you have to start a platform using the `minio` flavour in the init script.
-
-## Introduction
-
 In this workshop we will work with [Apache Spark](https://spark.apache.org/) DataFrames and Spark SQL.
 
 We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 

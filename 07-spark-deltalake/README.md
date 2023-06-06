@@ -1,9 +1,5 @@
 # Working with Delta Lake Table Format
 
-For this workshop you have to start a platform using the `minio` flavour in the init script.
-
-## Introduction
-
 In this workshop we will work with [Delta Lake](https://delta.io/), an open-source storage format that brings ACID transactions to Apache Spark™ and big data workloads.. 
 
 The same data as in the [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
