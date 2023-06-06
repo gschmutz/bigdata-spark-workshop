@@ -10,13 +10,44 @@ For this workshop we will use a new bucket, separate from the other workshops. U
 docker exec -ti minio-mc mc mb minio-1/flight-nifi-bucket
 ```
 
+## Make sure that sub-folders below `data-transfer` belong to your local user (`$USER`)
+
+In a terminal, navigate to the `data-transfer` folder. 
+
+```bash
+cd $DATAPLAFORM_HOME/data-transfer
+```
+
+now perform a `chown` to change the owner of all subfolders
+
+```bash
+sudo chown $USER:$USER *
+```
+
+check that the folders are now under the right user
+
+```bash
+$ ls -lsa
+4 drwxr-xr-x 10 root   root   4096 Jun  6 10:33 .
+4 drwxr-xr-x 17 root   root   4096 Jun  6 10:22 ..
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:33 adventureworks
+4 drwxr-xr-x  3 ubuntu ubuntu 4096 Jun  6 10:22 cookbook-data
+4 drwxr-xr-x  5 ubuntu ubuntu 4096 Jun  6 10:33 flight-data
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:33 graphdb-news
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:33 imdb-movies
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 12:21 landing-zone
+4 -rw-r--r--  1 ubuntu ubuntu   59 Jun  6 10:22 readme.txt
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:22 synthetic-load-generator
+```
+
+
 ## Create the Nifi data flow
 
 In a browser navigate to <https://dataplatform:18080/nifi> (make sure to replace `dataplatform` by the IP address of the machine where docker runs on,). We have enabled authentication for NiFi, therefore you have to use https to access it. Due to the use of a self-signed certificate, you have to initially confirm that the page is safe and you want to access the page.
 
 ![Alt Image Text](./images/nifi-login.png "Nifi Login")
 
-Enter `nifi``into the **User** field and `1234567890ACD` into the **Password** field and click **LOG IN**.
+Enter `nifi` into the **User** field and `1234567890ACD` into the **Password** field and click **LOG IN**.
 
 This should bring up the NiFi User Interface, which at this point is a blank canvas for orchestrating a data flow.
 
@@ -55,7 +86,7 @@ On the properties page, we configure the properties for reading the data from th
 Set the properties as follows:
 
   * **Input Directory**: `/data-transfer/landing-zone`
-  * **File Filter**: `[^\.].*\.xlsx`
+  * **File Filter**: `[^\.].*\.csv`
   * **Recursive Subdirectories**: `false`
   * **Minimum File Age**: `5 sec`
 
