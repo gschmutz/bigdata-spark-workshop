@@ -75,7 +75,7 @@ You should now see the canvas with the **GetFile** processor. A yellow marker is
 
 ![Alt Image Text](./images/nifi-canvas-with-getfile-processor-1.png "Schema Registry UI")
 
-Double-click on the **GetFile** processor and the properties page of the processor appears. Here you can change the name of Twitter processor among other general properties.
+Double-click on the **GetFile** processor and the properties page of the processor appears. Here you can change the name of the processor among other general properties.
 
 Click on **PROPERTIES** tab to switch to the properties page.
 

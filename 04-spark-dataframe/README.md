@@ -484,16 +484,20 @@ and with that get an overview of the
 
 ```sql
 %sql
-SELECT arrDelay, origin, destination,
-    CASE
-         WHEN arrDelay > 360 THEN 'Very Long Delays'
-         WHEN arrDelay > 120 AND arrDelay < 360 THEN 'Long Delays'
-         WHEN arrDelay > 60 AND arrDelay < 120 THEN 'Short Delays'
-         WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
-         WHEN arrDelay = 0 THEN 'No Delays'
-         ELSE 'Early'
-    END AS flight_delays
-         FROM flights
+SELECT year, month, flight_delays, count(*) AS count
+FROM (
+    SELECT year, month, arrDelay, origin, destination,
+        CASE
+             WHEN arrDelay > 360 THEN 'Very Long Delays'
+             WHEN arrDelay > 120 AND arrDelay < 360 THEN 'Long Delays'
+             WHEN arrDelay > 60 AND arrDelay < 120 THEN 'Short Delays'
+             WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
+             WHEN arrDelay = 0 THEN 'No Delays'
+             ELSE 'Early'
+        END AS flight_delays
+             FROM flights
+)
+GROUP BY year, month, flight_delays
 ```
 
 
