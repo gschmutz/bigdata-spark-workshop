@@ -1,7 +1,7 @@
 ---
 technologies:       azure,event-hub,kafka
-version:				1.16.0
-validated-at:			15.4.2023
+version:				1.17.0
+validated-at:			16.10.2023
 ---
 
 # Azure Event Hub as external Kafka
@@ -14,7 +14,7 @@ First [initialise a platys-supported data platform](../documentation/getting-sta
 
 ```bash
 export DATAPLATFORM_HOME=${PWD}
-platys init --enable-services KAFKA_CONNECT,AKHQ -s trivadis/platys-modern-data-platform -w 1.16.0
+platys init --enable-services KAFKA_CONNECT,AKHQ -s trivadis/platys-modern-data-platform -w 1.17.0
 ```
 
 Edit the `config.yml` 
@@ -27,6 +27,7 @@ bash
         KAFKA_security_protocol: SASL_SSL
         KAFKA_sasl_mechanism: PLAIN
         KAFKA_sasl_username: $$ConnectionString
+        KAFKA_login_module: org.apache.kafka.common.security.plain.PlainLoginModule
 ```
 
 For the password to not end up in the `docker-compose.yml` file, we have to add it as an environment variable:
@@ -40,7 +41,7 @@ nano .env
 and add the following environment variable to specify the password 
 
 ```bash
-PLATYS_KAFKA_PASSWORD=Endpoint=sb://fzageventhub.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=F1pPaMBrrSNaMyuxzhLgBG8LhkxQd/QEc+AEhO/DyKo=
+PLATYS_KAFKA_PASSWORD=Endpoint=sb://xxxxxxx.servicebus.windows.net/;SharedAccessKeyName=XXXXXXXXXXX;SharedAccessKey=XXXXXXXXXXXXXXXX
 ```
 
 Save the file and generate and start the data platform.

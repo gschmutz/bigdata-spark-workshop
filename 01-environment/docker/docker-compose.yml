@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            bigdata-minio-platform
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.17.0-preview
+# Platform Stack Version:  develop
 # =======================================================================
 version: '3.5'
 networks:
@@ -10,13 +10,15 @@ networks:
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.4.0
+    image: confluentinc/cp-zookeeper:7.6.0
     container_name: zookeeper-1
     hostname: zookeeper-1
     labels:
       com.platys.name: zookeeper
+      com.platys.description: Zookeeper Node 1
     ports:
       - 2181:2181
+      - 1240:1234
     environment:
       ZOOKEEPER_SERVER_ID: 1
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -33,8 +35,9 @@ services:
     hostname: spark-master
     labels:
       com.platys.name: spark
+      com.platys.description: Spark Master Node
       com.platys.webui.title: Spark UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28304
+      com.platys.webui.url: http://dataplatform:28304
     ports:
       - 6066:6066
       - 7077:7077
@@ -47,7 +50,6 @@ services:
       SPARK_MASTER_OPTS: -Dspark.deploy.defaultCores=2
       INIT_DAEMON_STEP: setup_spark
       MASTER: spark://spark-master:7077
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -66,13 +68,15 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__df959b4059aba80bbd77efa11246e04fbdba3696
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__df959b4059aba80bbd77efa11246e04fbdba3696
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__cfed2766bb40228a892b8e73b47781e4429ed5c4
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__cfed2766bb40228a892b8e73b47781e4429ed5c4
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -88,6 +92,7 @@ services:
     hostname: spark-worker-1
     labels:
       com.platys.name: spark
+      com.platys.description: Spark Worker Node
     depends_on:
       - spark-master
     ports:
@@ -99,7 +104,6 @@ services:
       SPARK_WORKER_WEBUI_PORT: '28111'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -120,9 +124,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -136,6 +142,7 @@ services:
     hostname: spark-worker-2
     labels:
       com.platys.name: spark
+      com.platys.description: Spark Worker Node
     depends_on:
       - spark-master
     ports:
@@ -147,7 +154,6 @@ services:
       SPARK_WORKER_WEBUI_PORT: '28112'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
       SPARK_PUBLIC_DNS: ${PUBLIC_IP}
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -168,9 +174,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -185,19 +193,20 @@ services:
     hostname: spark-history
     labels:
       com.platys.name: spark-historyserver
+      com.platys.description: Spark History Server
       com.platys.webui.title: Spark History Server
-      com.platys.webui.url: http://${PUBLIC_IP}:28117
+      com.platys.webui.url: http://dataplatform:28117
       com.platys.restapi.title: Spark History Server
-      com.platys.restapi.url: http://${PUBLIC_IP}:28117/api/v1
+      com.platys.restapi.url: http://dataplatform:28117/api/v1
     expose:
       - 18080
     ports:
       - 28117:18080
     environment:
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -213,6 +222,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/spark/jars:/extra-jars
@@ -224,8 +234,9 @@ services:
     hostname: spark-thriftserver
     labels:
       com.platys.name: spark-thriftserver
+      com.platys.description: Spark Thriftserver
       com.platys.webui.title: Spark Thriftserver UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28298
+      com.platys.webui.url: http://dataplatform:28298
     ports:
       - 28118:10000
       - 28298:4040
@@ -233,7 +244,6 @@ services:
       - ./conf/hadoop.env
     environment:
       SPARK_MASTER: spark://spark-master:7077
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -249,12 +259,14 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /spark/conf/hive-site.xml
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -271,6 +283,7 @@ services:
     hostname: hive-metastore
     labels:
       com.platys.name: hive-metastore
+      com.platys.description: Hive Metastore
     ports:
       - 9083:9083
     env_file:
@@ -297,6 +310,8 @@ services:
     hostname: hive-metastore-db
     labels:
       com.platys.name: hive-metastore
+      com.platys.description: Hive Metastore DB
+    environment:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -307,6 +322,7 @@ services:
     container_name: avro-tools
     labels:
       com.platys.name: avro-tools
+      com.platys.description: Avro Tools
     volumes:
       - ./data-transfer:/data-transfer
 #    entrypoint: "tail -f /dev/null"
@@ -319,6 +335,7 @@ services:
     container_name: parquet-tools
     labels:
       com.platys.name: parquet-tools
+      com.platys.description: Parquet Tools
     volumes:
       - ./data-transfer:/data-transfer
 #    entrypoint: "tail -f /dev/null"
@@ -326,18 +343,23 @@ services:
 #    restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.21.0
+    image: apache/nifi:1.25.0
     container_name: nifi-1
     hostname: nifi-1
     labels:
       com.platys.name: nifi
-      com.platys.webui.title: Apache NiFi UI Node 18080
-      com.platys.webui.url: https://${PUBLIC_IP}:18080/nifi
+      com.platys.description: NiFi Data Integration Engine
+      com.platys.webui.title: Apache NiFi UI
+      com.platys.webui.url: https://dataplatform:18080/nifi
+      com.platys.restapi.title: Apche NiFi REST API
+      com.platys.restapi.url: https://dataplatform:18080/nifi-api
     ports:
       # HTTP
       - 18080:18080
       # Remote Input Socket
       - 10005:10005/tcp
+      # Prometheus Port
+      - 1270:1234
     environment:
       NIFI_WEB_HTTPS_PORT: '18080'
       NIFI_WEB_HTTPS_HOST: nifi-1
@@ -346,6 +368,7 @@ services:
       KEYSTORE_PATH: /opt/certs/keystore.jks
       KEYSTORE_TYPE: JKS
       KEYSTORE_PASSWORD: BWt7eLC4R53N4bIxdZEVPhAdkYlQ0Le8Tw0erGXpvI0
+      KEY_PASSWORD: BWt7eLC4R53N4bIxdZEVPhAdkYlQ0Le8Tw0erGXpvI0
       TRUSTSTORE_PATH: /opt/certs/truststore.jks
       TRUSTSTORE_TYPE: JKS
       TRUSTSTORE_PASSWORD: PkhvPAirou5R/K9HQxVk99uT+hehM7SRURyFSbxTlTQ
@@ -366,28 +389,29 @@ services:
       - ./data-transfer:/data-transfer
       - ./plugins/nifi/jars/:/extra-jars/
       - ./plugins/nifi/nars/:/opt/nifi/nifi-current/extensions
-      - ./security/nifi/keystore.jks:/opt/certs/keystore.jks
-      - ./security/nifi/truststore.jks:/opt/certs/truststore.jks
+      - ./security/nifi/nifi-1/keystore.jks:/opt/certs/keystore.jks
+      - ./security/nifi/nifi-1/truststore.jks:/opt/certs/truststore.jks
       - ./security/nifi/s3-credentials.properties:/tmp/s3-credentials.properties.templ
     entrypoint:
       # We override the entrypoint from the docker image and therefore have to run ../scripts/start.sh from the NiFi docker image
       - bash
       - -c
       - |
-        eval "echo \"$(cat /tmp/s3-credentials.properties.templ)\"" >> s3-credentials.properties
+        eval "echo \"$$(cat /tmp/s3-credentials.properties.templ)\"" >> s3-credentials.properties
         ../scripts/start.sh
     restart: unless-stopped
 #  ================================== Airflow ========================================== #
   airflow:
-    image: apache/airflow:2.6.1-python3.10
+    image: apache/airflow:2.7.3-python3.10
     container_name: airflow
     hostname: airflow
     labels:
       com.platys.name: airflow
+      com.platys.description: Job Orchestration & Scheduler
       com.platys.webui.title: Airflow UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28139
+      com.platys.webui.url: http://dataplatform:28139
       com.platys.restapi.title: Airflow REST API (dags as sample)
-      com.platys.restapi.url: http://${PUBLIC_IP}:28139/api/v1/dags
+      com.platys.restapi.url: http://dataplatform:28139/api/v1/dags
     ports:
       - 28139:8080
     command: webserver
@@ -402,25 +426,30 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=True
-#      - AIRFLOW__API__AUTH_BACKENDS='airflow.api.auth.backend.basic_auth'
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-apache-spark
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
       - SPARK_HOME=/opt/spark
+      - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
+      - AIRFLOW_VAR_S3_ACCESS_KEY=V42FCGRVMK24JJ8DHUYG
+      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
       - spark-vol:/opt/spark:RO
-    user: ${AIRFLOW_UID:-50000}:0
+    user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
   airflow-scheduler:
-    image: apache/airflow:2.6.1-python3.10
+    image: apache/airflow:2.7.3-python3.10
     container_name: airflow-scheduler
     hostname: airflow-scheduler
     labels:
       com.platys.name: airflow
+      com.platys.description: Job Orchestration & Scheduler
     command:
       - bash
       - -c
@@ -438,16 +467,22 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=True
-#      - AIRFLOW__API__AUTH_BACKENDS='airflow.api.auth.backend.basic_auth'
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-apache-spark
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+      - SPARK_HOME=/opt/spark
+      - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
+      - AIRFLOW_VAR_S3_ACCESS_KEY=V42FCGRVMK24JJ8DHUYG
+      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-    user: ${AIRFLOW_UID:-50000}:0
+      - spark-vol:/opt/spark:RO
+    user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
   airflow-db:
     image: postgres:13
@@ -455,6 +490,7 @@ services:
     hostname: airflow-db
     labels:
       com.platys.name: airflow
+      com.platys.description: Job Orchestration & Scheduler
     environment:
       - POSTGRES_DB=airflowdb
       - POSTGRES_USER=airflow
@@ -463,11 +499,9 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   airflow-init:
-    image: apache/airflow:2.6.1-python3.10
+    image: apache/airflow:2.7.3-python3.10
     container_name: airflow-init
     hostname: airflow-init
-    labels:
-      com.platys.name: airflow
     entrypoint: /bin/bash
     # yamllint disable rule:line-length
     command:
@@ -542,7 +576,7 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=True
-#      - AIRFLOW__API__AUTH_BACKENDS='airflow.api.auth.backend.basic_auth'
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-apache-spark
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
@@ -553,6 +587,7 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     user: 0:0
+    init: true
   #  ================================== Zeppelin ========================================== #
   zeppelin:
     image: trivadis/apache-zeppelin:0.10.1-spark3.2.4-hadoop3.3
@@ -560,8 +595,9 @@ services:
     hostname: zeppelin
     labels:
       com.platys.name: zeppelin
+      com.platys.description: Data Science Notebook
       com.platys.webui.title: Apache Zeppelin UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28080
+      com.platys.webui.url: http://dataplatform:28080
     ports:
       - 28080:8080
       - 6060:6060
@@ -590,13 +626,14 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:2.0.2,io.delta:delta-storage:2.0.2,org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:1.2.1,org.apache.hudi:hudi-spark3.2-bundle_2.12:0.13.0'
       SPARK_DEFAULTS_CONF_spark_jars: /spark/jars/delta-core_2.12-2.0.2.jar,/spark/jars/delta-storage-2.0.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
+      SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /spark/conf/hive-site.xml
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
@@ -632,8 +669,9 @@ services:
     hostname: jupyter
     labels:
       com.platys.name: jupyter
+      com.platys.description: Web-based interactive development environment for notebooks, code, and data
       com.platys.webui.title: Jupyter UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28888
+      com.platys.webui.url: http://dataplatform:28888
     ports:
       - 28888:8888
       - 14040-14044:4040-4044
@@ -662,25 +700,28 @@ services:
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - ./data-transfer:/data-transfer
-      - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
-      - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
-      - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
-    # - ./custom-conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf
+      - ./scripts/docker/docker-maven-download.sh:/maven-download.sh
+#    #      - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
+#      - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
+#      - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
+#        # - ./custom-conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf
     #  - "./conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf"
     command:
       # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
       - bash
       - -c
       - |
+        /maven-download.sh central com.amazonaws:aws-java-sdk-bundle:1.11.375,org.apache.hadoop:hadoop-aws:3.2.1,com.google.guava:guava:14.0.1 /usr/local/spark/jars
         start-notebook.sh
     restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
   postgresql:
-    image: postgres:15
+    image: postgres:16
     container_name: postgresql
     hostname: postgresql
     labels:
       com.platys.name: postgresql
+      com.platys.description: Open-Source object-relational database system
     ports:
       - 5432:5432
     environment:
@@ -699,13 +740,14 @@ services:
     restart: unless-stopped
   #  ================================== Trino ========================================== #
   trino-1:
-    image: trinodb/trino:418
+    image: trinodb/trino:445
     hostname: trino-1
     container_name: trino-1
     labels:
       com.platys.name: trino
+      com.platys.description: SQL Virtualization Engine
       com.platys.webui.title: Trino UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28082
+      com.platys.webui.url: http://dataplatform:28082
     ports:
       - 28082:8080
       - 28083:8443
@@ -724,6 +766,7 @@ services:
       POSTGRESQL_DATABASE: postgres
       POSTGRESQL_USER: demo
       POSTGRESQL_PASSWORD: abc123!
+      EVENT_LISTENER_CONFIG_FILES: ''
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/trino/single/config.properties:/etc/trino/config.properties
@@ -735,13 +778,14 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2023-04-20T17-56-55Z
+    image: minio/minio:RELEASE.2024-04-06T05-26-02Z
     container_name: minio-1
     hostname: minio-1
     labels:
       com.platys.name: minio
+      com.platys.description: Software-defined Object Storage
       com.platys.webui.title: MinIO UI
-      com.platys.webui.url: http://${PUBLIC_IP}:9000
+      com.platys.webui.url: http://dataplatform:9000
     ports:
       - 9000:9000
       - 9010:9010
@@ -751,10 +795,19 @@ services:
       MINIO_REGION_NAME: us-east-1
       MINIO_DOMAIN: minio
       MINIO_SERVER_URL: http://${PUBLIC_IP}:9000
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+      MINIO_PROMETHEUS_URL: http://prometheus-1:9090
     volumes:
       - ./data-transfer:/data-transfer
     command: server /data --console-address ":9010"
     restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - bash -c 'printf \"GET / HTTP/1.1\n\n\" > /dev/tcp/127.0.0.1/9000; exit $$?;'
+      interval: 1s
+      timeout: 5s
+      retries: 5
   #  ================================== Minio MC ========================================== #
   minio-mc:
     image: minio/mc:latest
@@ -762,9 +815,9 @@ services:
     hostname: minio-mc
     labels:
       com.platys.name: minio
+      com.platys.description: MinIO Console
     volumes:
       - ./data-transfer:/data-transfer
-#      - ./conf/minio/config.json:/root/.mc/config.json
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
     entrypoint:
       - /bin/sh
@@ -773,9 +826,9 @@ services:
         /usr/src/app/wait-for-it.sh -t 180 minio-1:9000
         mc alias set minio-1 http://minio-1:9000 V42FCGRVMK24JJ8DHUYG bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
         mc mb --ignore-existing minio-1/admin-bucket
-           for i in $$(echo "" | sed "s/,/ /g")
+           for bucket in $$(tr ',' '\n' <<< "")
         do
-          mc mb --ignore-existing minio-1/$$i
+          mc mb --ignore-existing minio-1/$$bucket
         done
         #
         while [ 1 -eq 1 ];do sleep 60;done
@@ -787,6 +840,7 @@ services:
     hostname: awscli
     labels:
       com.platys.name: awscli
+      com.platys.description: AWS CLI
     environment:
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
@@ -804,8 +858,9 @@ services:
     hostname: filebrowser
     labels:
       com.platys.name: filebrowser
+      com.platys.description: File-Browser
       com.platys.webui.title: File Browser UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28178/filebrowser
+      com.platys.webui.url: http://dataplatform:28178/filebrowser
     ports:
       - 28178:8080
     environment:
@@ -821,8 +876,9 @@ services:
     hostname: wetty
     labels:
       com.platys.name: wetty
+      com.platys.description: A terminal window in Web-Browser
       com.platys.webui.title: WeTTY UI
-      com.platys.webui.url: http://${PUBLIC_IP}:3001
+      com.platys.webui.url: http://dataplatform:3001
     ports:
       - 3001:3000
     environment:
@@ -837,25 +893,35 @@ services:
     restart: unless-stopped
   #  ================================== markdown-viewer ========================================== #
   markdown-viewer:
-    image: trivadis/markdown-web:latest
+    image: dannyben/madness:latest
     container_name: markdown-viewer
     hostname: markdown-viewer
     labels:
       com.platys.name: markdown-viewer
+      com.platys.description: Platys Platform homepage viewer
       com.platys.webui.title: Markdown Viewer UI
-      com.platys.webui.url: http://${PUBLIC_IP}:80
+      com.platys.webui.url: http://dataplatform:80
     ports:
-      - 80:80
+      - 80:3000
     volumes:
-      - ./artefacts:/home/python/markdown
+      - ./artefacts:/docs
+      - ./conf/markdown-viewer/markdown-madness.yml:/docs/.madness.yml
       - ./data-transfer:/data-transfer
+    command: server
     restart: unless-stopped
+    healthcheck:
+      test: [CMD, curl, -f, http://dataplatform:80]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 1m
   markdown-renderer:
     image: trivadis/jinja2-renderer:latest
     container_name: markdown-renderer
     hostname: markdown-renderer
     labels:
       com.platys.name: markdown-renderer
+      com.platys.description: Platys Platform homepage rendering
     environment:
       USE_PUBLIC_IP: 'True'
       PUBLIC_IP: ${PUBLIC_IP}
@@ -863,14 +929,16 @@ services:
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: bigdata-minio-platform
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
-      PLATYS_PLATFORM_STACK_VERSION: 1.17.0-preview
+      PLATYS_PLATFORM_STACK_VERSION: develop
       PLATYS_COPY_COOKBOOK_DATA: 'True'
+      SERVICE_LIST_VERSION: 2
     volumes:
       - ./artefacts/templates:/templates
       - ./artefacts/templates:/scripts
       - .:/variables
       - ./artefacts:/output
       - ./data-transfer:/data-transfer
+    init: true
   #  ================================== data-provisioning ========================================== #
   data-provisioning:
     image: trivadis/platys-modern-data-platform-data:latest
@@ -878,8 +946,10 @@ services:
     hostname: data-provisioning
     labels:
       com.platys.name: data-provisioning
+      com.platys.description: Provisioning sample data
     volumes:
       - ./data-transfer:/data-transfer
+    init: true
 volumes:
   data-transfer-vol:
     name: data_transfer_vol
