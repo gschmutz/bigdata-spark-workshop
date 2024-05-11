@@ -68,8 +68,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__cfed2766bb40228a892b8e73b47781e4429ed5c4
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__cfed2766bb40228a892b8e73b47781e4429ed5c4
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__cdcc815d51bb182fa6a50934795ff4ae33b3e77a
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__cdcc815d51bb182fa6a50934795ff4ae33b3e77a
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -311,7 +311,6 @@ services:
     labels:
       com.platys.name: hive-metastore
       com.platys.description: Hive Metastore DB
-    environment:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
