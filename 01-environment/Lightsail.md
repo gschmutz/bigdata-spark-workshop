@@ -22,7 +22,7 @@ Optionally change the password from the default value of `ubuntu` to a more secu
 export GITHUB_PROJECT=bigdata-spark-workshop
 export GITHUB_OWNER=gschmutz
 export PLATYS_VERSION=2.4.0
-export NETWORK_NAME=eth0
+export NETWORK_NAME=ens5
 export USERNAME=ubuntu
 export PASSWORD=ubuntu
 
@@ -65,10 +65,10 @@ sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VE
 tar zvxf /tmp/platys.tar.gz 
 sudo mv platys /usr/local/bin/
 sudo chown root:root /usr/local/bin/platys
-sudo rm /tmp/platys.tar.gz 
+sudo rm platys.tar.gz 
 
 # Install various Utilities
-sudo apt-get install -y curl jq kafkacat tmux
+sudo apt-get install -y curl jq kafkacat tmux unzip
 
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
@@ -76,7 +76,7 @@ sudo sysctl -w vm.max_map_count=262144
 # Get the project
 cd /home/${USERNAME} 
 git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
-chown -R ${USERNAME}:${PASSWORD} ${GITHUB_PROJECT}
+chown -R ${USERNAME}:${USERNAME} ${GITHUB_PROJECT}
 
 cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker
 
@@ -86,7 +86,7 @@ sudo echo "export DOCKER_HOST_IP=$DOCKER_HOST_IP" | sudo tee -a /etc/profile.d/p
 sudo echo "export DATAPLATFORM_HOME=$PWD" | sudo tee -a /etc/profile.d/platys-platform-env.sh
 
 # Startup Environment
-docker-compose up -d
+sudo -E docker-compose up -d
 ```
 
 into the **Launch Script** edit field
