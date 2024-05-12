@@ -8,26 +8,6 @@ networks:
   default:
     name: bigdata-minio-platform
 services:
-  #  ================================== Zookeeper ========================================== #
-  zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.6.0
-    container_name: zookeeper-1
-    hostname: zookeeper-1
-    labels:
-      com.platys.name: zookeeper
-      com.platys.description: Zookeeper Node 1
-    ports:
-      - 2181:2181
-      - 1240:1234
-    environment:
-      ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_INIT_LIMIT: 5
-      ZOOKEEPER_SYNC_LIMIT: 2
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
   #  ================================== Apache Spark 2.x ========================================== #
   spark-master:
     image: trivadis/apache-spark-master:3.2.4-hadoop3.3
@@ -68,8 +48,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__cdcc815d51bb182fa6a50934795ff4ae33b3e77a
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__cdcc815d51bb182fa6a50934795ff4ae33b3e77a
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__2daded8db5afbdcb1f84d719cb9adcc9a9ee2cba
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__2daded8db5afbdcb1f84d719cb9adcc9a9ee2cba
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
