@@ -30,21 +30,7 @@ Navigate to your local folder, where you want to keep the workshop and execute t
 
 ```
 git clone https://github.com/gschmutz/hadoop-spark-workshop.git
-cd hadoop-spark-workshop/01-environment/docker-minio
-```
-
-## Get sample flight data
-
-The sample data we need for doing the workshops can be copied from a S3 bucket on AWS. Perform the following commands to download the necessary files into the `data-transfer` folder:
-
-```
-cd data-transfer
-mkdir -p flight-data
-cd flight-data
-wget https://gschmutz-datasets.s3.eu-central-1.amazonaws.com/datasets/flight-data.zip
-unzip -o flight-data.zip
-rm flight-data.zip
-rm -R __MACOSX/
+cd hadoop-spark-workshop/01-environment/docker
 ```
 
 ## Start Environment

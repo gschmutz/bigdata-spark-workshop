@@ -205,7 +205,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
-All these objects are no available in the flight-bucket under the `raw/flights` path.
+All these objects are now available in the flight-bucket under the `raw/flights` path.
 
 ![Alt Image Text](./images/MinIO-flights.png "MinIO list flights")
 
