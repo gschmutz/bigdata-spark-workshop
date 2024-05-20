@@ -71,23 +71,9 @@ You can use `pyspark` for this workshop. But there are also two other, browser-b
 
 In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
 
-First let's finish the configuration of the Spark Interpreter. Click on the **admin** drop-down menu and select **Interpreter**
+![Alt Image Text](./images/zeppelin-welcome.png "Zeppelin Execute Shell")
 
-![Alt Image Text](./images/zeppelin-interpreter.png "Zeppelin Interpreter")
-
-On the **Interpreters** page, navigate to the **Spark** interpreter. You can also enter `spark` into the search edit field and **Interpreters** will be filtered down to only one single item. 
-
-![Alt Image Text](./images/zeppelin-spark-interpreter.png "Zeppelin Interpreter")
-
-Click on **edit** to change the configuration. 
-
-Navigate to the **Properties** section and enter `1` into the **spark.cores.max** field and `8g` into the **spark.executor.memory** field. 
-
-![Alt Image Text](./images/zeppelin-spark-interpreter2.png "Zeppelin Interpreter")
-
-Then scroll all the way down to the bottom of the settings page and click **Save**. When asked to restart the interpreter, click **OK**. 
-
-Now let's create a new Notebook to perform some Spark actions. Navigate back to the Zeppelin homepage and click on the **Create new note** link. 
+Now let's create a new Notebook to perform some Spark actions by clicking on the **Create new note** link. 
 
 Enter `HelloSpark` into the **Note Name** field and leave the **Default Interpreter** set to **spark** and click **Create**. 
 
@@ -238,7 +224,16 @@ counts.count()
 To check the results in MinIO, do an ls to see the result and use the MinIO browser to download the object to the local machine.
 
 ```bash
-docker exec -ti awscli s3cmd ls -r s3://wordcount-bucket/result-data
+docker exec -it minio-mc mc ls minio-1/wordcount-bucket/result-data
+```
+
+and you should see a result similar to the one below. Here two result files were created, as we run the spark job in parallel:
+
+```bash
+ubuntu@ip-172-26-1-38:~$ docker exec -it minio-mc mc ls minio-1/wordcount-bucket/result-data
+[2024-05-20 18:41:54 UTC]     0B STANDARD _SUCCESS
+[2024-05-20 18:41:53 UTC] 658KiB STANDARD part-00000
+[2024-05-20 18:41:53 UTC] 655KiB STANDARD part-00001
 ```
 
 This finishes this simple Python implementation of a word count in Spark using Spark's Resilient Distributed Datasets (RDD).
