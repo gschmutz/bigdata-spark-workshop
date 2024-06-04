@@ -18,6 +18,10 @@ The Modern Data Platform version 1.18.0 contains the following bug fixes and enh
  * Web Protégé
  * Jena-Fuseki
  * Rancher
+ * NLM Ingestor
+ * Weaviate Verba
+ * Unstructured API
+ * gpt-researcher
 
 ### Version upgrades
 
@@ -57,19 +61,23 @@ The Modern Data Platform version 1.18.0 contains the following bug fixes and enh
  * Update `kibana` to `7.17.20` and `8.13.0`
  * Update `memcached` to `1.6.26`
  * Update `redis-stack` to `7.2.0-v10`
- * Update `flowise` to `1.6.5`
  * Update `stardog` to `latest`
  * Update `minio` to `RELEASE.2024-04-06T05-26-02Z`
  * Update `datahub` to `v0.13.2`
  * Update `risingwave` to `v1.8.2`
  * Update `portainer` to `alpine-sts`
- * Update `flowise` to `1.7.1`
+ * Update `flowise` to `1.8.1`
+ * Update `nifi` to `2.0.0-M3`
+ * Update `nifi` to `1.26.0`
 
 ### Breaking Changes
 
  * Remove `NEO4J_dbms_logs_debug_level` setting from Neo4J
  * Change to config settings to configure memory in Neo4J: `NEO4J_server_memory_pagecache_size`, `NEO4J_server_memory_heap_initial_size` and `NEO4J_server_memory_heap_max_size`
  * Lenses no longer uses external port `3030` but `28369`
+ * `wetty` is no longer enabled by default in the initial `config.yml` file
+ * Neo4J config setting `NEO4J_plugins` renamed to `NEO4J_download_plugins` and added `NEO4J_mount_plugins` 
+ * Memgraph no longer uses external port `7690 ` but `7699`
  
 ## What's new in 1.17.1
 

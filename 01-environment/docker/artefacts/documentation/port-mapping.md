@@ -159,11 +159,13 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 7474 | 7474 | neo4j-1 |
 7475 | 7474 | neo4j-2 |
 7476 | 7474 | neo4j-3 |
+7477 | 7474 | neo4j-4 |
 7577 | 7577 | spring-skipper-server |
 7687 | 7687 | neo4j-1 |
 7688 | 7687 | neo4j-2 |
 7689 | 7687 | neo4j-3 |
-7690 | 7687 | memgraph-platform |
+7690 | 7687 | neo4j-4 |
+7699 | 7687 | memgraph-platform |
 7860 | 7860 | langflow|
 8000 | 8000 | kong (proxy) |
 8001 | 8001 | kong (admin api) |
@@ -630,13 +632,16 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28369 | 3030 | lenses |
 28370 | 80 | rancher |
 28371 | 443 | rancher |
-
+28372 | 5001 | nlm-ingestor |
+28373 | 8000 | verba |
+28374 | 8000 | unstructured-api |
 
 ## Ports > 28500
 
 Container Port(s) | Internal Port(s)           | Service (alternatives) |
 --------------------|------------------|-----------------------|
 28500 - 28510 | 28500 - 28510 | streamsets-1 (additional ports) |
-28520 - 28600 | any | reserved for applications |
+28510 - 28620 | 28500 - 28510 | nifi-1 (additional ports |
+28530 - 28600 | any | reserved for applications |
 
 An overview of the URL for the various web-based UIs can be found [here](./environment/README).
