@@ -47,8 +47,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__e7dbafd957461521211868b3ec210ecf57249441
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__e7dbafd957461521211868b3ec210ecf57249441
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__2543f59e7f1655cfb5a6dda93acbedb1900b1852
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__2543f59e7f1655cfb5a6dda93acbedb1900b1852
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -62,7 +62,7 @@ services:
       - ./data-transfer:/data-transfer
       - ./plugins/spark/jars:/extra-jars
       - ./container-volume/spark/logs/:/var/log/spark/logs
-#      - ./scripts/docker/docker-maven-download.sh:/usr/src/app/docker-maven-download.sh
+#      - ./scripts/docker/maven-download.sh:/usr/src/app/maven-download.sh
       - spark-vol:/spark
     restart: unless-stopped
   spark-worker-1:
@@ -321,7 +321,7 @@ services:
 #    restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.26.0
+    image: apache/nifi:1.27.0
     container_name: nifi-1
     hostname: nifi-1
     labels:
@@ -680,7 +680,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - ./data-transfer:/data-transfer
-      - ./scripts/docker/docker-maven-download.sh:/maven-download.sh
+      - ./scripts/docker/maven-download.sh:/maven-download.sh
 #    #      - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
 #      - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
 #      - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
@@ -845,6 +845,7 @@ services:
       - 28178:8080
     environment:
       - FB_BASEURL=/filebrowser
+      - FB_USER=admin
     volumes:
       - ./data-transfer:/data
     user: 1000:1000
