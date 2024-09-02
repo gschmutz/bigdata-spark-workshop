@@ -56,8 +56,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__7a3082d4c71dcd0ef5a24cf5b59c0a514826c5bf
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__7a3082d4c71dcd0ef5a24cf5b59c0a514826c5bf
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__062ec98c13280e0668622c519b6f22491c0b71c3
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__062ec98c13280e0668622c519b6f22491c0b71c3
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
