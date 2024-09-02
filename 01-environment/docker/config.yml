@@ -283,8 +283,8 @@
       # ===== Apache Spark ========
       #
       SPARK_enable: true
-      # either 2.4 or 3.1 or 3.2
-      SPARK_base_version: 3.2
+      # either 2.4 or 3.1 or 3.2 or 3.3 or 3.4 or 3.5
+      SPARK_base_version: 3.5
       #SPARK_major_version: 2        # has been replaced by SPARK_base_version
       
       # "hive" or "in-memory"
@@ -306,7 +306,7 @@
       SPARK_sql_warehouse_dir: 's3a://admin-bucket/hive/warehouse'
       SPARK_cores_max: 2
       SPARK_executor_memory: 2048mb 
-      SPARK_table_format_type: 'delta'
+      SPARK_table_format_type: ''
       # misc spark 'addons'
       SPARK_HISTORY_enable: true
       SPARK_THRIFTSERVER_enable: true
@@ -551,7 +551,7 @@
       # ===== Jupyter ========
       #
       JUPYTER_enable: true
-      # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'all-spark'
+      # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'pyspark', 'all-spark'
       JUPYTER_edition: 'all-spark'
       JUPYTER_volume_map_data: false
       JUPYTER_python_packages: ''
@@ -563,7 +563,8 @@
       JUPYTER_notebook_args: ''
       # one of 'lab', 'notebook', 'nbclassic', 'server'
       JUPYTER_startup_cmd: 'lab'      
-
+      JUPYTER_download_jars: 'com.amazonaws:aws-java-sdk-bundle:1.11.375,org.apache.hadoop:hadoop-aws:3.2.1,com.google.guava:guava:27.1-jre'
+      JUPYTER_volume_map_docker_daemon: false
       #
       # ===== RStudio ========
       #
