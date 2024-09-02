@@ -107,8 +107,8 @@ Add the following code to the first cell
 ```python
 import os
 # get the accessKey and secretKey from Environment
-accessKey = os.environ['SPARK_HADOOP_FS_S3A_ACCESS_KEY']
-secretKey = os.environ['SPARK_HADOOP_FS_S3A_SECRET_KEY']
+accessKey = os.environ['AWS_ACCESS_KEY_ID']
+secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
 
 import pyspark
 conf = pyspark.SparkConf()
