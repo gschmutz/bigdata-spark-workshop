@@ -531,6 +531,7 @@ GROUP BY year, month, flight_delays
 If we execute a `show tables` command
 
 ```sql
+%sql
 show tables from flight_db;
 ```
 
@@ -655,10 +656,10 @@ We can test the JDBC/ODBC server easily using the Beeline CLI.
 In a terminal window perform
 
 ```bash 
-docker exec -ti spark-thriftserver /spark/bin/beeline
+docker exec -ti spark-thriftserver /opt/bitnami/spark/bin/beeline
 ```
 
-and connect to Spark Thrift Server (enter blank for username and password)
+and connect to Spark Thrift Server (enter empty string for `username` and `password`)
 
 ```sql
 !connect jdbc:hive2://spark-thriftserver:10000
