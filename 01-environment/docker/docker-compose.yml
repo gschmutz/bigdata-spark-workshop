@@ -56,15 +56,17 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__062ec98c13280e0668622c519b6f22491c0b71c3
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__062ec98c13280e0668622c519b6f22491c0b71c3
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__8e8c88f9a3c972e8053cf80a3fa6af9f83df654c
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__8e8c88f9a3c972e8053cf80a3fa6af9f83df654c
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-spark_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.0.jar,/opt/bitnami/spark/jars/delta-storage-3.2.0.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -72,10 +74,10 @@ services:
       - ./conf/spark/spark-defaults.conf:/opt/bitnami/spark/conf.default/spark-defaults.conf
       - ./init/spark:/docker-entrypoint-initdb.d
       - ./scripts/docker/maven-download.sh:/maven-download.sh
-      - ./plugins/spark/jars:/extra-jars
+      - ./scripts/spark/pyspark:/opt/bitnami/spark/bin/pyspark
       - ./container-volume/spark/logs/:/var/log/spark/logs
 #      - ./scripts/docker/maven-download.sh:/usr/src/app/maven-download.sh
-      - spark-vol:/opt/bitnami/spark
+      - spark-3-5-2-vol:/opt/bitnami/spark
     restart: unless-stopped
   spark-worker-1:
     image: bitnami/spark:3.5.2
@@ -121,13 +123,15 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-spark_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.0.jar,/opt/bitnami/spark/jars/delta-storage-3.2.0.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -135,7 +139,6 @@ services:
       - ./conf/spark/spark-defaults.conf:/opt/bitnami/spark/conf.default/spark-defaults.conf
       - ./init/spark:/docker-entrypoint-initdb.d
       - ./scripts/docker/maven-download.sh:/maven-download.sh
-      - ./plugins/spark/jars:/extra-jars
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-worker-2:
@@ -182,13 +185,15 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-spark_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.0.jar,/opt/bitnami/spark/jars/delta-storage-3.2.0.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -196,7 +201,6 @@ services:
       - ./conf/spark/spark-defaults.conf:/opt/bitnami/spark/conf.default/spark-defaults.conf
       - ./init/spark:/docker-entrypoint-initdb.d
       - ./scripts/docker/maven-download.sh:/maven-download.sh
-      - ./plugins/spark/jars:/extra-jars
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
   spark-history:
@@ -216,11 +220,11 @@ services:
       - 28117:18080
     environment:
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-spark_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.0.jar,/opt/bitnami/spark/jars/delta-storage-3.2.0.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
@@ -233,6 +237,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
     volumes:
       - ./data-transfer:/data-transfer
@@ -240,7 +246,6 @@ services:
       - ./conf/spark/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
       - ./init/spark:/docker-entrypoint-initdb.d
       - ./scripts/docker/maven-download.sh:/maven-download.sh
-      - ./plugins/spark/jars:/extra-jars
       - ./container-volume/spark/logs/:/var/log/spark/logs
     command: /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
     restart: unless-stopped
@@ -273,32 +278,29 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       CORE_CONF_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /spark/conf/hive-site.xml
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-core_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
-      SPARK_DEFAULTS_CONF_spark_jars:
+      SPARK_INSTALL_JARS_PACKAGES: ',io.delta:delta-spark_2.12:3.2.0,io.delta:delta-storage:3.2.0,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.0.jar,/opt/bitnami/spark/jars/delta-storage-3.2.0.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/spark/hive-site.xml:/opt/bitnami/spark/conf/hive-site.xml
-      - ./conf/spark/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./conf/spark/hive-site.xml:/opt/bitnami/spark/conf.default/hive-site.xml
+      - ./conf/spark/spark-defaults.conf:/opt/bitnami/spark/conf.default/spark-defaults.conf
       - ./init/spark:/docker-entrypoint-initdb.d
+      # we override the run.sh script to start thriftserver instead of master/worker
+      - ./scripts/spark/run-thriftserver.sh:/opt/bitnami/scripts/spark/run.sh
       - ./scripts/docker/maven-download.sh:/maven-download.sh
-      - ./plugins/spark/jars:/extra-jars
       - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-    command:
-      - bash
-      - -c
-      - |
-        /usr/src/app/wait-for-it.sh hive-metastore:9083 --timeout=120 -- echo "now starting spark thriftserver ...."
-        /opt/bitnami/spark/sbin/start-thriftserver.sh --master spark://spark-master:7077
     restart: unless-stopped
   #  ================================== Apache Hive Metastore ========================================== #
   hive-metastore:
@@ -463,7 +465,7 @@ services:
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-      - spark-vol:/opt/spark:RO
+      - spark-3-5-2-vol:/opt/spark:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
   airflow-scheduler:
@@ -504,7 +506,7 @@ services:
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-      - spark-vol:/opt/spark:RO
+      - spark-3-5-2-vol:/opt/spark:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
   airflow-db:
@@ -613,7 +615,7 @@ services:
     init: true
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: trivadis/zeppelin:0.11.0-java11
+    image: apache/zeppelin:0.11.2
     container_name: zeppelin
     hostname: zeppelin
     labels:
@@ -634,7 +636,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
       AWS_ENDPOINT: http://minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
-      SPARK_HOME: /opt/spark
+      SPARK_HOME: /opt/bitnami/spark
       ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
       SPARK_MASTER: spark://spark-master:7077
       SPARK_SUBMIT_OPTIONS: ' --conf spark.ui.port=4050 --conf spark.driver.host=zeppelin --conf spark.driver.port=5050 --conf spark.driver.bindAddress=0.0.0.0 --conf spark.blockManager.port=6060 --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4'
@@ -659,7 +661,7 @@ services:
       - ./init/zeppelin/zeppelin-init.sh:/opt/zeppelin/bin/zeppelin-init.sh
       - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
-      - spark-vol:/opt/spark:RO
+      - spark-3-5-2-vol:/opt/bitnami/spark:RO
     command:
       - bash
       - -c
@@ -688,7 +690,7 @@ services:
       GRANT_SUDO: "'yes'"
       JUPYTER_TOKEN: abc123!
       DOCKER_STACKS_JUPYTER_CMD: lab
-      MAVEN_DOWNLOAD_JARS: com.amazonaws:aws-java-sdk-bundle:1.11.375,org.apache.hadoop:hadoop-aws:3.2.1,com.google.guava:guava:27.1-jre
+      MAVEN_DOWNLOAD_JARS: com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.1-jre
       # remove some JARS if they are conflicting with the ones installed above
       REMOVE_JARS: guava-14.0.1.jar
       # for awscli & s3cmd
@@ -766,6 +768,7 @@ services:
       - ./conf/trino/single/config.properties:/etc/trino/config.properties
       - ./conf/trino/single/node.properties:/etc/trino/node.properties
       - ./conf/trino/catalog/minio.properties:/etc/trino/catalog/minio.properties
+      - ./conf/trino/catalog/delta.properties:/etc/trino/catalog/delta.properties
       - ./conf/trino/catalog/postgresql.properties:/etc/trino/catalog/postgresql.properties
       - ./custom-conf/trino/security:/etc/trino/security
     restart: unless-stopped
@@ -947,4 +950,4 @@ services:
 volumes:
   data-transfer-vol:
     name: data_transfer_vol
-  spark-vol:
+  spark-3-5-2-vol:

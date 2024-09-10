@@ -174,8 +174,7 @@ num_of_flights
 ```python
 %pyspark
 from pyspark.sql.functions import col
-graph.edges
-        .groupBy("src", "dst") \
+graph.edges.groupBy("src", "dst") \
 		.max("distance") \
 		.sort(col("max(distance)") \
 		.desc()) \
@@ -186,8 +185,7 @@ graph.edges
 
 ```python
 %pyspark
-graph.edges
-        .groupBy("src", "dst") \
+graph.edges.groupBy("src", "dst") \
         .avg("depDelay") \
         .sort(col("avg(depDelay)") \
         .desc()) \

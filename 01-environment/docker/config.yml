@@ -296,7 +296,8 @@
       SPARK_worker_memory:
       SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
       SPARK_jars_repositories: ''
-      SPARK_jars_packages: 'org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.2.4,graphframes:graphframes:0.8.2-spark3.2-s_2.12'
+      # spark graphframes dependency taken from here: https://spark-packages.org/package/graphframes/graphframes
+      SPARK_jars_packages: 'org.postgresql:postgresql:42.3.4,org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12'
       SPARK_jars_excludes: ''
       SPARK_jars: ''
       SPARK_jars_ivySettings: ''
@@ -306,7 +307,7 @@
       SPARK_sql_warehouse_dir: 's3a://admin-bucket/hive/warehouse'
       SPARK_cores_max: 2
       SPARK_executor_memory: 2048mb 
-      SPARK_table_format_type: ''
+      SPARK_table_format_type: 'delta'
       # misc spark 'addons'
       SPARK_HISTORY_enable: true
       SPARK_THRIFTSERVER_enable: true
@@ -563,7 +564,7 @@
       JUPYTER_notebook_args: ''
       # one of 'lab', 'notebook', 'nbclassic', 'server'
       JUPYTER_startup_cmd: 'lab'      
-      JUPYTER_download_jars: 'com.amazonaws:aws-java-sdk-bundle:1.11.375,org.apache.hadoop:hadoop-aws:3.2.1,com.google.guava:guava:27.1-jre'
+      JUPYTER_download_jars: 'com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.1-jre'
       JUPYTER_volume_map_docker_daemon: false
       #
       # ===== RStudio ========
