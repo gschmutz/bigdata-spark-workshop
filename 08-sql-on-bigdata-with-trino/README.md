@@ -4,7 +4,7 @@ For this workshop you have to start a platform using the `minio` flavour in the 
 
 ## Introduction
 
-[Trino](https://trino.io/) (previously know as PrestoSQL) Trino is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
+[Trino](https://trino.io/) (previously know as PrestoSQL) is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
 
 In this workshop we are using Trino to access the data we have available in the Object Storage. 
 
@@ -14,7 +14,7 @@ The docker image we use for the Trino container is from [Starburst Data](https:/
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 6 - [Data Reading and Writing using DataFrames](06-spark-dataframe). You can skip this section, if you still have the data available in MinIO.
+The data needed here has been uploaded in workshop 4 - [Data Reading and Writing using DataFrames](../04-spark-dataframe). You can skip this section, if you still have the data available in MinIO.
 
 Create the flight bucket:
  

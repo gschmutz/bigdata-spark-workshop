@@ -1,0 +1,10 @@
+# dbt Core 1.8
+dbt-core>=1.8.0
+
+# spark adapter
+dbt-spark>=1.8.0
+
+dbt-spark[PyHive]
+
+
+
