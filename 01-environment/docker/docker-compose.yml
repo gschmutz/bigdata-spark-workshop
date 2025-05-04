@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__b1d14ed8ceb7e75ed318732bb89257abedfd6c4d
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__b1d14ed8ceb7e75ed318732bb89257abedfd6c4d
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__1c85c2be1eb75c157fde302f3655e4fb0efce81b
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__1c85c2be1eb75c157fde302f3655e4fb0efce81b
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -751,7 +751,7 @@ services:
       retries: 5
   #  ================================== Trino ========================================== #
   trino-1:
-    image: trinodb/trino:470
+    image: trinodb/trino:475
     hostname: trino-1
     container_name: trino-1
     labels:
