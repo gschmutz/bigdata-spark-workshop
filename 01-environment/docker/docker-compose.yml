@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__0a5489d18242e4d3b551a650050fb83b9763d19c
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__0a5489d18242e4d3b551a650050fb83b9763d19c
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__2d4aede46de787580895f7dfa5b38196a0555a5b
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__2d4aede46de787580895f7dfa5b38196a0555a5b
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -710,6 +710,8 @@ services:
       AWS_ENDPOINT: http://minio-1:9000
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
+      PYSPARK_PYTHON: /opt/bitnami/python/bin/python3.12
+      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12      
     volumes:
       - ./data-transfer:/data-transfer
       - ./init/jupyter/on-startup-jupyter/:/usr/local/bin/start-notebook.d/
@@ -722,6 +724,11 @@ services:
       - bash
       - -c
       - |
+        conda create -y --name py312 python=3.12.8
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate py312
+        pip install ipykernel pyspark==3.5.3 jupysql boto3
+        python -m ipykernel install --user --name python312 --display-name "Python 3.12 (ipykernel)"
         start-notebook.sh
     restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #

@@ -582,7 +582,7 @@
       # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'pyspark', 'all-spark'
       JUPYTER_edition: 'all-spark'
       JUPYTER_volume_map_data: false
-      JUPYTER_python_packages: ''
+      JUPYTER_python_packages: 'pyspark==3.5.3 jupysql boto3'
       JUPYTER_spark_jars_packages: ''
       JUPYTER_tokenless: false
       JUPYTER_token: 'abc123!'

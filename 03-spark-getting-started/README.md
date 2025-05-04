@@ -111,6 +111,8 @@ accessKey = os.environ['AWS_ACCESS_KEY_ID']
 secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
 
 import pyspark
+from pyspark.sql import SparkSession
+
 conf = pyspark.SparkConf()
 
 # point to mesos master or zookeeper entry (e.g., zk://10.10.10.10:2181/mesos)
@@ -127,8 +129,9 @@ conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
 conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
 conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 
-from pyspark.sql import SparkSession
-spark = SparkSession.builder.appName('abc').config(conf=conf).getOrCreate()
+spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
+spark.sparkContext.setLogLevel("INFO")
+
 sc = spark.sparkContext
 ```
 
