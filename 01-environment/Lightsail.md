@@ -11,12 +11,14 @@ Click **Create instance** to navigate to the **Create an instance** dialog.
 ![Alt Image Text](./images/lightsail-create-instance-1.png "Lightsail Homepage")
 
 Optionally change the **Instance Location** to a AWS region of your liking.
-Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and select **Ubuntu 20.04 LTS** for the **Select a blueprint**. 
+
+Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and select **Ubuntu 24.04 LTS** for the **Select a blueprint**. 
 
 ![Alt Image Text](./images/lightsail-create-instance-2.png "Lightsail Homepage")
 
 Scroll down to **Launch script** and add the following script. 
-Optionally change the password from the default value of `ubuntu` to a more secure one. 
+
+Optionally change the password from the default value of `abc123!` to a more secure one. 
 
 ```
 export GITHUB_PROJECT=bigdata-spark-workshop
@@ -24,7 +26,7 @@ export GITHUB_OWNER=gschmutz
 export PLATYS_VERSION=2.4.0
 export NETWORK_NAME=ens5
 export USERNAME=ubuntu
-export PASSWORD=ubuntu
+export PASSWORD=abc123!
 
 # Prepare Environment Variables 
 export PUBLIC_IP=$(curl ipinfo.io/ip)
@@ -32,8 +34,11 @@ export DOCKER_HOST_IP=$(ip addr show ${NETWORK_NAME} | grep "inet\b" | awk '{pri
 
 # allow login by password
 sudo sed -i "s/.*PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+sudo sed -i "s/.*PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config.d/60-cloudimg-settings.conf
+
 echo "${USERNAME}:${PASSWORD}"|chpasswd
-sudo service sshd restart
+sudo systemctl daemon-reload
+sudo systemctl restart ssh
 
 # add alias "dataplatform" to /etc/hosts
 echo "$DOCKER_HOST_IP     dataplatform" | sudo tee -a /etc/hosts
@@ -54,11 +59,6 @@ echo \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo usermod -aG docker $USERNAME
-
-# Install Docker Compose Switch
-sudo curl -fL https://github.com/docker/compose-switch/releases/latest/download/docker-compose-linux-amd64 -o /usr/local/bin/compose-switch
-chmod +x /usr/local/bin/compose-switch
-sudo update-alternatives --install /usr/local/bin/docker-compose docker-compose /usr/local/bin/compose-switch 99
 
 # Install Platys
 sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VERSION}/platys_${PLATYS_VERSION}_linux_x86_64.tar.gz" -o /tmp/platys.tar.gz
@@ -93,11 +93,13 @@ into the **Launch Script** edit field
  
 ![Alt Image Text](./images/lightsail-create-instance-3.png "Lightsail Homepage")
 
-Under **Choose your instance plan** click on the arrow on the right and select the **16 GB** instance.   
+Scroll further down and under **Choose your instance plan** leave the **Dual Stack** selected and select the **16 GB** instance. It will cost you **$84** per month (but you can stop it anytime).
+
+![Alt Image Text](./images/lightsail-create-instance-4.png "Lightsail Homepage")
 
 Under **Identify your instance** enter **Ubuntu-Hadoop-1** into the edit field. 
 
-![Alt Image Text](./images/lightsail-create-instance-4.png "Lightsail Homepage")
+![Alt Image Text](./images/lightsail-create-instance-5.png "Lightsail Homepage")
 
 Click on **Create Instance** to start provisioning the instance. 
 
@@ -105,7 +107,7 @@ The new instance will show up in the Instances list on the Lightsail homepage.
 
 ![Alt Image Text](./images/lightsail-image-started.png "Lightsail Homepage")
 
-Click on the instance to navigate to the image details page. On the right you can find the Public IP address of the newly created instance, which is **18.194.105.133** in this example, of course your Public IP will be different.
+Click on the instance to navigate to the image details page. On the right you can find the **Public IPv4 address** of the newly created instance, which is **18.159.210.130** in this example, of course your Public IP will be different.
 
 ![Alt Image Text](./images/lightsail-image-details.png "Lightsail Homepage")
 
@@ -121,7 +123,7 @@ The initialisation is finished when you see the `Creating xxxxx .... done` lines
 
 ## View Platform Documentation
 
-The platform contains some web-based documentation, which can be accessed once the platform is running. In a web browser, navigate to the public IP <http://18.194.105.133> (replace the IP address by your Public IP address) and you should see a page similar to the one shown here
+The platform contains some web-based documentation, which can be accessed once the platform is running. In a web browser, navigate to the public IP <http://18.196.124.212> (replace the IP address by your Public IP address) and you should see a page similar to the one shown here
 
 ![Alt Image Text](./images/platform-overview.png "Platform Overview")
 
@@ -151,7 +153,7 @@ To increase security, you should restrict incoming traffic to one or more IP add
 
 ![Alt Image Text](./images/lightsail-image-networking-add-firewall-rule-1.png "Lightsail Homepage")
 
-To find out your IP address, browse to <https://www.whatismyip.com/> and use the `XXX.XXX.XXX.XXX` value shown right to **My Public IPv4 is:** to replace the `188.60.35.196` value in the image above. Also add the Public IP of the Lightsail VM (`18.194.105.133` in this example, replace it with your one) as a second address to restrict on/allow. 
+To find out your IP address, browse to <https://www.whatismyip.com/> and use the `XXX.XXX.XXX.XXX` value shown right to **My Public IPv4 is:** to replace the `188.60.35.196` value in the image above.
 
 Click on **Create** to save this new Firewall rule and it should be added to the list of rules. 
 
@@ -159,6 +161,13 @@ Click on **Create** to save this new Firewall rule and it should be added to the
 
 Your instance is now ready to use. Complete the post installation steps documented the [here](README.md).
 
+## Using Portainer
+
+Portainer Community Edition is a lightweight service delivery platform for containerized applications that can be used to manage Docker, Swarm, Kubernetes and ACI environments. It is also installed with the platform and can be used by navigating to <http://dataplatform:28137>. Enter `admin` for the **Username** and `abc123!abc123!` for the **Password**.
+
+Navigate to **Home** and click on **Live Connect**. Now you can use Portainer to navigate around and manage the containers running in the dataplatform.
+
+![Alt Image Text](./images/portainer.png "Portainer")
 
 ## Using the Web-Terminal
 

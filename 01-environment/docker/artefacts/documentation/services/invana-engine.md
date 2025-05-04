@@ -14,5 +14,5 @@ platys gen
 The GraphQL Endpoint can be reached here:
 
 ```
-http://dataplatform:28291/graphql
+http://:28291/graphql
 ```

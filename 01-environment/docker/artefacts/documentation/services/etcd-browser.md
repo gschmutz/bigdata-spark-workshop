@@ -13,6 +13,6 @@ platys gen
 
 ## How to use it?
 
-In a Web-Browser navigate to <http://dataplatform:28310>.
+In a Web-Browser navigate to <http://:28310>.
 
 

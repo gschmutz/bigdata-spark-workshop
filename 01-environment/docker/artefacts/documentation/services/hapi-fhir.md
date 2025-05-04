@@ -13,4 +13,4 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://dataplatform:28336/fhir>. 
+Navigate to <http://:28336/fhir>. 

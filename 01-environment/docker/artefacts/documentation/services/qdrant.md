@@ -13,4 +13,4 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://dataplatform:6333/dashboard>.
+Navigate to <http://:6333/dashboard>.

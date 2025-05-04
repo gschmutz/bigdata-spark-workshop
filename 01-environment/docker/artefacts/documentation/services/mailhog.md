@@ -15,4 +15,4 @@ Add MONGO if you want to use MongoDB for storage.
 
 ## How to use it?
 
-Navigate to <http://dataplatform:28325>.
+Navigate to <http://:28325>.

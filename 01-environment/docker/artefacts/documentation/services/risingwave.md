@@ -24,4 +24,4 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://dataplatform:5691>
+Navigate to <http://:5691>

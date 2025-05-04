@@ -13,6 +13,6 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://dataplatform:6006>.
+Navigate to <http://:6006>.
 
 
