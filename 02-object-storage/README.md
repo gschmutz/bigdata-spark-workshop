@@ -59,7 +59,7 @@ docker exec -ti minio-mc mc -h
 
 In a browser window, navigate to <http://dataplatform:9000>. 
 
-Enter `V42FCGRVMK24JJ8DHUYG` into the **Access Key** and  `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker/docker-compose.yml) file. 
+Enter `admin` into the **Access Key** and  `abc123!abc123!` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker/docker-compose.yml) file. 
 
 The MinIO Console dashboard page should now appear.
  
@@ -96,10 +96,18 @@ Navigate to the MinIO UI (<http://dataplatform:9000/buckets)>) and you should se
 
 ![Alt Image Text](./images/minio-show-bucket.png "Minio show bucket")
 
-or you could also use `s3cmd ls` to list all buckets.
+or you can also use `s3cmd ls` to list all buckets.
 
 ```bash
 docker exec -ti minio-mc mc ls minio-1
+```
+
+and you should get
+
+```
+bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1
+[2025-05-04 14:53:50 UTC]     0B admin-bucket/
+[2025-05-04 15:03:55 UTC]     0B flight-bucket/
 ```
 
 ### Upload the Airport and Plane-Data CSV files to the new bucket
@@ -107,7 +115,7 @@ docker exec -ti minio-mc mc ls minio-1
 To upload a file we are going to use the `cp` command of the `minio-mc`. First for the `airports.csv`
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
+docker exec -ti minio-mc mc cp /data-transfer/airports-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 and then also for the `plane-data.csv` file. 
@@ -139,8 +147,8 @@ we can see the objects with the hierarchy as well.
 
 ```bash
 bigdata@bigdata:~$ docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
-[2022-05-17 12:13:15 UTC] 239KiB STANDARD raw/airports/airports.csv
-[2022-05-17 12:13:35 UTC] 418KiB STANDARD raw/planes/plane-data.csv
+[2025-05-04 15:06:52 UTC]  11MiB STANDARD raw/airports/airports.csv
+[2025-05-04 15:07:02 UTC] 418KiB STANDARD raw/planes/plane-data.csv
 ```
 
 you can also use the `tree` command to display it as a tree
@@ -178,14 +186,15 @@ minio-1/flight-bucket/
       └─ plane-data.csv
 ```
 
-We can see the same in the MinIO Browser.  
+We can see the same in the MinIO Browser. Navigate to **Object Browser** and click on the **flight-bucket** bucket and then on **raw** and **airports**:  
 
 ![Alt Image Text](./images/MinIO-list-objects.png "MinIO list objects")
 
-
 ### Upload the Carriers JSON file to the new bucket
 
-To upload a file we are going to use the `s3cmd put` command. First for the `carriers.json`
+To upload the carriers JSON file we are going to use the `s3cmd put` command, which is available through the `awscli` docker container. 
+
+First for the `carriers.json`
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
@@ -207,31 +216,14 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 All these objects are now available in the flight-bucket under the `raw/flights` path.
 
-![Alt Image Text](./images/MinIO-flights.png "MinIO list flights")
+![Alt Image Text](./images/minio-flights.png "MinIO list flights")
 
 ### Upload the Flight Handbook PDF file to the new bucket
 
-Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` we should have a `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
+Now after we have seen how to upload text files, let's also upload a binary file. In the `data-transfer/flight-data` there is the `pilot-handbook.pdf` PDF file. Let's upload this into a pdf folder:
 
 ```bash
 docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
-```
-
-You can see by the output that a multi-part upload has been performed:
-
-```bash
-$ docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
-WARNING: pilot_handbook.pdf: Owner username not known. Storing UID=1000 instead.
-WARNING: pilot_handbook.pdf: Owner groupname not known. Storing GID=1000 instead.
-WARNING: Module python-magic is not available. Guessing MIME types based on file extensions.
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 1 of 4, 15MB] [1 of 1]
- 15728640 of 15728640   100% in    0s    77.98 MB/s  done
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 2 of 4, 15MB] [1 of 1]
- 15728640 of 15728640   100% in    0s    73.09 MB/s  done
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 3 of 4, 15MB] [1 of 1]
- 15728640 of 15728640   100% in    0s    80.48 MB/s  done
-upload: '/data-transfer/flight-data/pilot_handbook.pdf' -> 's3://flight-bucket/raw/pdf/pilot_handbook.pdf'  [part 4 of 4, 8MB] [1 of 1]
- 8702870 of 8702870   100% in    0s    66.63 MB/s  done
 ```
 
 The file has been upload, which you can again check using the MinIO browser.
@@ -250,7 +242,7 @@ Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:900
 
 We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over this URLs. 
 
-## Working with Amazon S3
+## Working with Amazon S3 (optional)
 
 Navigate to the S3 console <https://s3.console.aws.amazon.com/s3>.
 

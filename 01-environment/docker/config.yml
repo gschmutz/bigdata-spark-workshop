@@ -1098,8 +1098,8 @@
       # "single" or "cluster"
       MINIO_install: 'single'
       MINIO_nodes: 1
-      MINIO_access_key: V42FCGRVMK24JJ8DHUYG
-      MINIO_secret_key: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
+      MINIO_access_key: admin
+      MINIO_secret_key: abc123!abc123!
       # add additional buckets, comma separated, admin-bucket will be created by default
       MINIO_default_buckets: ''
       MINIO_browser_enable: true

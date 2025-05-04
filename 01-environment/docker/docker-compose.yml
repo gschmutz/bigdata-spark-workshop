@@ -38,8 +38,8 @@ services:
 #     INIT_DAEMON_STEP: setup_spark
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__3947ffad85dda43fff38a7fcc7f68ff37d0e20ea
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__3947ffad85dda43fff38a7fcc7f68ff37d0e20ea
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__0a5489d18242e4d3b551a650050fb83b9763d19c
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__0a5489d18242e4d3b551a650050fb83b9763d19c
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -107,8 +107,8 @@ services:
       # env vars for config files
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
@@ -165,8 +165,8 @@ services:
       # env vars for config files
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
@@ -261,8 +261,8 @@ services:
       SPARK_MASTER_URL: spark://spark-master:7077
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
@@ -308,8 +308,8 @@ services:
       CORE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
-      HIVE_SITE_CONF_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      HIVE_SITE_CONF_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      HIVE_SITE_CONF_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      HIVE_SITE_CONF_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       HIVE_SITE_CONF_hive_metastore_uris: thrift://hive-metastore:9083
@@ -392,8 +392,8 @@ services:
       S3_PATH_STYLE_ACCESS: 'true'
       S3_REGION: us-east-1
       # these two env variables are also needed for the s3-credentials.properties file gen to work! 
-      AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       NIFI_REMOTE_INPUT_SOCKET_PORT: '10015'
       NIFI_REMOTE_INPUT_HOST: nifi-1
       NIFI_SENSITIVE_PROPS_KEY: 12345678901234567890A
@@ -449,8 +449,8 @@ services:
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
       - SPARK_HOME=/opt/spark
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
-      - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
+      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
       - AIRFLOW__OPENLINEAGE__DISABLED=true
     volumes:
@@ -498,8 +498,8 @@ services:
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
       - SPARK_HOME=/opt/spark
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
-      - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
+      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
       - AIRFLOW__OPENLINEAGE__DISABLED=true
     volumes:
@@ -642,8 +642,8 @@ services:
       - 4050-4054:4050-4054
     environment:
       # for awscli & s3cmd
-      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       AWS_ENDPOINT: http://minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
       SPARK_HOME: /opt/bitnami/spark
@@ -705,8 +705,8 @@ services:
       # remove some JARS if they are conflicting with the ones installed above
       REMOVE_JARS: guava-14.0.1.jar
       # for awscli & s3cmd
-      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       AWS_ENDPOINT: http://minio-1:9000
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
@@ -772,8 +772,8 @@ services:
       DUMMY: make-it-valid
       S3_ENDPOINT: http://minio-1:9000
       S3_REGION: us-east-1
-      S3_AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      S3_AWS_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      S3_AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      S3_AWS_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       S3_PATH_STYLE_ACCESS: 'true'
       HIVE_STORAGE_FORMAT: ORC
       HIVE_COMPRESSION_CODEC: GZIP
@@ -811,8 +811,8 @@ services:
       # UI Port
       - 9010:9010
     environment:
-      MINIO_ROOT_USER: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      MINIO_ROOT_PASSWORD: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      MINIO_ROOT_USER: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      MINIO_ROOT_PASSWORD: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       # remove region due to problems with RisingWave
       #MINIO_REGION_NAME: us-east-1
       #MINIO_REGION: us-east-1
@@ -840,9 +840,9 @@ services:
       com.platys.description: MinIO Console
     environment:
       # these two env variables are also needed for the s3-credentials.properties file gen to work! 
-      AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
-      MC_HOST_minio-1: http://${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}:${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}@minio-1:9000
+      AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      MC_HOST_minio-1: http://${PLATYS_AWS_ACCESS_KEY:-admin}:${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}@minio-1:9000
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
@@ -872,8 +872,8 @@ services:
       com.platys.name: awscli
       com.platys.description: AWS CLI
     environment:
-      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-V42FCGRVMK24JJ8DHUYG}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       AWS_ENDPOINT: minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
     volumes:
