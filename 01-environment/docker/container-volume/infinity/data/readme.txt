@@ -1,1 +1,0 @@
-Contains the data folder of infinity service, if flag INFINITY_volume_map_data is set to true.

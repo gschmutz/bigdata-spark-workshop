@@ -1,1 +1,0 @@
-Add sh scripts which should be executed upon initialisation of the Solr database. This will only be done once, in the init phase of the database before starting Solr.

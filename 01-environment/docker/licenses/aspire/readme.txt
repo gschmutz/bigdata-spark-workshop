@@ -1,1 +1,0 @@
-Place the Accenture Aspire license file here (named AspireLicense.lic). 

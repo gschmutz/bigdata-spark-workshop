@@ -1,1 +1,0 @@
-Contains the data of OpenLIT service, if flag OPENLIT_volume_map_data is set to true.

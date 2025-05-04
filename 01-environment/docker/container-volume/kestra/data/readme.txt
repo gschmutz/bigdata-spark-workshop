@@ -1,1 +1,0 @@
-Contains the local storage data of kestra service

@@ -1,1 +1,0 @@
-Place the Valkey password file here and specify the name in `VALKEY_password_file`.

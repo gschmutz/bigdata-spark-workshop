@@ -1,1 +1,0 @@
-Contains the metadata of lakefs service, if flag LAKEFS_volume_map_data is set to true and "local" is used for the LAKEFS_blockstore_type.

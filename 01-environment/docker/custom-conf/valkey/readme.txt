@@ -1,1 +1,0 @@
-Place an overrides config file here to override certain Valkey configuration settings. Specify the name of the file using the VALKEY_overrides_config_file config setting. 

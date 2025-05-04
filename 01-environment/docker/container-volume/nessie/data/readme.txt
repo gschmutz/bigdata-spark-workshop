@@ -1,1 +1,0 @@
-Contains the data of nessie service, if flag NESSIE_volume_map_data is set to true.

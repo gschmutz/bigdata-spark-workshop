@@ -1,1 +1,0 @@
-Put custom config for supabase here
