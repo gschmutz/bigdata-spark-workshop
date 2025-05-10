@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__2d4aede46de787580895f7dfa5b38196a0555a5b
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__2d4aede46de787580895f7dfa5b38196a0555a5b
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__a048d3dd3d1bb2233c7bf2c16e6cd5f07256412e
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__a048d3dd3d1bb2233c7bf2c16e6cd5f07256412e
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -305,6 +305,7 @@ services:
     ports:
       - 9083:9083
     environment:
+      HIVE_VER: 3.1.2
       CORE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -313,26 +314,35 @@ services:
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       HIVE_SITE_CONF_hive_metastore_uris: thrift://hive-metastore:9083
-      HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: jdbc:postgresql://hive-metastore-db/metastore
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: jdbc:postgresql://hive-metastore-db/metastore_db
       HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName: org.postgresql.Driver
       HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName: hive
-      HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword: hive
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword: ${PLATYS_HMS_POSTGRESQL_PASSWORD:-abc123!}
       HIVE_SITE_CONF_datanucleus_autoCreateSchema: false
       HIVE_SITE_CONF_hive_metastore_event_db_notification_api_auth: false
       # necessary for Trino to be able to read from Avro
       HIVE_SITE_CONF_metastore_storage_schema_reader_impl: org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader
       SERVICE_PRECONDITION: hive-metastore-db:5432
+      DB_DRIVER: postgres
+      SERVICE_NAME: metastore
+      SERVICE_OPTS: -Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://hive-metastore-db/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=${PLATYS_HMS_POSTGRESQL_PASSWORD:-abc123!}
     volumes:
       - ./data-transfer:/data-transfer
-    command: /opt/hive/bin/hive --service metastore
     restart: unless-stopped
   hive-metastore-db:
-    image: trivadis/apache-hive-metastore-postgresql:3.1.0-postgres9.5.3
+    image: postgres
     container_name: hive-metastore-db
     hostname: hive-metastore-db
     labels:
       com.platys.name: hive-metastore
       com.platys.description: Hive Metastore DB
+      com.platys.password.envvars: PLATYS_HMS_POSTGRESQL_PASSWORD
+    ports:
+      - 5442:5432
+    environment:
+      POSTGRES_DB: metastore_db
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: ${PLATYS_HMS_POSTGRESQL_PASSWORD:-abc123!}
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -710,8 +720,8 @@ services:
       AWS_ENDPOINT: http://minio-1:9000
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
-      PYSPARK_PYTHON: /opt/bitnami/python/bin/python3.12
-      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12      
+      #PYSPARK_PYTHON: /opt/bitnami/python/bin/python3.12
+      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12
     volumes:
       - ./data-transfer:/data-transfer
       - ./init/jupyter/on-startup-jupyter/:/usr/local/bin/start-notebook.d/
@@ -727,8 +737,9 @@ services:
         conda create -y --name py312 python=3.12.8
         source /opt/conda/etc/profile.d/conda.sh
         conda activate py312
-        pip install ipykernel pyspark==3.5.3 jupysql boto3
-        python -m ipykernel install --user --name python312 --display-name "Python 3.12 (ipykernel)"
+        pip install ipykernel    
+        python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
+        pip install pyspark==3.5.3 jupysql boto3
         start-notebook.sh
     restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
@@ -803,7 +814,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2025-02-07T23-21-09Z
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: minio-1
     hostname: minio-1
     labels:
