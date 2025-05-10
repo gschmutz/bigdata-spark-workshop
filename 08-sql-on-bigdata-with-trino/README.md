@@ -46,7 +46,7 @@ and on the command prompt first create a new database `flight_db`
 
 ```sql
 CREATE DATABASE flight_db
-LOCATION 's3a://flight-bucket';
+LOCATION 's3a://flight-bucket/';
 ```
 
 switch into that database
