@@ -86,7 +86,7 @@ sudo echo "export DOCKER_HOST_IP=$DOCKER_HOST_IP" | sudo tee -a /etc/profile.d/p
 sudo echo "export DATAPLATFORM_HOME=$PWD" | sudo tee -a /etc/profile.d/platys-platform-env.sh
 
 # Startup Environment
-sudo -E docker-compose up -d
+sudo -E docker compose up -d
 ```
 
 into the **Launch Script** edit field
