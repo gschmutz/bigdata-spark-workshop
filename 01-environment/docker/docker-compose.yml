@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__a048d3dd3d1bb2233c7bf2c16e6cd5f07256412e
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__a048d3dd3d1bb2233c7bf2c16e6cd5f07256412e
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__31dc8022aad88fbf9779137aeb426ade96ed3faf
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__31dc8022aad88fbf9779137aeb426ade96ed3faf
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -682,7 +682,6 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
-
     command:
       - bash
       - -c
@@ -691,7 +690,7 @@ services:
         conda create -y --name py312 python=3.12.8
         source /opt/conda/etc/profile.d/conda.sh
         conda activate py312
-        pip install pyspark==3.5.3 boto3      
+        pip install pyspark==3.5.3 boto3
         ./bin/zeppelin-init.sh
         ./bin/zeppelin.sh
     restart: unless-stopped
@@ -805,6 +804,8 @@ services:
       HIVE_RUN_AS_INVOKER: 'false'
       HIVE_LEGACY_TRANSLATION: 'false'
       NESSIE_CATALOG_WAREHOUSE_DIR: s3a://admin-bucket/hive/warehouse
+      ICEBERG_REST_CATALOG_URI: http://iceberg-rest-catalog:8181
+      ICEBERG_REST_CATALOG_WAREHOUSE: s3a://admin-bucket/iceberg/warehouse
       POSTGRESQL_DATABASE: postgres
       POSTGRESQL_USER: demo
       POSTGRESQL_PASSWORD: abc123!
@@ -813,11 +814,17 @@ services:
       - ./data-transfer:/data-transfer
       - ./conf/trino/single/config.properties:/etc/trino/config.properties
       - ./conf/trino/single/node.properties:/etc/trino/node.properties
+      - ./conf/trino/single/log-debug.properties:/etc/trino/log.properties
       - ./conf/trino/catalog/minio.properties:/etc/trino/catalog/minio.properties
       - ./conf/trino/catalog/delta.properties:/etc/trino/catalog/delta.properties
       - ./conf/trino/catalog/postgresql.properties:/etc/trino/catalog/postgresql.properties
       - ./custom-conf/trino/security:/etc/trino/security
     restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, trino --version]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   #  ================================== Minio ========================================== #
   minio-1:
     image: minio/minio:RELEASE.2025-04-22T22-12-26Z
@@ -973,7 +980,7 @@ services:
       retries: 3
       start_period: 1m
   markdown-renderer:
-    image: trivadis/jinja2-renderer:latest
+    image: trivadis/jinja2-renderer:0.8.1
     container_name: markdown-renderer
     hostname: markdown-renderer
     labels:

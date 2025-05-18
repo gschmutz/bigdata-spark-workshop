@@ -63,7 +63,6 @@ The Modern Data Platform version 1.18.0 contains the following bug fixes and enh
  * Audio-Transcriber
  * Nvidia NIMs
  * No Language Left Behind (NLLB)
- * Supabase
  * Local Deep Researcher
  * DbGate
  * DuckDB (optionally with UI)
@@ -144,6 +143,7 @@ The Modern Data Platform version 1.18.0 contains the following bug fixes and enh
  * Update `jikkou` to `main` - to support Mac M1
  * Update `telegraf` to `1.34`
  * Update `cassandra` to `5.0`
+ * Update `iceberg-rest-catalog` to `1.6.0`
 
 ### Enhancements
 
@@ -157,6 +157,7 @@ The Modern Data Platform version 1.18.0 contains the following bug fixes and enh
  * NiFi 2.0.0 can be run it in parallel to a 1.x version (`NIFI2_enable` config setting)
  * Kafka Open Source docker images are now supported (use `KAFKA_edition` = `oss`)
  * Hive Metastores docker image is now based on the `apache/hive` image and with that the underlying database can either be an embedded Derby or a separate Postgresql (using the standard docker image).
+ * `markdown-renderer` also includes a `docker-compose.override.yml` file for services to be rendered in the services list (if there are `com.platys.***` labels used). 
 
 ### Breaking Changes
 
