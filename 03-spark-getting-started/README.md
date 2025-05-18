@@ -22,7 +22,16 @@ There is also the option to use **Thrift Server** to execute Spark SQL from any 
 
 The [PySpark API](https://spark.apache.org/docs/latest/api/python/index.html) allows us to work with Spark through the command line. 
 
-In our environment, PySpark is accessible inside the `spark-master` container. To start PySpark use the `pyspark` command. 
+In our environment, PySpark is accessible inside the `spark-master` container. 
+
+To avoid problems with not being able to write to `spark/logs` folder, execute once the following statement in a terminal:
+
+```bash
+cd $DATAPLATFORM_HOME
+chmod 777 container-volume/spark/logs
+```
+
+Now to start PySpark use the `pyspark` command. 
 
 ```bash
 docker exec -ti spark-master pyspark
@@ -33,23 +42,54 @@ and you should end up on the **pyspark** command prompt `>>>` as shown below
 ```bash
 bigdata@bigdata:~$ docker exec -ti spark-master pyspark
 
-Python 3.7.13 (default, Apr  7 2022, 05:58:59)
-[GCC 10.3.1 20211027] on linux
+Python 3.12.8 (main, Dec  4 2024, 00:26:17) [GCC 12.2.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.
+:: loading settings :: url = jar:file:/opt/bitnami/spark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /opt/bitnami/spark/.ivy2/cache
+The jars for the packages stored in: /opt/bitnami/spark/.ivy2/jars
+org.postgresql#postgresql added as a dependency
+org.apache.spark#spark-avro_2.12 added as a dependency
+graphframes#graphframes added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-a03e809f-bd0c-4692-8dc5-c0ee43d96331;1.0
+        confs: [default]
+        found org.postgresql#postgresql;42.3.4 in central
+        found org.checkerframework#checker-qual;3.5.0 in central
+        found org.apache.spark#spark-avro_2.12;3.5.2 in central
+        found org.tukaani#xz;1.9 in central
+        found graphframes#graphframes;0.8.4-spark3.5-s_2.12 in spark-packages
+        found org.slf4j#slf4j-api;1.7.16 in central
+:: resolution report :: resolve 607ms :: artifacts dl 19ms
+        :: modules in use:
+        graphframes#graphframes;0.8.4-spark3.5-s_2.12 from spark-packages in [default]
+        org.apache.spark#spark-avro_2.12;3.5.2 from central in [default]
+        org.checkerframework#checker-qual;3.5.0 from central in [default]
+        org.postgresql#postgresql;42.3.4 from central in [default]
+        org.slf4j#slf4j-api;1.7.16 from central in [default]
+        org.tukaani#xz;1.9 from central in [default]
+        ---------------------------------------------------------------------
+        |                  |            modules            ||   artifacts   |
+        |       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+        ---------------------------------------------------------------------
+        |      default     |   6   |   0   |   0   |   0   ||   6   |   0   |
+        ---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-a03e809f-bd0c-4692-8dc5-c0ee43d96331
+        confs: [default]
+        0 artifacts copied, 6 already retrieved (0kB/11ms)
+25/05/18 10:44:10 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 3.1.3
+   /__ / .__/\_,_/_/ /_/\_\   version 3.5.3
       /_/
 
-Using Python version 3.7.13 (default, Apr  7 2022 05:58:59)
-Spark context Web UI available at http://192.168.1.162:4040
-Spark context available as 'sc' (master = spark://spark-master:7077, app id = app-20220523154800-0000).
+Using Python version 3.12.8 (main, Dec  4 2024 00:26:17)
+Spark context Web UI available at http://3.79.56.105:4040
+Spark context available as 'sc' (master = local[*], app id = local-1747565056739).
 SparkSession available as 'spark'.
->>>
+>>> 
 ```
 
 You have an active `SparkSession` available as the `spark` variable. Enter any valid command, just to test we can ask Spark for the version which is installed. 
@@ -62,7 +102,7 @@ and we should get the version back
 
 ```bash
 >>> spark.version
-'3.1.3'
+'3.5.3'
 ```
 
 You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
@@ -94,7 +134,7 @@ You can use Apache Zeppelin to perform the workshop below. The other option is t
 In a browser window, navigate to <http://dataplatform:28888>. 
 Enter `abc123!` into the **Password or token** field and click **Log in**. 
 
-You should be forwarded to the **Jupyter** homepage. Click on the **Python 3** icon in the **Notebook** section to create a new notebook using the **Python 3** kernel.
+You should be forwarded to the **Jupyter** homepage. Click on the **Python 3.12.8** icon in the **Notebook** section to create a new notebook using the **Python 3.12.8** kernel (it's important to use exactly the same python version as on the Spark cluster).
 
 ![Alt Image Text](./images/jupyter-create-notebook.png "Jupyter Create Notebook")
   
