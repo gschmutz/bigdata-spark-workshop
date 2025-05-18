@@ -636,7 +636,7 @@ services:
     init: true
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: apache/zeppelin:0.11.2
+    image: trivadis/zeppelin:0.11.2
     container_name: zeppelin
     hostname: zeppelin
     labels:
@@ -686,10 +686,6 @@ services:
       - bash
       - -c
       - |
-        conda create -y --name py312 python=3.12.8
-        source /opt/conda/etc/profile.d/conda.sh
-        conda activate py312
-        pip install pyspark==3.5.3 boto3
         ./bin/zeppelin-init.sh
         ./bin/zeppelin.sh
     restart: unless-stopped
