@@ -27,13 +27,13 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 **Airports:**
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/flight-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+docker exec -ti awscli s3cmd put /data-transfer/airports-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
 ```
 
 or with `mc`
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
+docker exec -ti minio-mc mc cp /data-transfer/airports-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 **Plane-Data:**
@@ -82,11 +82,8 @@ docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_
 
 ## Create a new Zeppelin notebook
 
-For this workshop we will be using Zeppelin discussed above. In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
-
-But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
-
-In a browser window, navigate to <http://dataplatform:28080>.
+For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you should be able to easily adapt it to **Jupyter** or **PySpark**, if you whish for.  
+In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
 
 Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
 
@@ -97,7 +94,8 @@ Click on **Create Note** and a new Notebook is created with one cell which is em
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
 
 ```
-%md # Spark DataFrame sample with flights data
+%md 
+# Spark DataFrame sample with flights data
 ```
 
 Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
@@ -109,22 +107,24 @@ The markdown code should now be rendered as a Heading-1 title.
 First add another title, this time as a Heading-2.
 
 ```
-%md ## Working with the Airport data
+%md 
+## Working with the Airport data
 ```
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. 
 
-First we have to import the spark python API. 
+First we have to import the spark python API. Use the `%pyspark` directive to switch to the PySpark interpreter.
 
 ```python
 %pyspark
 from pyspark.sql.types import *
 ```
 
+We wil not show the `%pyspark` directive in the following statements.
+
 Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema
  
 ```python
-%pyspark
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
     	sep=",", inferSchema="true", header="true")
 airportsRawDF.show(5)
@@ -137,7 +137,6 @@ The output will show the header line followed by the 5 data lines.
 Now let’s display the schema, which has been derived from the data:
 
 ```	python
-%pyspark
 airportsRawDF.printSchema()
 ```
 
@@ -154,19 +153,20 @@ root
  |-- long: double (nullable = true)
 ``` 
  
-Next let’s ask for the total number of rows in the dataset. Should return a total of **3376**. 
+Next let’s ask for the total number of rows in the dataset. 
 
 ```python
-%pyspark
 airportsRawDF.count()
 ```
+
+It should return a total of **81193**. 
+
 
 You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
 Let’s create a JSON representation of the data in the refined folder. 
 
 ```python
-%pyspark
 airportsRawDF.write.json("s3a://flight-bucket/refined/airports")
 ```
 
@@ -178,14 +178,15 @@ Check that the file has been written to MinIO using either one of the techniques
 First add another title, this time as a Heading-2.
 
 ```python
-%md ## Working with the Flights data
+%md 
+## Working with the Flights data
 ```
 
 Let’s now start working with the Flights data, which we have uploaded with the various files within the `s3://flight-bucket/raw/flights/`.
 
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
  
-Make sure that the data is in the right place. 
+Let's see the data in the `flight-bucket` bucket in MinIO. In a terminal window execute the following `s3cmd` 
 
 ```
 docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
@@ -194,16 +195,15 @@ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
 You should see the five files inside the `flights` folder
 
 ```
-ubuntu@ip-172-26-3-90:~$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
-
-2021-05-15 15:26       980792  s3://flight-bucket/raw/flights/flights_2008_4_1.csv
-2021-05-15 15:26       981534  s3://flight-bucket/raw/flights/flights_2008_4_2.csv
-2021-05-15 15:26       998020  s3://flight-bucket/raw/flights/flights_2008_5_1.csv
-2021-05-15 15:26      1002531  s3://flight-bucket/raw/flights/flights_2008_5_2.csv
-2021-05-15 15:26       989831  s3://flight-bucket/raw/flights/flights_2008_5_3.csv
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
+2025-05-18 16:12       980792  s3://flight-bucket/raw/flights/flights_2008_4_1.csv
+2025-05-18 16:12       981534  s3://flight-bucket/raw/flights/flights_2008_4_2.csv
+2025-05-18 16:12       998020  s3://flight-bucket/raw/flights/flights_2008_5_1.csv
+2025-05-18 16:12      1002531  s3://flight-bucket/raw/flights/flights_2008_5_2.csv
+2025-05-18 16:12       989831  s3://flight-bucket/raw/flights/flights_2008_5_3.csv
 ```
 
-The CSV files in this case do not contain a header line, therefore we cannot use the same technique as before with the airports and derive the schema from the header. 
+The CSV files in this case do not contain a header line, therefore we cannot use the same technique as before with the airports data and derive the schema from the header. 
 
 We first have to manually define a schema. One way is to use a DSL as shown in the next code block. 
 
@@ -219,7 +219,6 @@ Now we can import the flights data into a DataFrame using this schema and show t
 We use  to use the header line for naming the columns and specify to infer the schema. We specify `schema=fligthSchema` to use the schema from above.  
 
 ```python
-%pyspark
 flightsRawDF = spark.read.csv("s3a://flight-bucket/raw/flights", 
     	sep=",", inferSchema="false", header="false", schema=flightSchema)
 flightsRawDF.show(5)
@@ -232,7 +231,6 @@ The output will show the header line followed by the 5 data lines.
 Let’s also see the schema, which is not very surprising
 
 ```	python
-%pyspark
 flightsRawDF.printSchema()
 ```
 
@@ -271,26 +269,35 @@ root
  |-- lateAircraftDelay: string (nullable = true)
 ```
 	
-Next let’s ask for the total number of rows in the dataset. Should return **50'000**. 
-
+Next let’s ask for the total number of rows in the dataset
+ 
 ```python
-%pyspark
 flightsRawDF.count()
 ```
+
+It should return **50'000**. 
 	
 You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
 Let’s create a Parquet representation of the data in the refined folder. Additionally we partition the data by `year` and `month`. 
 
 ```python
-%pyspark
 flightsRawDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/refined/flights")
 ```
 
-Check that the file has been written to MinIO using the s3cmd. 
+In a terminal window, check that the file has been written to MinIO using the `s3cmd`. 
 
 ```bash
 docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
+```	
+
+and you should see an output similar to
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
+2025-05-18 16:54            0  s3://flight-bucket/refined/flights/_SUCCESS
+2025-05-18 16:54       377251  s3://flight-bucket/refined/flights/year=2008/month=4/part-00001-b6c9ceb9-6c45-42e7-9835-91e83e5c78c1.c000.snappy.parquet
+2025-05-18 16:54       461116  s3://flight-bucket/refined/flights/year=2008/month=5/part-00000-b6c9ceb9-6c45-42e7-9835-91e83e5c78c1.c000.snappy.parquet
 ```	
 	
 Should you want to execute the write a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution of the write will throw an error. 
@@ -310,14 +317,12 @@ Additionally we have also stored the data to a file in json format.
 First let's read the data from the parquet refined structure just created before. 
 
 ```python
-%pyspark
 flightsRefinedDF = spark.read.format("parquet").load("s3a://flight-bucket/refined/flights")
 ```
 
 With the `flightsRefinedDF` DataFrame in place, register the two DataFrames as temporary tables in Spark SQL
 
 ```python
-%pyspark
 flightsRefinedDF.createOrReplaceTempView("flights")
 airportsRawDF.createOrReplaceTempView("airports")
 ```
@@ -325,14 +330,12 @@ airportsRawDF.createOrReplaceTempView("airports")
 We can always display the registered tables by using the following statement:
 
 ```python
-%pyspark
 spark.sql("show tables").show()
 ```
 
 We can use `spark.sql()` to now execute an SELECT statement using one of the two tables
 
 ```python
-%pyspark
 spark.sql("SELECT * FROM airports").show()
 ```
 
@@ -347,31 +350,29 @@ FROM airports
 Let's see a `GROUP BY` in action
 
 ```sql
-%sql
-SELECT country, state, count(*)
+SELECT iso_country, iso_region, count(*)
 FROM airports
-GROUP BY country, state
+GROUP BY iso_country,  iso_region
 ```
 
 If we only want to see the ones for the USA, we add a `WHERE` clause
 
 ```sql
-%sql
-SELECT country, state, count(*)
+SELECT iso_country, iso_region, count(*)
 FROM airports
-WHERE country = 'USA'
-GROUP BY country, state
+WHERE iso_country = 'US'
+GROUP BY iso_country,  iso_region
 ```
 
-Once you are ready, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. 
+Once you are ready, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. Make sure that you again use the `%pyspark` directive
 
 ```sql
 %pyspark
 usAirportsByStateDF = spark.sql("""
-        SELECT country, state, count(*)
-        FROM airports
-        WHERE country = 'USA'
-        GROUP BY country, state
+			SELECT iso_country, iso_region, count(*)
+			FROM airports
+			WHERE iso_country = 'US'
+			GROUP BY iso_country,  iso_region
           """)
 usAirportsByStateDF.show()
 ```
@@ -392,9 +393,9 @@ In Python, it’s possible to access a DataFrame’s columns either by attribute
 
 ```
 %pyspark
-airportsRawDF.select(airportsRawDF['country'], airportsRawDF['state']) \
-    .filter(airportsRawDF['country'] == "USA") \
-    .groupBy("country", "state") \
+airportsRawDF.select(airportsRawDF['iso_country'], airportsRawDF['iso_region']) \
+    .filter(airportsRawDF['iso_country'] == "US") \
+    .groupBy("iso_country", "iso_region") \
     .count() \
     .show()
 ```
@@ -407,16 +408,18 @@ If we know SQL, we know that this can be done using a JOIN between two tables. T
 
 ```sql
 %sql
-SELECT ao.airport AS origin_airport
-		, ao.city AS origin_city
-		, ad.airport AS desitination_airport
-		, ad.city AS destination_city
+SELECT ao.name AS origin_airport
+		, ao.type AS origin_type
+		, ao.municipality AS orign_municipality
+		, ad.name AS destination_airport
+		, ad.type AS destination_type
+		, ad.municipality AS destination_municipality
 		, f.*
 FROM flights  AS f
 LEFT JOIN airports AS ao
-ON (f.origin = ao.iata)
+ON (f.origin = ao.iata_code)
 LEFT JOIN airports AS ad
-ON (f.destination = ad.iata)
+ON (f.destination = ad.iata_code)
 ```
 
 As soon as we are happy, we can again wrap it in a `spark.sql()` statement. 
@@ -424,30 +427,30 @@ As soon as we are happy, we can again wrap it in a `spark.sql()` statement.
 ```sql
 %pyspark
 flightEnrichedDF = spark.sql("""
-		SELECT ao.airport AS origin_airport
-				, ao.city AS origin_city
-				, ad.airport AS desitination_airport
-				, ad.city AS destination_city
+		SELECT ao.name AS origin_airport
+				, ao.type AS origin_type
+				, ao.municipality AS orign_municipality
+				, ad.name AS destination_airport
+				, ad.type AS destination_type
+				, ad.municipality AS destination_municipality
 				, f.*
 		FROM flights  AS f
 		LEFT JOIN airports AS ao
-		ON (f.origin = ao.iata)
+		ON (f.origin = ao.iata_code)
 		LEFT JOIN airports AS ad
-		ON (f.destination = ad.iata)
+		ON (f.destination = ad.iata_code)
 		""")
 ```
 
 Let's see the result behind the DataFrame
 
 ```python
-%pyspark
 flightEnrichedDF.show()
 ```
 
 Finally let's write the enriched structure as a result to object storage using again the Parquet format:
 
 ```python
-%pyspark
 flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result/flights")
 ```
 ## Use Spark SQL to perform analytics on the data
@@ -500,13 +503,18 @@ FROM (
 GROUP BY year, month, flight_delays
 ```
 
-
 ## Provide result as permanent table
+
+So far we have only worked with temporary views, which are only visible while the Spark session is active and will be removed as soon as it is closed. 
+
+But we can also create permanent tables which will survive a Spark session. First we have to create a database 
 
 ```sql
 %sql
 CREATE DATABASE IF NOT EXISTS flight_db;
 ```
+
+and then we create the table within that database
 
 ```sql
 %sql
@@ -539,13 +547,13 @@ we can see the two temporary tables with the additional permanent table just cre
 
 ![](./images/zeppelin-show-tables.png)
 
-Let's see that by connecting to the `spark-sql` CLI
+Let's see that by connecting to the `spark-sql` CLI. In a terminal window execute
 
 ```bash
 docker exec -it spark-master spark-sql
 ```
 
-On the command prompt, enter `show databases` and you can see the database `flight_db` just created
+On the command prompt, enter `show databases;` and you can see the database `flight_db` just created
 
 ```bash
 spark-sql> show databases;
@@ -564,7 +572,7 @@ switch to the database and
 use flight_db;
 ```
 
-and perform a `show tables` to prove that the table is in fact permanent
+and perform a `show tables;` to prove that the table is in fact permanent
 
 ```bash
 spark-sql> show tables;
@@ -574,73 +582,29 @@ Time taken: 0.062 seconds, Fetched 1 row(s)
 spark-sql>
 ```
 
-Now check that the data is in fact available:
+Now check that the data is in fact available by executing
+
+```sql
+select * from count_delaygroups_t LIMIT 10;
+```
+
+and you should see a result similar to that shown below
 
 ```bash
-spark-sql> select * from count_delaygroups_t LIMIT 10;
-2023-05-22 07:57:58,876 INFO sqlstd.SQLStdHiveAccessController: Created SQLStdHiveAccessController for session context : HiveAuthzSessionContext [sessionString=d7e08f1a-9e0d-4f22-8cd0-8da63256684c, clientType=HIVECLI]
-2023-05-22 07:57:58,881 WARN session.SessionState: METASTORE_FILTER_HOOK will be ignored, since hive.security.authorization.manager is set to instance of HiveAuthorizerFactory.
-2023-05-22 07:57:58,925 INFO hive.metastore: Trying to connect to metastore with URI thrift://hive-metastore:9083
-2023-05-22 07:57:58,949 INFO hive.metastore: Opened a connection to metastore, current connections: 1
-2023-05-22 07:57:58,960 INFO hive.metastore: Connected to metastore.
-2023-05-22 07:57:59,242 INFO memory.MemoryStore: Block broadcast_0 stored as values in memory (estimated size 521.3 KiB, free 365.8 MiB)
-2023-05-22 07:57:59,606 INFO memory.MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 55.5 KiB, free 365.7 MiB)
-2023-05-22 07:57:59,610 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on spark-master:35737 (size: 55.5 KiB, free: 366.2 MiB)
-2023-05-22 07:57:59,617 INFO spark.SparkContext: Created broadcast 0 from
-2023-05-22 07:58:00,197 INFO mapred.FileInputFormat: Total input files to process : 1
-2023-05-22 07:58:00,232 INFO spark.SparkContext: Starting job: main at NativeMethodAccessorImpl.java:0
-2023-05-22 07:58:00,259 INFO scheduler.DAGScheduler: Got job 0 (main at NativeMethodAccessorImpl.java:0) with 1 output partitions
-2023-05-22 07:58:00,259 INFO scheduler.DAGScheduler: Final stage: ResultStage 0 (main at NativeMethodAccessorImpl.java:0)
-2023-05-22 07:58:00,260 INFO scheduler.DAGScheduler: Parents of final stage: List()
-2023-05-22 07:58:00,262 INFO scheduler.DAGScheduler: Missing parents: List()
-2023-05-22 07:58:00,271 INFO scheduler.DAGScheduler: Submitting ResultStage 0 (MapPartitionsRDD[4] at main at NativeMethodAccessorImpl.java:0), which has no missing parents
-2023-05-22 07:58:00,382 INFO memory.MemoryStore: Block broadcast_1 stored as values in memory (estimated size 11.1 KiB, free 365.7 MiB)
-2023-05-22 07:58:00,391 INFO memory.MemoryStore: Block broadcast_1_piece0 stored as bytes in memory (estimated size 5.7 KiB, free 365.7 MiB)
-2023-05-22 07:58:00,393 INFO storage.BlockManagerInfo: Added broadcast_1_piece0 in memory on spark-master:35737 (size: 5.7 KiB, free: 366.2 MiB)
-2023-05-22 07:58:00,395 INFO spark.SparkContext: Created broadcast 1 from broadcast at DAGScheduler.scala:1474
-2023-05-22 07:58:00,416 INFO scheduler.DAGScheduler: Submitting 1 missing tasks from ResultStage 0 (MapPartitionsRDD[4] at main at NativeMethodAccessorImpl.java:0) (first 15 tasks are for partitions Vector(0))
-2023-05-22 07:58:00,418 INFO scheduler.TaskSchedulerImpl: Adding task set 0.0 with 1 tasks resource profile 0
-2023-05-22 07:58:00,472 INFO scheduler.TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0) (172.19.0.23, executor 0, partition 0, PROCESS_LOCAL, 4592 bytes) taskResourceAssignments Map()
-2023-05-22 07:58:00,855 INFO storage.BlockManagerInfo: Added broadcast_1_piece0 in memory on 172.19.0.23:46775 (size: 5.7 KiB, free: 912.3 MiB)
-2023-05-22 07:58:01,889 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on 172.19.0.23:46775 (size: 55.5 KiB, free: 912.2 MiB)
-2023-05-22 07:58:06,479 INFO scheduler.TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 6027 ms on 172.19.0.23 (executor 0) (1/1)
-2023-05-22 07:58:06,485 INFO scheduler.TaskSchedulerImpl: Removed TaskSet 0.0, whose tasks have all completed, from pool
-2023-05-22 07:58:06,491 INFO scheduler.DAGScheduler: ResultStage 0 (main at NativeMethodAccessorImpl.java:0) finished in 6.194 s
-2023-05-22 07:58:06,505 INFO scheduler.DAGScheduler: Job 0 is finished. Cancelling potential speculative or zombie tasks for this job
-2023-05-22 07:58:06,515 INFO scheduler.TaskSchedulerImpl: Killing all running tasks in stage 0: Stage finished
-2023-05-22 07:58:06,520 INFO scheduler.DAGScheduler: Job 0 finished: main at NativeMethodAccessorImpl.java:0, took 6.287210 s
-2023-05-22 07:58:06,540 INFO spark.SparkContext: Starting job: main at NativeMethodAccessorImpl.java:0
-2023-05-22 07:58:06,541 INFO scheduler.DAGScheduler: Got job 1 (main at NativeMethodAccessorImpl.java:0) with 1 output partitions
-2023-05-22 07:58:06,541 INFO scheduler.DAGScheduler: Final stage: ResultStage 1 (main at NativeMethodAccessorImpl.java:0)
-2023-05-22 07:58:06,541 INFO scheduler.DAGScheduler: Parents of final stage: List()
-2023-05-22 07:58:06,542 INFO scheduler.DAGScheduler: Missing parents: List()
-2023-05-22 07:58:06,548 INFO scheduler.DAGScheduler: Submitting ResultStage 1 (MapPartitionsRDD[4] at main at NativeMethodAccessorImpl.java:0), which has no missing parents
-2023-05-22 07:58:06,559 INFO memory.MemoryStore: Block broadcast_2 stored as values in memory (estimated size 11.1 KiB, free 365.7 MiB)
-2023-05-22 07:58:06,565 INFO memory.MemoryStore: Block broadcast_2_piece0 stored as bytes in memory (estimated size 5.7 KiB, free 365.7 MiB)
-2023-05-22 07:58:06,566 INFO storage.BlockManagerInfo: Added broadcast_2_piece0 in memory on spark-master:35737 (size: 5.7 KiB, free: 366.2 MiB)
-2023-05-22 07:58:06,567 INFO spark.SparkContext: Created broadcast 2 from broadcast at DAGScheduler.scala:1474
-2023-05-22 07:58:06,569 INFO scheduler.DAGScheduler: Submitting 1 missing tasks from ResultStage 1 (MapPartitionsRDD[4] at main at NativeMethodAccessorImpl.java:0) (first 15 tasks are for partitions Vector(1))
-2023-05-22 07:58:06,569 INFO scheduler.TaskSchedulerImpl: Adding task set 1.0 with 1 tasks resource profile 0
-2023-05-22 07:58:06,572 INFO scheduler.TaskSetManager: Starting task 0.0 in stage 1.0 (TID 1) (172.19.0.15, executor 1, partition 1, PROCESS_LOCAL, 4592 bytes) taskResourceAssignments Map()
-2023-05-22 07:58:06,868 INFO storage.BlockManagerInfo: Added broadcast_2_piece0 in memory on 172.19.0.15:45257 (size: 5.7 KiB, free: 912.3 MiB)
-2023-05-22 07:58:08,206 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on 172.19.0.15:45257 (size: 55.5 KiB, free: 912.2 MiB)
-2023-05-22 07:58:12,465 INFO scheduler.TaskSetManager: Finished task 0.0 in stage 1.0 (TID 1) in 5894 ms on 172.19.0.15 (executor 1) (1/1)
-2023-05-22 07:58:12,466 INFO scheduler.TaskSchedulerImpl: Removed TaskSet 1.0, whose tasks have all completed, from pool
-2023-05-22 07:58:12,467 INFO scheduler.DAGScheduler: ResultStage 1 (main at NativeMethodAccessorImpl.java:0) finished in 5.917 s
-2023-05-22 07:58:12,467 INFO scheduler.DAGScheduler: Job 1 is finished. Cancelling potential speculative or zombie tasks for this job
-2023-05-22 07:58:12,467 INFO scheduler.TaskSchedulerImpl: Killing all running tasks in stage 1: Stage finished
-2023-05-22 07:58:12,468 INFO scheduler.DAGScheduler: Job 1 finished: main at NativeMethodAccessorImpl.java:0, took 5.928024 s
-2008	4	Long Delays	200
-2008	4	Short Delays	721
-2008	4	Tolerable Delays	8515
-2008	4	No Delays	687
-2008	4	Early	9877
-2008	5	Tolerable Delays	9464
-2008	5	Early	18694
-2008	5	No Delays	913
-2008	5	Short Delays	601
-2008	5	Long Delays	309
-Time taken: 14.019 seconds, Fetched 10 row(s)
+spark-sql (flight_db)> select * from count_delaygroups_t LIMIT 10;
+25/05/18 17:13:14 WARN SessionState: METASTORE_FILTER_HOOK will be ignored, since hive.security.authorization.manager is set to instance of HiveAuthorizerFactory.
+2008    5       Tolerable Delays        9464
+2008    5       Early   18694
+2008    5       No Delays       913
+2008    5       Short Delays    601
+2008    5       Long Delays     309
+2008    5       Very Long Delays        19
+2008    4       Long Delays     200
+2008    4       Short Delays    721
+2008    4       Tolerable Delays        8515
+2008    4       No Delays       687
+Time taken: 1.599 seconds, Fetched 10 row(s)
+spark-sql (flight_db)> 
 ```
 
 There are quite a lot of INFO log messages but at the end we see the 10 results we asked for. This is not really usable but it proofs the fact that we have made the results available for querying over SQL. 
@@ -659,27 +623,25 @@ In a terminal window perform
 docker exec -ti spark-thriftserver /opt/bitnami/spark/bin/beeline
 ```
 
-and connect to Spark Thrift Server (enter empty string for `username` and `password`)
+and connect to Spark Thrift Server 
 
 ```sql
 !connect jdbc:hive2://spark-thriftserver:10000
 ```
 
+Enter empty string for `username` and `password`
+
 and you should get to the thriftserver command prompt:
 
 ```bash
-$ docker exec -ti spark-thriftserver /spark/bin/beeline
-Beeline version 2.3.9 by Apache Hive
 beeline> !connect jdbc:hive2://spark-thriftserver:10000
 Connecting to jdbc:hive2://spark-thriftserver:10000
-Enter username for jdbc:hive2://spark-thriftserver:10000:
-Enter password for jdbc:hive2://spark-thriftserver:10000:
-2023-05-22 08:04:29,694 INFO jdbc.Utils: Supplied authorities: spark-thriftserver:10000
-2023-05-22 08:04:29,695 INFO jdbc.Utils: Resolved authority: spark-thriftserver:10000
-Connected to: Spark SQL (version 3.2.4)
+Enter username for jdbc:hive2://spark-thriftserver:10000: 
+Enter password for jdbc:hive2://spark-thriftserver:10000: 
+Connected to: Spark SQL (version 3.5.3)
 Driver: Hive JDBC (version 2.3.9)
 Transaction isolation: TRANSACTION_REPEATABLE_READ
-0: jdbc:hive2://spark-thriftserver:10000>
+0: jdbc:hive2://spark-thriftserver:10000> 
 ```
 
 Now let's again issue a query on the `flight_db.count_delaygroups_t` table
@@ -719,11 +681,11 @@ To create a connection to the Spark Thriftserver from DBeaver, click on the **+*
 
 and click **Next >**.
 
-On the **Connect to a database** screen enter `dataplatform` for the **Host** and `` for the port 
+On the **Connect to a database** screen enter `dataplatform` for the **Host** and `28118` for the port 
 
 ![](./images/dbeaver-2.png)
 
-and click **Test Connection ...** and you should see a successful message 
+and click **Test Connection ...** and DBeaver will ask you for downloading the JDBC driver (the first time). Confirm that and you should see a successful message 
 
 ![](./images/dbeaver-3.png)
 
@@ -741,7 +703,7 @@ Navigate to the **Data** tab and you should see the same data as before
 
 ![](./images/dbeaver-show-data.png)
 
-You could of course also use the SQL Console to execute ad-hoc SQL statements. In the **Database Navigator**, right-click on the database and select **SQL Editor** | **Open SQL console**. Start entering a SELECT statement and you get help by DBeaver's IntelliSense feature.
+You can of course also use the SQL Console to execute ad-hoc SQL statements. In the **Database Navigator**, right-click on the database and select **SQL Editor** | **Open SQL console**. Start entering a SELECT statement and you get help by DBeaver's IntelliSense feature.
 
 ![](./images/dbeaver-sql-editor.png)
 
