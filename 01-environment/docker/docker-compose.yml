@@ -682,10 +682,15 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
       - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
+    user: root
     command:
       - bash
       - -c
       - |
+        conda create -y --name py312 python=3.12.8
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate py312
+        pip install pyspark==3.5.3 boto3      
         ./bin/zeppelin-init.sh
         ./bin/zeppelin.sh
     restart: unless-stopped
