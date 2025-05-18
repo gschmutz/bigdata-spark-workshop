@@ -661,7 +661,7 @@ services:
       SPARK_MASTER: spark://spark-master:7077
       SPARK_SUBMIT_OPTIONS: ' --conf spark.ui.port=4050 --conf spark.driver.host=zeppelin --conf spark.driver.port=5050 --conf spark.driver.bindAddress=0.0.0.0 --conf spark.blockManager.port=6060 --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4'
       PYSPARK_PYTHON: python3
-      PYSPARK_DRIVER_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12
       # Zeppelin Properties
       ZEPPELIN_ADDR: 0.0.0.0
       ZEPPELIN_PORT: '8080'
@@ -675,7 +675,6 @@ services:
       ZEPPELIN_ADMIN_PASSWORD: ${PLATYS_ZEPPELIN_ADMIN_PASSWORD:-changeme}
       ZEPPELIN_USER_USERNAME: zeppelin
       ZEPPELIN_USER_PASSWORD: ${PLATYS_ZEPPELIN_USER_PASSWORD:-changeme}
-      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/zeppelin:/opt/zeppelin/conf.templates
