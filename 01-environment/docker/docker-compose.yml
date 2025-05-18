@@ -636,7 +636,7 @@ services:
     init: true
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: trivadis/zeppelin:0.11.2
+    image: apache/zeppelin:0.11.2
     container_name: zeppelin
     hostname: zeppelin
     labels:
