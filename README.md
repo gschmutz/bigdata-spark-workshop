@@ -8,8 +8,8 @@ All the workshops can be done on a container-based infrastructure using Docker C
 
 ## Workshops
 
-  * [Working with Minio Object Storage](./02a-object-storage)
-  * [Working with AWS S3 Object Storage (optional)](./02b-object-storage)
+  * [Working with Minio Object Storage](./02a-minio-object-storage)
+  * [Working with AWS S3 Object Storage (optional)](./02b-aws-object-storage)
   * [Getting Started using Spark RDD and DataFrames](./03-spark-getting-started)
   * [Data Reading and Writing using DataFrames](./04-spark-dataframe)
   * [Graph Analysis using Spark GraphFrames](./05-spark-graphframe)
