@@ -107,7 +107,10 @@ and we should get the version back
 
 You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
 
-### Using Apache Zeppelin
+### Using Apache Zeppelin (used for this workshop)
+
+[Apache Zeppelin](https://zeppelin.apache.org/) is a Web-based notebook that enables data-driven,
+interactive data analytics and collaborative documents with SQL, Scala, Python, R and more. It is installed as part of the dataplatform.  
 
 In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
 
@@ -187,7 +190,6 @@ Also execute a python command `print ("hello")` just to see that you are executi
 
 You can use Jupyter to perform the workshop. 
 
-
 ## Working with Spark Resilient Distributed Datasets (RDDs)
 
 Spark’s primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. 
@@ -206,13 +208,13 @@ First let's upload the data needed for this workshop, using the techniques we ha
 
 ### Upload Raw Data to MinIO
 
-First create a bucket for the data
+First create a new bucket `wordcount-bucket` for the data
 
 ```bash
 docker exec -ti minio-mc mc mb minio-1/wordcount-bucket
 ```
 
-And then copy the `big.txt` into the new bucket 
+And then upload the `big.txt` into the new bucket 
 
 ```bash
 docker exec -ti minio-mc mc cp /data-transfer/wordcount/big.txt minio-1/wordcount-bucket/raw-data/
@@ -228,31 +230,34 @@ You can use either one of the three different ways described above to access the
 
 Just copy and paste the commands either into the **PySpark** command line or into the paragraphs in **Zeppelin** or **Jupyter**. In Zeppelin you have to switch to Python interpreter by using the following directive `%spark.pyspark` on each paragraph.
 
-In **Jupyter** make sure to get the connection to spark using the script shown before. 
+In **Jupyter** make sure to get the connection to spark using the script shown before.
 
-For data in Minio
+To work with **Zeppelin**, naviagte to <http://dataplatform:28080> and login as user `admin` with password `changme`. Click on **Notebook** and select **Create new note**. Enter `wordcount` into **Note Name** and select **Spark** for the **Default Interpreter** and click **Create**.
+
+To start, let's read the data into an RDD. Copy the following line into the empty cell (i.e. paragraph) and add the `%pyspark` directive to specifiy that we want to work with pyspark. 
 
 ```python
 lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
 ```
 
-Split the line into words and flat map it
+![](./images/zeppelin-rdd-1.png)
+
+Click on Shift-Enter to execute the cell.
+
+Next let's split the line into words and flat map it
 
 ```python
 words = lines.flatMap(lambda line: line.split(" "))
 ```
 
-Reduce by key to get the counts by word and number
-
+Reduce by key to get the counts by word and number. 
 ```python
 counts = words.map(lambda word: (word,1)).reduceByKey(lambda a, b : a + b)
 ```
 
-Save the counts to a file on MinIO object storage. 
+So far all of the operations are **transform** operations and executed in a lazy fashion. 
 
-This is an action and will start execution on Spark. Make sure to remove the output folder in case it already exists
-
-to write to MinIO object storage:
+Now let's save the counts to a file on MinIO object storage. This is an **action** and will start execution on Spark. Make sure to remove the output folder in case it already exists
 
 ```python
 counts.saveAsTextFile("s3a://wordcount-bucket/result-data")
@@ -285,23 +290,21 @@ This finishes this simple Python implementation of a word count in Spark using S
 
 The data needed here has been uploaded to MinIO in the **Working with RDD** section. 
 
-You can use either one of the three different ways described above (**PySpark**, **Apache Zeppelin** or **Jupyter**) to access the Spark Python environment. 
+You can use either one of the three different ways described above (**PySpark**, **Apache Zeppelin** or **Jupyter**) to access the Spark Python environment. Don't forget to add the `%pyspark` directive when using **Apache Zeppelin**.
 
-For Zeppelin you can find a complete Notebook inside the [`zeppelin`](https://github.com/gschmutz/hadoop-spark-workshop/tree/master/05-spark-getting-started/zeppelin) folder. 
+For Zeppelin you can find a complete Notebook inside the [`zeppelin`](https://github.com/gschmutz/hadoop-spark-workshop/tree/master/03-spark-getting-started/zeppelin) folder. 
 
 The following statements assume that they are used from within Zeppelin, that's why you find the `%pyspark` directives. Create a new notebook in Zeppelin, as we have learned before. 
 
 First let's see the `spark.read` method, which is part of the `DataFrameReader`. The following statement shows that:
 
 ```python
-%pyspark
 spark.read
 ```
 
 We can easily display the methods it eposes, such as `text()`, `json()` and many others using the `dir` command:
 
 ```python
-%pyspark
 dir (spark.read)
 ```
 
@@ -314,7 +317,6 @@ In this workshop we will be using the `text()` operation.
 Let's start by reading the data from object storage into a `bookDF` DataFrame, using the `read.text` with the address of the object in minio
 
 ```python
-%pyspark
 bookDF = spark.read.text("s3a://wordcount-bucket/raw-data/big.txt")
 bookDF
 ```
@@ -324,28 +326,24 @@ A DataFrame with a single value of type string is returned.
 We can easily display the schema in a more readable way:
 
 ```python
-%pyspark
 bookDF.printSchema()
 ```
 
 To display the data behind the DataFrame, we can use the `show()` method. If used without any parameters, by default a maximum of 20 rows is shown. 
 
 ```python
-%pyspark
 bookDF.show()
 ```
 
 We can also change it to `10` records and truncate them to 50 characters:
 
 ```python
-%pyspark
 bookDF.show(10, truncate=50)
 ```
 
 Next we tokenize each word, by splitting on a single space character, return a list of words:
 
 ```python
-%pyspark
 from pyspark.sql.functions import split
 
 linesDF = bookDF.select(split(bookDF.value, " ").alias("line"))
@@ -370,7 +368,6 @@ only showing top 5 rows
 Using the `bookDF.value` we are able to select a specific column out from the DataFrame. There are alternative approaches, as shown next. They all get the same result:
 
 ```python
-%pyspark
 from pyspark.sql.functions import col
 
 bookDF.select(bookDF.value) 
@@ -381,7 +378,6 @@ bookDF.select(col("value"))
 Print the schema and we can see that a line is an array of string elements, i.e. the single words
 
 ```python
-%pyspark
 linesDF.printSchema()
 ```
 
@@ -397,7 +393,6 @@ wordsDF.show(15)
 With the table of words, we next use the `lower` function to change the case to all lowercase. 
 
 ```python
-%pyspark
 from pyspark.sql.functions import lower 
 wordsLowerDF = wordsDF.select(lower(col("word")).alias("word_lower"))
 
@@ -407,7 +402,6 @@ wordsLowerDF.show()
 Now using `regexp_extract()` function we make sure that only words are kept (only letters a - z). 
 
 ```python
-%pyspark
 from pyspark.sql.functions import regexp_extract 
 wordsCleanDF = wordsLowerDF.select( regexp_extract(col("word_lower"), "[a-z]*", 0).alias("word") )
 
@@ -417,7 +411,6 @@ wordsCleanDF.show()
 Next let's remove empty words, by just applying a `where` operation:
 
 ```python
-%pyspark
 wordsNonNullDF = wordsCleanDF.where(col("word") != "")
 
 wordsNonNullDF.show()
@@ -426,14 +419,12 @@ wordsNonNullDF.show()
 With that we are finally ready to group by word and return the count by word
 
 ```python
-%pyspark
 resultsDF = wordsNonNullDF.groupby(col("word")).count()
 resultsDF
 ```
 
-Finally we order the counts in descending order and only show the top 10 word counts
+Finally we order the counts in descending order and only show the top 10 word counts. 
 
 ```python
-%pyspark
 resultsDF.orderBy("count", ascending=False).show(10)
 ```
