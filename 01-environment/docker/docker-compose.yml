@@ -675,6 +675,7 @@ services:
       ZEPPELIN_ADMIN_PASSWORD: ${PLATYS_ZEPPELIN_ADMIN_PASSWORD:-changeme}
       ZEPPELIN_USER_USERNAME: zeppelin
       ZEPPELIN_USER_PASSWORD: ${PLATYS_ZEPPELIN_USER_PASSWORD:-changeme}
+      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/zeppelin:/opt/zeppelin/conf.templates
@@ -686,6 +687,10 @@ services:
       - bash
       - -c
       - |
+        conda create -y --name py312 python=3.12.8
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate py312
+        pip install pyspark==3.5.3 boto3
         ./bin/zeppelin-init.sh
         ./bin/zeppelin.sh
     restart: unless-stopped
