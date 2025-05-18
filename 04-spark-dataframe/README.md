@@ -453,6 +453,28 @@ Finally let's write the enriched structure as a result to object storage using a
 ```python
 flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result/flights")
 ```
+
+To perform the same join using the domain-specific language, the statement looks like this
+
+```python
+%pyspark
+from pyspark.sql.functions import col
+
+# Create aliases for clarity
+a_origin = airportsRawDF.alias("a_origin")
+a_dest = airportsRawDF.alias("a_dest")
+
+flightsRefinedDF.alias("f") \
+    .join(a_origin, col("f.origin") == col("a_origin.iata_code"), "inner") \
+    .join(a_dest, col("f.destination") == col("a_dest.iata_code"), "inner") \
+    .select(
+        col("a_origin.name").alias("origin_airport_name"),
+        col("a_dest.name").alias("destination_airport_name"),
+        "f.*",
+    ) \
+    .show()
+```
+
 ## Use Spark SQL to perform analytics on the data
 
 Let's see the the 10 longest flights in descending order with `origin` and `destination`
