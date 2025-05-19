@@ -311,7 +311,7 @@ Finally let's import the data from the data-transfer folder.
 
 ```sql
 COPY flight_data.pg_airport_t(iata,airport,city,state,country,lat,long) 
-FROM '/data-transfer/flight-data/airports.csv' DELIMITER ',' CSV HEADER;
+FROM '/data-transfer/airports-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
 ### Query Table from Trino
