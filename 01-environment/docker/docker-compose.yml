@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__66f9c12278be2edd8a42f76000ea364acb77e23c
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__66f9c12278be2edd8a42f76000ea364acb77e23c
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__b7c03cf33cc677004b69b343ca98ce3dd119cd06
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__b7c03cf33cc677004b69b343ca98ce3dd119cd06
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -505,6 +505,8 @@ services:
         /usr/src/app/wait-for-it.sh -t 180 airflow-db:5432
         airflow scheduler
     environment:
+      # provide a health service on port 8974
+      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       # For backward compatibility, with Airflow <2.3
@@ -525,7 +527,6 @@ services:
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
       - AIRFLOW__OPENLINEAGE__DISABLED=true
-      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
