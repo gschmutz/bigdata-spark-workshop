@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__aa62a9dcc44e490bf18df89c69c6b691a0b848ee
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__aa62a9dcc44e490bf18df89c69c6b691a0b848ee
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__66f9c12278be2edd8a42f76000ea364acb77e23c
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__66f9c12278be2edd8a42f76000ea364acb77e23c
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -76,7 +76,7 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "python3 -c 'import socket; socket.create_connection((\"localhost\", 28304), timeout=5)'"]
+      test: [CMD-SHELL, "python3 -c 'import socket; socket.create_connection((\"localhost\", 28304), timeout=5)'"]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -140,11 +140,11 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f org.apache.spark.deploy.worker.Worker"]
+      test: [CMD-SHELL, "python3 -c 'import socket; socket.create_connection((\"localhost\", 28111), timeout=5)'"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 10s    
+      retries: 10
+      start_period: 20s
   spark-worker-2:
     image: bitnami/spark:3.5.3
     container_name: spark-worker-2
@@ -204,11 +204,11 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f org.apache.spark.deploy.worker.Worker"]
+      test: [CMD-SHELL, "python3 -c 'import socket; socket.create_connection((\"localhost\", 28112), timeout=5)'"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 10s       
+      retries: 10
+      start_period: 20s
   spark-history:
     image: bitnami/spark:3.5.3
     container_name: spark-history
