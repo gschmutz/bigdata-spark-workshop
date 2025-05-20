@@ -525,6 +525,7 @@ services:
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
       - AIRFLOW__OPENLINEAGE__DISABLED=true
+      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
