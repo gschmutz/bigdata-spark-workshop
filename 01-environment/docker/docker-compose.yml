@@ -76,11 +76,11 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f org.apache.spark.deploy.master.Master"]
+      test: ["CMD-SHELL", "python3 -c 'import socket; socket.create_connection((\"localhost\", 28304), timeout=5)'"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 10s  
+      retries: 10
+      start_period: 20s
   spark-worker-1:
     image: bitnami/spark:3.5.3
     container_name: spark-worker-1
