@@ -58,13 +58,25 @@ USE flight_db;
 and create a table `airport_t`:
 
 ```
-CREATE EXTERNAL TABLE airport_t (iata string
-                                , airport string
-                                , city string                                
-                                , state string
-                                , country string
-                                , lat double
-                                , long double)
+CREATE EXTERNAL TABLE airport_t (id int
+									  , ident string
+									  , type string
+                                , name string
+                                , latitude_deg double
+                                , longitude_deg double
+                                , elevation_ft int
+                                , continent string
+                                , iso_country string
+                                , iso_region string
+                                , municipality string
+                                , scheduled_service string
+                                , gps_code string
+                                , iata_code string
+                                , local_code string
+                                , home_link string
+                                , wikipedia_link string
+                                , keywords string
+                                )
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 LOCATION 's3a://flight-bucket/refined/airports';
 ```
@@ -296,22 +308,33 @@ DROP TABLE IF EXISTS flight_data.pg_airport_t;
 
 CREATE TABLE flight_data.pg_airport_t
 (
-  iata character varying(50) NOT NULL,
-  airport character varying(50),
-  city character varying(50),
-  state character varying(50),
-  country character varying(50),
-  lat float,
-  long float,
-  CONSTRAINT airport_pk PRIMARY KEY (iata)
+	id int
+	, ident character varying(50)
+	, type character varying(50)
+   , name character varying(200)
+   , latitude_deg float
+   , longitude_deg float
+   , elevation_ft int
+   , continent character varying(50)
+   , iso_country character varying(50)
+   , iso_region character varying(50)
+   , municipality character varying(100)
+   , scheduled_service character varying(50)
+   , gps_code character varying(50)
+   , iata_code character varying(50)
+   , local_code character varying(50)
+   , home_link character varying(200)
+   , wikipedia_link character varying(200)
+   , keywords character varying(1000)
+  , CONSTRAINT airport_pk PRIMARY KEY (id)
 );
 ```
 
 Finally let's import the data from the data-transfer folder. 
 
 ```sql
-COPY flight_data.pg_airport_t(iata,airport,city,state,country,lat,long) 
-FROM '/data-transfer/flight-data/airports.csv' DELIMITER ',' CSV HEADER;
+COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg, elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords) 
+FROM '/data-transfer/airports-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
 ### Query Table from Trino

@@ -1,19 +1,56 @@
 # Working with different data types
 
-In this workshop we will working with various data types. To make it not more complex than necessary, we just use the local filesystem to store the data using different data types and not S3 object storage.
+In this workshop we will working with various data types. 
 
 We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
+
+We only show the pure PySpark statement, if you want to execute the in Zepplin, then you have to add the `%pyspark` directive. 
 
 ## Read CSV File
 
 Let's read the raw airport data in CSV file format. 
 
 ```python
-%pyspark
 from pyspark.sql.types import *
-airportsRawDF = spark.read.csv("file:///data-transfer/flight-data/airports.csv", 
+airportsRawDF = spark.read.csv("file:///data-transfer/airports-data/airports.csv", 
     	sep=",", inferSchema="true", header="true")
 airportsRawDF.show(5)
+```
+
+let's check the schema of this dataframe
+
+```python
+airportsRawDF.printSchema()
+```
+
+and you should get
+
+```bash
+root
+ |-- id: integer (nullable = true)
+ |-- ident: string (nullable = true)
+ |-- type: string (nullable = true)
+ |-- name: string (nullable = true)
+ |-- latitude_deg: double (nullable = true)
+ |-- longitude_deg: double (nullable = true)
+ |-- elevation_ft: integer (nullable = true)
+ |-- continent: string (nullable = true)
+ |-- iso_country: string (nullable = true)
+ |-- iso_region: string (nullable = true)
+ |-- municipality: string (nullable = true)
+ |-- scheduled_service: string (nullable = true)
+ |-- gps_code: string (nullable = true)
+ |-- iata_code: string (nullable = true)
+ |-- local_code: string (nullable = true)
+ |-- home_link: string (nullable = true)
+ |-- wikipedia_link: string (nullable = true)
+ |-- keywords: string (nullable = true)
+``` 
+
+and create a new bucket to store the results of this workshop
+
+```bash
+docker exec -ti minio-mc mc mb minio-1/datatype-bucket
 ```
 
 ## Write as JSON
@@ -21,8 +58,28 @@ airportsRawDF.show(5)
 Store the data using the `json` data type:
 
 ```python
-%pyspark
-airportsRawDF.write.json("file:///data-transfer/tmp/json")
+airportsRawDF.write.json("s3a://datatype-bucket/json")
+```
+
+Let's view the data created in the bucket
+
+```
+docker exec -ti awscli s3cmd ls s3://datatype-bucket/json/
+```
+
+and you should see a result similar to the one shown below
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/json/
+2025-05-19 20:22            0  s3://datatype-bucket/json/_SUCCESS
+2025-05-19 20:22     16767132  s3://datatype-bucket/json/part-00000-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
+2025-05-19 20:22      8106536  s3://datatype-bucket/json/part-00001-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
+```
+
+let's view the content of one of the objects (make sure to adapt the object name)
+
+```bash
+docker exec -ti awscli s3cmd get s3://datatype-bucket/json/part-00000-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json - | less
 ```
 
 ## Write as Avro
@@ -30,28 +87,60 @@ airportsRawDF.write.json("file:///data-transfer/tmp/json")
 Store the data using the `avro` data type:
 
 ```python
-%pyspark
-airportsRawDF.write.format("avro").save("file:///data-transfer/tmp/avro")
+airportsRawDF.write.format("avro").save("s3a://datatype-bucket/avro")
 ```
 
-check for the output using the `tree` command
+Let's view the data created in the bucket
+
+```
+docker exec -ti awscli s3cmd ls s3://datatype-bucket/avro/
+```
+
+and you should see a result similar to the one shown below
 
 ```bash
-$ tree data-transfer/tmp/avro
-data-transfer/tmp/avro
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/avro/
+2025-05-19 20:31            0  s3://datatype-bucket/avro/_SUCCESS
+2025-05-19 20:31      3539632  s3://datatype-bucket/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+2025-05-19 20:31      1731266  s3://datatype-bucket/avro/part-00001-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+```
+
+Let's download the files to the local folder
+
+```bash
+cd $DATAPLATFORM_HOME
+sudo mkdir -p data-transfer/result/avro
+docker exec -ti awscli s3cmd get --recursive --force s3://datatype-bucket/avro/ data-transfer/result/avro
+```
+
+check for the output using the `tree` command.
+
+```bash
+cd data-transfer/result
+tree avro
+```
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ cd data-transfer/result
+tree avro
+avro
 ├── _SUCCESS
-└── part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
+├── part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+└── part-00001-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 ```
 
 Let's see the first 2 lines of the avro file. 
 
 ```bash
-$ head -n 2 data-transfer/tmp/avro/part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
-Objavro.schema�{"type":"record","name":"topLevelRecord","fields":[{"name":"iata","type":["string","null"]},{"name":"airport","type":["string","null"]},{"name":"city","type":["string","null"]},{"name":"state","type":["string","null"]},{"name":"country","type":["string","null"]},{"name":"lat","type":["double","null"]},{"name":"long","type":["double","null"]}]}0org.apache.spark.version
-3.2.4avro.codec
-               snappy.}]�ҹԠ�ekDiaL�������00MThigpen Bay SpringsMSUSA�z��)�?@� OV�7R(Liv)8ton Municipal
-                                                                                                      TX	B@[
-                                                                                                                   �>@�2��%�W�B\VMeadow Lake Colorado�CO	?<�c�LyC@im�!y$Z?D1GPerry-Warsaw
+head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+```
+
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+{"type":"record","name":"topLevelRecord","fields":[{"name":"id","type":["int","null"]},{"name":"ident","type":["string","null"]},{"name":"type","type":["string","null"]},{"name":"name","type":["string","null"]},{"name":"latitude_deg","type":["double","null"]},{"name":"longitude_deg","type":["double","null"]},{"name":"elevation_ft","type":["int","null"]},{"name":"continent","type":["string","null"]},{"name":"iso_country","type":["string","null"]},{"name":"iso_region","type":["string","null"]},{"name":"municipality","type":["string","null"]},{"name":"scheduled_service","type":["string","null"]},{"name":"gps_code","type":["string","null"]},{"name":"iata_code","type":["string","null"]},{"name":"local_code","type":["string","null"]},{"name":"home_link","type":["string","null"]},{"name":"wikipedia_link","type":["string","null"]},{"name":"keywords","type":["string","null"]}]}0org.apache.spark.version
+3.5.3avro.codec
+               snappyA�Y�$<�D��})1����t�e00Aheliport"Total RF H���V             D@�聏��R�NAUS
 ```
 
 Let's use the Avro tools to inspect the Avro files.
@@ -95,70 +184,129 @@ trevni_random  Create a Trevni file filled with random instances of a schema.
 trevni_tojson  Dumps a Trevni file as JSON.
 ```
 
-To see how many records are in an Avro file, use the `count` tool
+To see how many records are in an Avro file, use the `count` tool (replace the name of the file)
+
+```
+docker compose run --rm  avro-tools count /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+```
+
+and you should get a count of `54024`
 
 ```bash
-$ docker compose run --rm  avro-tools count /data-transfer/tmp/avro/part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
-23/05/20 20:16:42 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-3376
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm  avro-tools count /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+25/05/20 05:26:11 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+54024
 ```
 
 Let's use `tojson`to dump the Avro file as JSON, one line per record and only showing the first 10 records (using the `--head` option)
 
+```
+docker compose run --rm avro-tools tojson --head /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+```
+
 ```bash
-$ docker compose run --rm avro-tools tojson --head /data-transfer/tmp/avro/part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
-23/05/20 20:11:42 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-{"iata":{"string":"00M"},"airport":{"string":"Thigpen "},"city":{"string":"Bay Springs"},"state":{"string":"MS"},"country":{"string":"USA"},"lat":{"double":31.95376472},"long":{"double":-89.23450472}}
-{"iata":{"string":"00R"},"airport":{"string":"Livingston Municipal"},"city":{"string":"Livingston"},"state":{"string":"TX"},"country":{"string":"USA"},"lat":{"double":30.68586111},"long":{"double":-95.01792778}}
-{"iata":{"string":"00V"},"airport":{"string":"Meadow Lake"},"city":{"string":"Colorado Springs"},"state":{"string":"CO"},"country":{"string":"USA"},"lat":{"double":38.94574889},"long":{"double":-104.5698933}}
-{"iata":{"string":"01G"},"airport":{"string":"Perry-Warsaw"},"city":{"string":"Perry"},"state":{"string":"NY"},"country":{"string":"USA"},"lat":{"double":42.74134667},"long":{"double":-78.05208056}}
-{"iata":{"string":"01J"},"airport":{"string":"Hilliard Airpark"},"city":{"string":"Hilliard"},"state":{"string":"FL"},"country":{"string":"USA"},"lat":{"double":30.6880125},"long":{"double":-81.90594389}}
-{"iata":{"string":"01M"},"airport":{"string":"Tishomingo County"},"city":{"string":"Belmont"},"state":{"string":"MS"},"country":{"string":"USA"},"lat":{"double":34.49166667},"long":{"double":-88.20111111}}
-{"iata":{"string":"02A"},"airport":{"string":"Gragg-Wade "},"city":{"string":"Clanton"},"state":{"string":"AL"},"country":{"string":"USA"},"lat":{"double":32.85048667},"long":{"double":-86.61145333}}
-{"iata":{"string":"02C"},"airport":{"string":"Capitol"},"city":{"string":"Brookfield"},"state":{"string":"WI"},"country":{"string":"USA"},"lat":{"double":43.08751},"long":{"double":-88.17786917}}
-{"iata":{"string":"02G"},"airport":{"string":"Columbiana County"},"city":{"string":"East Liverpool"},"state":{"string":"OH"},"country":{"string":"USA"},"lat":{"double":40.67331278},"long":{"double":-80.64140639}}
-{"iata":{"string":"03D"},"airport":{"string":"Memphis Memorial"},"city":{"string":"Memphis"},"state":{"string":"MO"},"country":{"string":"USA"},"lat":{"double":40.44725889},"long":{"double":-92.22696056}}
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm avro-tools tojson --head /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+25/05/20 05:27:17 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+{"id":{"int":6523},"ident":{"string":"00A"},"type":{"string":"heliport"},"name":{"string":"Total RF Heliport"},"latitude_deg":{"double":40.070985},"longitude_deg":{"double":-74.933689},"elevation_ft":{"int":11},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-PA"},"municipality":{"string":"Bensalem"},"scheduled_service":{"string":"no"},"gps_code":{"string":"K00A"},"iata_code":null,"local_code":{"string":"00A"},"home_link":{"string":"https://www.penndot.pa.gov/TravelInPA/airports-pa/Pages/Total-RF-Heliport.aspx"},"wikipedia_link":null,"keywords":null}
+{"id":{"int":323361},"ident":{"string":"00AA"},"type":{"string":"small_airport"},"name":{"string":"Aero B Ranch Airport"},"latitude_deg":{"double":38.704022},"longitude_deg":{"double":-101.473911},"elevation_ft":{"int":3435},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-KS"},"municipality":{"string":"Leoti"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00AA"},"iata_code":null,"local_code":{"string":"00AA"},"home_link":null,"wikipedia_link":null,"keywords":null}
+{"id":{"int":6524},"ident":{"string":"00AK"},"type":{"string":"small_airport"},"name":{"string":"Lowell Field"},"latitude_deg":{"double":59.947733},"longitude_deg":{"double":-151.692524},"elevation_ft":{"int":450},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-AK"},"municipality":{"string":"Anchor Point"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00AK"},"iata_code":null,"local_code":{"string":"00AK"},"home_link":null,"wikipedia_link":null,"keywords":null}
+{"id":{"int":6525},"ident":{"string":"00AL"},"type":{"string":"small_airport"},"name":{"string":"Epps Airpark"},"latitude_deg":{"double":34.86479949951172},"longitude_deg":{"double":-86.77030181884766},"elevation_ft":{"int":820},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-AL"},"municipality":{"string":"Harvest"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00AL"},"iata_code":null,"local_code":{"string":"00AL"},"home_link":null,"wikipedia_link":null,"keywords":null}
+{"id":{"int":506791},"ident":{"string":"00AN"},"type":{"string":"small_airport"},"name":{"string":"Katmai Lodge Airport"},"latitude_deg":{"double":59.093287},"longitude_deg":{"double":-156.456699},"elevation_ft":{"int":80},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-AK"},"municipality":{"string":"King Salmon"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00AN"},"iata_code":null,"local_code":{"string":"00AN"},"home_link":null,"wikipedia_link":null,"keywords":null}
+{"id":{"int":6526},"ident":{"string":"00AR"},"type":{"string":"closed"},"name":{"string":"Newport Hospital & Clinic Heliport"},"latitude_deg":{"double":35.6087},"longitude_deg":{"double":-91.254898},"elevation_ft":{"int":237},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-AR"},"municipality":{"string":"Newport"},"scheduled_service":{"string":"no"},"gps_code":null,"iata_code":null,"local_code":null,"home_link":null,"wikipedia_link":null,"keywords":{"string":"00AR"}}
+{"id":{"int":322127},"ident":{"string":"00AS"},"type":{"string":"small_airport"},"name":{"string":"Fulton Airport"},"latitude_deg":{"double":34.9428028},"longitude_deg":{"double":-97.8180194},"elevation_ft":{"int":1100},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-OK"},"municipality":{"string":"Alex"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00AS"},"iata_code":null,"local_code":{"string":"00AS"},"home_link":null,"wikipedia_link":null,"keywords":null}
+{"id":{"int":6527},"ident":{"string":"00AZ"},"type":{"string":"small_airport"},"name":{"string":"Cordes Airport"},"latitude_deg":{"double":34.305599212646484},"longitude_deg":{"double":-112.16500091552734},"elevation_ft":{"int":3810},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-AZ"},"municipality":{"string":"Cordes"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00AZ"},"iata_code":null,"local_code":{"string":"00AZ"},"home_link":null,"wikipedia_link":null,"keywords":null}
+{"id":{"int":6528},"ident":{"string":"00CA"},"type":{"string":"small_airport"},"name":{"string":"Goldstone (GTS) Airport"},"latitude_deg":{"double":35.35474},"longitude_deg":{"double":-116.885329},"elevation_ft":{"int":3038},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-CA"},"municipality":{"string":"Barstow"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00CA"},"iata_code":null,"local_code":{"string":"00CA"},"home_link":null,"wikipedia_link":{"string":"https://en.wikipedia.org/wiki/Goldstone_Gts_Airport"},"keywords":null}
+{"id":{"int":324424},"ident":{"string":"00CL"},"type":{"string":"small_airport"},"name":{"string":"Williams Ag Airport"},"latitude_deg":{"double":39.427188},"longitude_deg":{"double":-121.763427},"elevation_ft":{"int":87},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-CA"},"municipality":{"string":"Biggs"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00CL"},"iata_code":null,"local_code":{"string":"00CL"},"home_link":null,"wikipedia_link":null,"keywords":null}
 ```
 
 Now let's see the meta data of the Avro file
 
 ```bash
-$ docker compose run --rm avro-tools getmeta /data-transfer/tmp/avro/part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
-23/05/20 20:13:26 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-avro.schema	{"type":"record","name":"topLevelRecord","fields":[{"name":"iata","type":["string","null"]},{"name":"airport","type":["string","null"]},{"name":"city","type":["string","null"]},{"name":"state","type":["string","null"]},{"name":"country","type":["string","null"]},{"name":"lat","type":["double","null"]},{"name":"long","type":["double","null"]}]}
-org.apache.spark.version	3.2.4
-avro.codec	snappy
+docker compose run --rm avro-tools getmeta /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+```
+
+and you should get
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm avro-tools getmeta /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+25/05/20 05:28:52 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+avro.schema     {"type":"record","name":"topLevelRecord","fields":[{"name":"id","type":["int","null"]},{"name":"ident","type":["string","null"]},{"name":"type","type":["string","null"]},{"name":"name","type":["string","null"]},{"name":"latitude_deg","type":["double","null"]},{"name":"longitude_deg","type":["double","null"]},{"name":"elevation_ft","type":["int","null"]},{"name":"continent","type":["string","null"]},{"name":"iso_country","type":["string","null"]},{"name":"iso_region","type":["string","null"]},{"name":"municipality","type":["string","null"]},{"name":"scheduled_service","type":["string","null"]},{"name":"gps_code","type":["string","null"]},{"name":"iata_code","type":["string","null"]},{"name":"local_code","type":["string","null"]},{"name":"home_link","type":["string","null"]},{"name":"wikipedia_link","type":["string","null"]},{"name":"keywords","type":["string","null"]}]}
+org.apache.spark.version        3.5.3
+avro.codec      snappy
 ```
 
 If you only want to see the schema, use the `getschema` tool instead
 
 ```bash
-$ docker compose run --rm avro-tools getschema /data-transfer/tmp/avro/part-00000-facaf478-33c0-42e9-b358-c9e6b3e56921-c000.avro
-23/05/20 20:14:57 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+docker compose run --rm avro-tools getschema /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+```
+
+and you should get
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm avro-tools getschema /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+25/05/20 05:30:01 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 {
   "type" : "record",
   "name" : "topLevelRecord",
   "fields" : [ {
-    "name" : "iata",
+    "name" : "id",
+    "type" : [ "int", "null" ]
+  }, {
+    "name" : "ident",
     "type" : [ "string", "null" ]
   }, {
-    "name" : "airport",
+    "name" : "type",
     "type" : [ "string", "null" ]
   }, {
-    "name" : "city",
+    "name" : "name",
     "type" : [ "string", "null" ]
   }, {
-    "name" : "state",
-    "type" : [ "string", "null" ]
-  }, {
-    "name" : "country",
-    "type" : [ "string", "null" ]
-  }, {
-    "name" : "lat",
+    "name" : "latitude_deg",
     "type" : [ "double", "null" ]
   }, {
-    "name" : "long",
+    "name" : "longitude_deg",
     "type" : [ "double", "null" ]
+  }, {
+    "name" : "elevation_ft",
+    "type" : [ "int", "null" ]
+  }, {
+    "name" : "continent",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "iso_country",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "iso_region",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "municipality",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "scheduled_service",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "gps_code",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "iata_code",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "local_code",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "home_link",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "wikipedia_link",
+    "type" : [ "string", "null" ]
+  }, {
+    "name" : "keywords",
+    "type" : [ "string", "null" ]
   } ]
 }
 ```
@@ -168,17 +316,34 @@ $ docker compose run --rm avro-tools getschema /data-transfer/tmp/avro/part-0000
 Store the data using the `parquet` data type:
 
 ```python
-%pyspark
-airportsRawDF.write.parquet("file:///data-transfer/tmp/parquet")
+airportsRawDF.write.parquet("s3a://datatype-bucket/parquet")
 ```
 
-check for the output using the `tree` command
 
 ```bash
-$ tree data-transfer/tmp/parquet
-data-transfer/tmp/parquet/
+cd $DATAPLATFORM_HOME
+sudo mkdir -p data-transfer/result/parquet
+docker exec -ti awscli s3cmd get --recursive s3://datatype-bucket/parquet/ /data-transfer/result/parquet 
+```
+
+check for the output using the `tree` command.
+
+```bash
+cd data-transfer/result
+tree parquet
+```
+
+and you should see a result similar to 
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ cd data-transfer/result
+tree parquet
+parquet
 ├── _SUCCESS
-└── part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
+├── part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+└── part-00001-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+
+1 directory, 3 files
 ```
 
 Let's use the Avro tools to inspect the Avro files.
@@ -301,14 +466,25 @@ where <input> is the parquet file to print the column and offset indexes for
 To see the number of rows in the Parquet file
 
 ```bash
-$ docker compose run --rm parquet-tools rowcount /data-transfer/tmp/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
-Total RowCount: 3376
+docker compose run --rm parquet-tools rowcount /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+```
+
+and you should see a count of `54024`
+
+```bash
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools rowcount /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+Total RowCount: 54024
 ```
 
 To see the metadata of the Parquet file, use the `meta` tool
 
 ```bash
-$ docker compose run --rm parquet-tools meta  /data-transfer/tmp/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
+docker compose run --rm parquet-tools meta  /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+``
+
+```bash
+$ docker compose run --rm parquet-tools meta  /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
 file:        file:/data-transfer/tmp/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
 creator:     parquet-mr version 1.12.2 (build 77e30c8093386ec52c3cfa6c34b7ef3321322c94)
 extra:       org.apache.spark.version = 3.2.4
@@ -338,7 +514,7 @@ long:         DOUBLE SNAPPY DO:0 FPO:113552 SZ:27049/27043/1.00 VC:3376 ENC:BIT_
 and to see the schema, use the `schema` tool
 
 ```bash
-$ docker compose run --rm parquet-tools schema  /data-transfer/tmp/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
+$ docker compose run --rm parquet-tools schema  /data-transfer/result/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
 message spark_schema {
   optional binary iata (STRING);
   optional binary airport (STRING);
@@ -353,7 +529,7 @@ message spark_schema {
 and finally to see the first 10 records, use the `head` tool with the `-n` option
 
 ```bash
-$ docker compose run --rm parquet-tools head -n 10  /data-transfer/tmp/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
+$ docker compose run --rm parquet-tools head -n 10  /data-transfer/result/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
 iata = 00M
 airport = Thigpen
 city = Bay Springs
@@ -433,4 +609,72 @@ state = MO
 country = USA
 lat = 40.44725889
 long = -92.22696056
+```
+
+## Reading from PostgreSQL
+
+In this section we will see how we can use Spark to read from a relational database table. We will use PostgreSQL which is part of the dataplatform.
+
+Let's create the `pg_airports_t` table in PostgreSQL, which we will use.
+
+Connect to PostgreSQL using the `psql` CLI
+
+```bash
+docker exec -ti postgresql psql -d postgres -U postgres
+```
+
+Create a database and the table for the airport data 
+
+```sql
+CREATE SCHEMA flight_data;
+
+DROP TABLE IF EXISTS flight_data.pg_airport_t;
+
+CREATE TABLE flight_data.pg_airport_t
+(
+	id int
+	, ident character varying(50)
+	, type character varying(50)
+   , name character varying(200)
+   , latitude_deg float
+   , longitude_deg float
+   , elevation_ft int
+   , continent character varying(50)
+   , iso_country character varying(50)
+   , iso_region character varying(50)
+   , municipality character varying(100)
+   , scheduled_service character varying(50)
+   , gps_code character varying(50)
+   , iata_code character varying(50)
+   , local_code character varying(50)
+   , home_link character varying(200)
+   , wikipedia_link character varying(200)
+   , keywords character varying(1000)
+  , CONSTRAINT airport_pk PRIMARY KEY (id)
+);
+```
+
+Finally let's import the data from the data-transfer folder. 
+
+```sql
+COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg, elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords) 
+FROM '/data-transfer/airports-data/airports.csv' DELIMITER ',' CSV HEADER;
+```
+
+Now in Pyspark (for example from Zeppelin) use the following statement to read from the `flight_data.pg_airport_t` table. 
+
+```python
+jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql:postgresql").option("dbtable", "flight_data.pg_airport_t").option("user", "postgres").option("password", "postgres").load()
+```
+
+and let's view the data
+
+```python
+jdbcDF.show()
+```
+
+let's see the schema derived from the table
+
+```python
+jdbcDF.printSchema()
 ```
