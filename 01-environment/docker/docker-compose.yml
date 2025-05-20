@@ -76,10 +76,10 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:28304"]
+      test: ["CMD-SHELL", "pgrep -f org.apache.spark.deploy.master.Master"]
       interval: 30s
       timeout: 10s
-      retries: 10
+      retries: 5
       start_period: 10s  
   spark-worker-1:
     image: bitnami/spark:3.5.3
@@ -139,6 +139,12 @@ services:
       - ./scripts/docker/maven-download.sh:/maven-download.sh
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:28111"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s    
   spark-worker-2:
     image: bitnami/spark:3.5.3
     container_name: spark-worker-2
@@ -197,6 +203,12 @@ services:
       - ./scripts/docker/maven-download.sh:/maven-download.sh
       - ./container-volume/spark/logs/:/var/log/spark/logs
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:28112"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s      
   spark-history:
     image: bitnami/spark:3.5.3
     container_name: spark-history
