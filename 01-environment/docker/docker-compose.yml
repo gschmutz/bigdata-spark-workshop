@@ -76,10 +76,11 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark
     restart: unless-stopped
     healthcheck:
-      test: [CMD, spark-submit, --version]
+      test: ["CMD", "curl", "-f", "http://localhost:28304"]
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 10s  
   spark-worker-1:
     image: bitnami/spark:3.5.3
     container_name: spark-worker-1
