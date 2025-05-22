@@ -6,9 +6,38 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 
 We only show the pure PySpark statement, if you want to execute the in Zepplin, then you have to add the `%pyspark` directive. 
 
+
+# Prepare the data, if no longer available
+
+The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
+
+Create the flight bucket:
+
+```bash
+docker exec -ti awscli s3cmd mb s3://flight-bucket
+```
+
+or with `mc`
+ 
+```bash
+docker exec -ti minio-mc mc mb minio-1/flight-bucket
+```
+
+**Airports:**
+
+```bash
+docker exec -ti awscli s3cmd put /data-transfer/airports-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+```
+
+or with `mc`
+
+```bash
+docker exec -ti minio-mc mc cp /data-transfer/airports-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
+```
+
 ## Read CSV File
 
-Let's read the raw airport data in CSV file format. 
+Let's read the raw airport data in CSV file format. You can either use Zeppelin, Jupyter or pyspark CLI for that. 
 
 ```python
 from pyspark.sql.types import *
@@ -17,7 +46,9 @@ airportsRawDF = spark.read.csv("file:///data-transfer/airports-data/airports.csv
 airportsRawDF.show(5)
 ```
 
-let's check the schema of this dataframe
+Don't forget to add the `%pyspark` directive if you use Zeppelin.
+
+Let's check the schema of this dataframe
 
 ```python
 airportsRawDF.printSchema()
@@ -47,7 +78,7 @@ root
  |-- keywords: string (nullable = true)
 ``` 
 
-and create a new bucket to store the results of this workshop
+Let's create another new bucket to store the results of this workshop
 
 ```bash
 docker exec -ti minio-mc mc mb minio-1/datatype-bucket
@@ -76,7 +107,7 @@ ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker ex
 2025-05-19 20:22      8106536  s3://datatype-bucket/json/part-00001-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
 ```
 
-let's view the content of one of the objects (make sure to adapt the object name)
+Let's view the content of one of the objects (make sure to adapt the object name)
 
 ```bash
 docker exec -ti awscli s3cmd get s3://datatype-bucket/json/part-00000-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json - | less
@@ -135,6 +166,7 @@ Let's see the first 2 lines of the avro file.
 head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 ```
 
+We can see in the result that the data first holds the Avro schema followed by the binary serialized data
 
 ```bash
 ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
@@ -143,7 +175,13 @@ ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker/data-trans
                snappyA�Y�$<�D��})1����t�e00Aheliport"Total RF H���V             D@�聏��R�NAUS
 ```
 
-Let's use the Avro tools to inspect the Avro files.
+Let's use the Avro tools to inspect the Avro files. `avro-tools` is running as a container, therefore we can just run it.
+
+```bash
+docker compose run --rm avro-tools
+```
+
+you should see the help page of the `avro-tools`
 
 ```bash
 $ docker compose run --rm avro-tools
@@ -319,6 +357,22 @@ Store the data using the `parquet` data type:
 airportsRawDF.write.parquet("s3a://datatype-bucket/parquet")
 ```
 
+Let's view the data created in the bucket
+
+```
+docker exec -ti awscli s3cmd ls s3://datatype-bucket/parquet/
+```
+
+and you should see a result similar to the one shown below
+
+```bash
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/parquet/
+2025-05-22 11:37            0  s3://datatype-bucket/parquet/_SUCCESS
+2025-05-22 11:37      3366543  s3://datatype-bucket/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+2025-05-22 11:37      1618896  s3://datatype-bucket/parquet/part-00001-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+```
+
+Let's download the files to the local folder
 
 ```bash
 cd $DATAPLATFORM_HOME
@@ -336,20 +390,21 @@ tree parquet
 and you should see a result similar to 
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ cd data-transfer/result
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ cd data-transfer/result
 tree parquet
 parquet
 ├── _SUCCESS
-├── part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
-└── part-00001-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+├── part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+└── part-00001-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
 
 1 directory, 3 files
 ```
 
-Let's use the Avro tools to inspect the Avro files.
+Let's use the Parquet tools to inspect the Parquet files.
 
 ```bash
-$ docker compose run --rm parquet-tools
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 No command specified
 
 parquet-tools cat:
@@ -484,131 +539,238 @@ docker compose run --rm parquet-tools meta  /data-transfer/result/parquet/part-0
 ``
 
 ```bash
-$ docker compose run --rm parquet-tools meta  /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
-file:        file:/data-transfer/tmp/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
-creator:     parquet-mr version 1.12.2 (build 77e30c8093386ec52c3cfa6c34b7ef3321322c94)
-extra:       org.apache.spark.version = 3.2.4
-extra:       org.apache.spark.sql.parquet.row.metadata = {"type":"struct","fields":[{"name":"iata","type":"string","nullable":true,"metadata":{}},{"name":"airport","type":"string","nullable":true,"metadata":{}},{"name":"city","type":"string","nullable":true,"metadata":{}},{"name":"state","type":"string","nullable":true,"metadata":{}},{"name":"country","type":"string","nullable":true,"metadata":{}},{"name":"lat","type":"double","nullable":true,"metadata":{}},{"name":"long","type":"double","nullable":true,"metadata":{}}]}
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools meta /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+file:              file:/data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet 
+creator:           parquet-mr version 1.13.1 (build db4183109d5b734ec5930d870cdae161e408ddba) 
+extra:             org.apache.spark.version = 3.5.3 
+extra:             org.apache.spark.sql.parquet.row.metadata = {"type":"struct","fields":[{"name":"id","type":"integer","nullable":true,"metadata":{}},{"name":"ident","type":"string","nullable":true,"metadata":{}},{"name":"type","type":"string","nullable":true,"metadata":{}},{"name":"name","type":"string","nullable":true,"metadata":{}},{"name":"latitude_deg","type":"double","nullable":true,"metadata":{}},{"name":"longitude_deg","type":"double","nullable":true,"metadata":{}},{"name":"elevation_ft","type":"integer","nullable":true,"metadata":{}},{"name":"continent","type":"string","nullable":true,"metadata":{}},{"name":"iso_country","type":"string","nullable":true,"metadata":{}},{"name":"iso_region","type":"string","nullable":true,"metadata":{}},{"name":"municipality","type":"string","nullable":true,"metadata":{}},{"name":"scheduled_service","type":"string","nullable":true,"metadata":{}},{"name":"gps_code","type":"string","nullable":true,"metadata":{}},{"name":"iata_code","type":"string","nullable":true,"metadata":{}},{"name":"local_code","type":"string","nullable":true,"metadata":{}},{"name":"home_link","type":"string","nullable":true,"metadata":{}},{"name":"wikipedia_link","type":"string","nullable":true,"metadata":{}},{"name":"keywords","type":"string","nullable":true,"metadata":{}}]} 
 
-file schema: spark_schema
+file schema:       spark_schema 
 --------------------------------------------------------------------------------
-iata:        OPTIONAL BINARY L:STRING R:0 D:1
-airport:     OPTIONAL BINARY L:STRING R:0 D:1
-city:        OPTIONAL BINARY L:STRING R:0 D:1
-state:       OPTIONAL BINARY L:STRING R:0 D:1
-country:     OPTIONAL BINARY L:STRING R:0 D:1
-lat:         OPTIONAL DOUBLE R:0 D:1
-long:        OPTIONAL DOUBLE R:0 D:1
+id:                OPTIONAL INT32 R:0 D:1
+ident:             OPTIONAL BINARY L:STRING R:0 D:1
+type:              OPTIONAL BINARY L:STRING R:0 D:1
+name:              OPTIONAL BINARY L:STRING R:0 D:1
+latitude_deg:      OPTIONAL DOUBLE R:0 D:1
+longitude_deg:     OPTIONAL DOUBLE R:0 D:1
+elevation_ft:      OPTIONAL INT32 R:0 D:1
+continent:         OPTIONAL BINARY L:STRING R:0 D:1
+iso_country:       OPTIONAL BINARY L:STRING R:0 D:1
+iso_region:        OPTIONAL BINARY L:STRING R:0 D:1
+municipality:      OPTIONAL BINARY L:STRING R:0 D:1
+scheduled_service: OPTIONAL BINARY L:STRING R:0 D:1
+gps_code:          OPTIONAL BINARY L:STRING R:0 D:1
+iata_code:         OPTIONAL BINARY L:STRING R:0 D:1
+local_code:        OPTIONAL BINARY L:STRING R:0 D:1
+home_link:         OPTIONAL BINARY L:STRING R:0 D:1
+wikipedia_link:    OPTIONAL BINARY L:STRING R:0 D:1
+keywords:          OPTIONAL BINARY L:STRING R:0 D:1
 
-row group 1: RC:3376 TS:188503 OFFSET:4
+row group 1:       RC:54024 TS:5360817 OFFSET:4 
 --------------------------------------------------------------------------------
-iata:         BINARY SNAPPY DO:0 FPO:4 SZ:15169/23709/1.56 VC:3376 ENC:BIT_PACKED,PLAIN,RLE ST:[min: 00M, max: ZZV, num_nulls: 0]
-airport:      BINARY SNAPPY DO:0 FPO:15173 SZ:39581/68276/1.72 VC:3376 ENC:BIT_PACKED,PLAIN,RLE ST:[min: Abbeville Chris Crusta Memorial, max: Zephyrhills Municipal, num_nulls: 0]
-city:         BINARY SNAPPY DO:54754 FPO:78407 SZ:28763/39366/1.37 VC:3376 ENC:BIT_PACKED,PLAIN_DICTIONARY,RLE ST:[min: Abbeville, max: Zuni, num_nulls: 0]
-state:        BINARY SNAPPY DO:83517 FPO:83790 SZ:2822/2907/1.03 VC:3376 ENC:BIT_PACKED,PLAIN_DICTIONARY,RLE ST:[min: AK, max: WY, num_nulls: 0]
-country:      BINARY SNAPPY DO:86339 FPO:86446 SZ:164/159/0.97 VC:3376 ENC:BIT_PACKED,PLAIN_DICTIONARY,RLE ST:[min: Federated States of Micronesia, max: USA, num_nulls: 0]
-lat:          DOUBLE SNAPPY DO:0 FPO:86503 SZ:27049/27043/1.00 VC:3376 ENC:BIT_PACKED,PLAIN,RLE ST:[min: 7.367222, max: 71.2854475, num_nulls: 0]
-long:         DOUBLE SNAPPY DO:0 FPO:113552 SZ:27049/27043/1.00 VC:3376 ENC:BIT_PACKED,PLAIN,RLE ST:[min: -176.6460306, max: 145.621384, num_nulls: 0]
+id:                 INT32 SNAPPY DO:0 FPO:4 SZ:216232/216207/1.00 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: 2, max: 558440, num_nulls: 0]
+ident:              BINARY SNAPPY DO:0 FPO:216236 SZ:238411/498265/2.09 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: 00A, max: rjns, num_nulls: 0]
+type:               BINARY SNAPPY DO:454647 FPO:454765 SZ:17781/17780/1.00 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: balloonport, max: small_airport, num_nulls: 0]
+name:               BINARY SNAPPY DO:0 FPO:472428 SZ:766089/1468044/1.92 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: """Ghost"" International Airport", max: ​Isla de Desecheo Helipad, num_nulls: 0]
+latitude_deg:       DOUBLE SNAPPY DO:0 FPO:1238517 SZ:400205/432302/1.08 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: -89.989444, max: 82.75, num_nulls: 0]
+longitude_deg:      DOUBLE SNAPPY DO:0 FPO:1638722 SZ:405788/432303/1.07 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: -179.876999, max: 179.9757, num_nulls: 0]
+elevation_ft:       INT32 SNAPPY DO:2044510 FPO:2066338 SZ:94999/95104/1.00 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: -1266, max: 17372, num_nulls: 10066]
+continent:          BINARY SNAPPY DO:2139509 FPO:2139567 SZ:2127/2252/1.06 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: AF, max: SA, num_nulls: 0]
+iso_country:        BINARY SNAPPY DO:2141636 FPO:2142548 SZ:4477/5976/1.33 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: AD, max: ZW, num_nulls: 0]
+iso_region:         BINARY SNAPPY DO:2146113 FPO:2158943 SZ:65525/81213/1.24 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: AD-04, max: ZW-MW, num_nulls: 0]
+municipality:       BINARY SNAPPY DO:2211638 FPO:2489352 SZ:371717/480678/1.29 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: """Jaunkalmes"", max: Žocene, num_nulls: 2895]
+scheduled_service:  BINARY SNAPPY DO:2583355 FPO:2583409 SZ:3040/3155/1.04 VC:54024 ENC:RLE,PLAIN_DICTIONARY,BIT_PACKED ST:[min: Lejasciema pag., max: yes, num_nulls: 0]
+gps_code:           BINARY SNAPPY DO:0 FPO:2586395 SZ:147711/236912/1.60 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: LV4412", max: ZYXC, num_nulls: 25018]
+iata_code:          BINARY SNAPPY DO:0 FPO:2734106 SZ:31309/46111/1.47 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: AAA, max: no, num_nulls: 47912]
+local_code:         BINARY SNAPPY DO:0 FPO:2765415 SZ:125839/207154/1.65 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: 00A, max: ZZV, num_nulls: 28459]
+home_link:          BINARY SNAPPY DO:0 FPO:2891254 SZ:80300/156416/1.95 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: http://GillespieField.com/, max: https:/https://www.dynali.com//www.dynali.com/, num_nulls: 50494]
+wikipedia_link:     BINARY SNAPPY DO:0 FPO:2971554 SZ:205132/716740/3.49 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: http://de.wikipedia.org/wiki/Albertus_Airport, max: https://zh.wikipedia.org/wiki/%E9%83%91%E5%B7%9E%E4%B8%8A%E8%A1%97%E6%9C%BA%E5%9C%BA, num_nulls: 41736]
+keywords:           BINARY SNAPPY DO:0 FPO:3176686 SZ:183387/264205/1.44 VC:54024 ENC:RLE,PLAIN,BIT_PACKED ST:[min: """Alas de Rauch""", max: 황수원비행장, 黃水院飛行場, num_nulls: 40762]
 ``` 
 
 and to see the schema, use the `schema` tool
 
 ```bash
-$ docker compose run --rm parquet-tools schema  /data-transfer/result/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools schema /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 message spark_schema {
-  optional binary iata (STRING);
-  optional binary airport (STRING);
-  optional binary city (STRING);
-  optional binary state (STRING);
-  optional binary country (STRING);
-  optional double lat;
-  optional double long;
+  optional int32 id;
+  optional binary ident (STRING);
+  optional binary type (STRING);
+  optional binary name (STRING);
+  optional double latitude_deg;
+  optional double longitude_deg;
+  optional int32 elevation_ft;
+  optional binary continent (STRING);
+  optional binary iso_country (STRING);
+  optional binary iso_region (STRING);
+  optional binary municipality (STRING);
+  optional binary scheduled_service (STRING);
+  optional binary gps_code (STRING);
+  optional binary iata_code (STRING);
+  optional binary local_code (STRING);
+  optional binary home_link (STRING);
+  optional binary wikipedia_link (STRING);
+  optional binary keywords (STRING);
 }
 ```
 
 and finally to see the first 10 records, use the `head` tool with the `-n` option
 
 ```bash
-$ docker compose run --rm parquet-tools head -n 10  /data-transfer/result/parquet/part-00000-1f3942a8-da8d-4338-b56a-a347991f1e00-c000.snappy.parquet
-iata = 00M
-airport = Thigpen
-city = Bay Springs
-state = MS
-country = USA
-lat = 31.95376472
-long = -89.23450472
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools head -n 10 /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
+id = 6523
+ident = 00A
+type = heliport
+name = Total RF Heliport
+latitude_deg = 40.070985
+longitude_deg = -74.933689
+elevation_ft = 11
+continent = NA
+iso_country = US
+iso_region = US-PA
+municipality = Bensalem
+scheduled_service = no
+gps_code = K00A
+local_code = 00A
+home_link = https://www.penndot.pa.gov/TravelInPA/airports-pa/Pages/Total-RF-Heliport.aspx
 
-iata = 00R
-airport = Livingston Municipal
-city = Livingston
-state = TX
-country = USA
-lat = 30.68586111
-long = -95.01792778
+id = 323361
+ident = 00AA
+type = small_airport
+name = Aero B Ranch Airport
+latitude_deg = 38.704022
+longitude_deg = -101.473911
+elevation_ft = 3435
+continent = NA
+iso_country = US
+iso_region = US-KS
+municipality = Leoti
+scheduled_service = no
+gps_code = 00AA
+local_code = 00AA
 
-iata = 00V
-airport = Meadow Lake
-city = Colorado Springs
-state = CO
-country = USA
-lat = 38.94574889
-long = -104.5698933
+id = 6524
+ident = 00AK
+type = small_airport
+name = Lowell Field
+latitude_deg = 59.947733
+longitude_deg = -151.692524
+elevation_ft = 450
+continent = NA
+iso_country = US
+iso_region = US-AK
+municipality = Anchor Point
+scheduled_service = no
+gps_code = 00AK
+local_code = 00AK
 
-iata = 01G
-airport = Perry-Warsaw
-city = Perry
-state = NY
-country = USA
-lat = 42.74134667
-long = -78.05208056
+id = 6525
+ident = 00AL
+type = small_airport
+name = Epps Airpark
+latitude_deg = 34.86479949951172
+longitude_deg = -86.77030181884766
+elevation_ft = 820
+continent = NA
+iso_country = US
+iso_region = US-AL
+municipality = Harvest
+scheduled_service = no
+gps_code = 00AL
+local_code = 00AL
 
-iata = 01J
-airport = Hilliard Airpark
-city = Hilliard
-state = FL
-country = USA
-lat = 30.6880125
-long = -81.90594389
+id = 506791
+ident = 00AN
+type = small_airport
+name = Katmai Lodge Airport
+latitude_deg = 59.093287
+longitude_deg = -156.456699
+elevation_ft = 80
+continent = NA
+iso_country = US
+iso_region = US-AK
+municipality = King Salmon
+scheduled_service = no
+gps_code = 00AN
+local_code = 00AN
 
-iata = 01M
-airport = Tishomingo County
-city = Belmont
-state = MS
-country = USA
-lat = 34.49166667
-long = -88.20111111
+id = 6526
+ident = 00AR
+type = closed
+name = Newport Hospital & Clinic Heliport
+latitude_deg = 35.6087
+longitude_deg = -91.254898
+elevation_ft = 237
+continent = NA
+iso_country = US
+iso_region = US-AR
+municipality = Newport
+scheduled_service = no
+keywords = 00AR
 
-iata = 02A
-airport = Gragg-Wade
-city = Clanton
-state = AL
-country = USA
-lat = 32.85048667
-long = -86.61145333
+id = 322127
+ident = 00AS
+type = small_airport
+name = Fulton Airport
+latitude_deg = 34.9428028
+longitude_deg = -97.8180194
+elevation_ft = 1100
+continent = NA
+iso_country = US
+iso_region = US-OK
+municipality = Alex
+scheduled_service = no
+gps_code = 00AS
+local_code = 00AS
 
-iata = 02C
-airport = Capitol
-city = Brookfield
-state = WI
-country = USA
-lat = 43.08751
-long = -88.17786917
+id = 6527
+ident = 00AZ
+type = small_airport
+name = Cordes Airport
+latitude_deg = 34.305599212646484
+longitude_deg = -112.16500091552734
+elevation_ft = 3810
+continent = NA
+iso_country = US
+iso_region = US-AZ
+municipality = Cordes
+scheduled_service = no
+gps_code = 00AZ
+local_code = 00AZ
 
-iata = 02G
-airport = Columbiana County
-city = East Liverpool
-state = OH
-country = USA
-lat = 40.67331278
-long = -80.64140639
+id = 6528
+ident = 00CA
+type = small_airport
+name = Goldstone (GTS) Airport
+latitude_deg = 35.35474
+longitude_deg = -116.885329
+elevation_ft = 3038
+continent = NA
+iso_country = US
+iso_region = US-CA
+municipality = Barstow
+scheduled_service = no
+gps_code = 00CA
+local_code = 00CA
+wikipedia_link = https://en.wikipedia.org/wiki/Goldstone_Gts_Airport
 
-iata = 03D
-airport = Memphis Memorial
-city = Memphis
-state = MO
-country = USA
-lat = 40.44725889
-long = -92.22696056
+id = 324424
+ident = 00CL
+type = small_airport
+name = Williams Ag Airport
+latitude_deg = 39.427188
+longitude_deg = -121.763427
+elevation_ft = 87
+continent = NA
+iso_country = US
+iso_region = US-CA
+municipality = Biggs
+scheduled_service = no
+gps_code = 00CL
+local_code = 00CL
 ```
 
 ## Reading from PostgreSQL
@@ -661,10 +823,10 @@ COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg
 FROM '/data-transfer/airports-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
-Now in Pyspark (for example from Zeppelin) use the following statement to read from the `flight_data.pg_airport_t` table. 
+Now in Pyspark (for example from Zeppelin) use the following statement to read from the `flight_data.pg_airport_t` table.
 
 ```python
-jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql:postgresql").option("dbtable", "flight_data.pg_airport_t").option("user", "postgres").option("password", "postgres").load()
+jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://postgresql:5432/postgres").option("dbtable", "flight_data.pg_airport_t").option("user", "postgres").option("password", "abc123!").load()
 ```
 
 and let's view the data
