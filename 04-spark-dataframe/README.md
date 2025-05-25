@@ -727,6 +727,8 @@ Navigate to the **Data** tab and you should see the same data as before
 
 You can of course also use the SQL Console to execute ad-hoc SQL statements. In the **Database Navigator**, right-click on the database and select **SQL Editor** | **Open SQL console**. Start entering a SELECT statement and you get help by DBeaver's IntelliSense feature.
 
+![](./images/dbeaver-sql-editor.png)
+
 ## Using Python User-Defined Functions (UDF) in Spark SQL
 
 In Apache Spark SQL, you can create a User-Defined Function (UDF) in Python using PySpark to extend the built-in SQL functions with your own logic.
@@ -776,6 +778,4 @@ spark.sql("""
 		""").show()
 ```
 
-
-![](./images/dbeaver-sql-editor.png)
 
