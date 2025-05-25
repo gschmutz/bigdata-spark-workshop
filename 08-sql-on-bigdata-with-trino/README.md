@@ -313,7 +313,7 @@ Of course there is much more. Consult the Trino documentation to learn more abou
 Of course you can also join the `flights_t` table with the `airports_t` table to enrich it, similar than we have done it in the Spark DataFrame workshop. We leave that as an exercise and show a different way of joining data in the next section.
 
 
-## Using Trino build-in Functions
+## Using Trino built-in Functions
 
 Trino supports a lot of built-in SQL functions and opperators. They allow you to implement complex capabilities and behavior of the queries executed by Trino operating on the underlying data sources.
 
@@ -410,7 +410,22 @@ trino:flight_db> SHOW FUNCTIONS LIKE 'array%';
 (15 rows)
 ```
 
-Let's see how to use some of the [Geospational fucntions](https://trino.io/docs/current/functions/geospatial.html) on the `airport_t` table. 
+Using the `CASE` expression from the [Conditional expression](https://trino.io/docs/current/functions/conditional.html) category, we can recreate the same statemen we have seen with Spark SQL in [Workshop 04 - Data Reading and Writing using DataFrames](../04-spark-dataframe). Because it's standard SQL, we can just copy/paste and adapt the table name to use `flights_t` table
+
+```sql
+SELECT arrDelay, origin, destination,
+    CASE
+         WHEN arrDelay > 360 THEN 'Very Long Delays'
+         WHEN arrDelay > 120 AND arrDelay < 360 THEN 'Long Delays'
+         WHEN arrDelay > 60 AND arrDelay < 120 THEN 'Short Delays'
+         WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
+         WHEN arrDelay = 0 THEN 'No Delays'
+         ELSE 'Early'
+    END AS flight_delay
+FROM flights_t;
+```         
+
+Let's see in another example, how to use some the [Geospational functions](https://trino.io/docs/current/functions/geospatial.html) on the `airport_t` table. 
 
 To calculate the distance between two airports, e.g. between New Jork (JFK) and San Francisco (SFO), we can use the following statement
 
@@ -426,6 +441,187 @@ FROM airport_t   AS orig
 JOIN airport_t  AS dest
 ON (orig.iata_code = 'SFO' AND dest.iata_code = 'JFK');
 ```
+
+## Using Trino User-defined Functions (UDF)
+
+Instead of calculating the "delay buckets" in SQL using the CASE expression as shown before, we can also make the bucket creation more reusable by creating a user-defined function (UDF). UDFs are scalar functions that return a single output value, similar to built-in functions, we seen above.
+
+User defined functions can either be written in Java/Python or using the SQL routine language. We will see an example with SQL routing language first, followed by an example using Python.  
+
+A UDF can be declared as an [inline UDF](https://trino.io/docs/current/udf/introduction.html#udf-inline) to be used in the current query, or declared as a [catalog UDF](https://trino.io/docs/current/udf/introduction.html#udf-catalog) to be used in any future query, if the connector used for the catalog supports UDF storage. Our `minio` catalog, which is using the `Hive Connector`, supports that. 
+
+### SQL user-defined functions
+
+A [SQL user-defined function](https://trino.io/docs/current/udf/sql.html), also known as SQL routine, is a user-defined function that uses the SQL routine language and statements for the definition of the function.
+
+#### Inline UDF `delay_bucket`
+
+Let's first see how to create an inline UDF calcuating the delays. To test it we can just call it in a `SELECT` without reading from a table.
+
+```sql
+WITH 
+  FUNCTION delay_bucket(delay int) 
+    RETURNS varchar
+	 RETURN CASE
+		         WHEN delay > 360 THEN 'Very Long Delays'
+		         WHEN delay > 120 AND delay < 360 THEN 'Long Delays'
+		         WHEN delay > 60 AND delay < 120 THEN 'Short Delays'
+		         WHEN delay > 0 and delay < 60 THEN 'Tolerable Delays'
+		         WHEN delay = 0 THEN 'No Delays'
+		         ELSE 'Early'
+           END
+    
+SELECT delay_bucket(100); 
+```
+
+And we can see that the value `100` is in the bucket `Short Delays`
+
+```sql
+trino:flight_db> WITH 
+              ->   FUNCTION delay_bucket(delay int) 
+              ->     RETURNS varchar
+              ->     RETURN CASE
+              ->                 WHEN delay > 360 THEN 'Very Long Delays'
+              ->                 WHEN delay > 120 AND delay < 360 THEN 'Long Delays'
+              ->                 WHEN delay > 60 AND delay < 120 THEN 'Short Delays'
+              ->                 WHEN delay > 0 and delay < 60 THEN 'Tolerable Delays'
+              ->                 WHEN delay = 0 THEN 'No Delays'
+              ->                 ELSE 'Early'
+              ->            END
+              ->     
+              -> SELECT delay_bucket(100); 
+    _col0     
+--------------
+ Short Delays 
+(1 row)
+
+Query 20250525_163740_00137_83kbj, FINISHED, 1 node
+Splits: 1 total, 1 done (100.00%)
+0.04 [0 rows, 0B] [0 rows/s, 0B/s]
+```
+
+#### Catalog UDF `minio.flight_db.delay_bucket`
+
+Let's create the same function as a catalog UDF using the SQL routine language
+
+```sql
+CREATE OR REPLACE FUNCTION minio.flight_db.delay_bucket(delay int) 
+  RETURNS varchar
+  BEGIN
+	 RETURN CASE
+		         WHEN delay > 360 THEN 'Very Long Delays'
+		         WHEN delay > 120 AND delay < 360 THEN 'Long Delays'
+		         WHEN delay > 60 AND delay < 120 THEN 'Short Delays'
+		         WHEN delay > 0 and delay < 60 THEN 'Tolerable Delays'
+		         WHEN delay = 0 THEN 'No Delays'
+		         ELSE 'Early'
+           END;
+  END;
+```
+
+To test it we can also call it in a `SELECT` without reading from a table.
+
+```sql
+SELECT minio.flight_db.delay_bucket(100);
+```
+
+And we can see that the value `100` is in the bucket `Short Delays`
+
+```sql
+trino:flight_db> SELECT minio.flight_db.delay_bucket(100);
+    _col0     
+--------------
+ Short Delays 
+(1 row)
+
+Query 20250525_154104_00086_83kbj, FINISHED, 1 node
+Splits: 1 total, 1 done (100.00%)
+0.21 [0 rows, 0B] [0 rows/s, 0B/s]
+```
+
+Now let's change the statement from before to use the function instead of the CASE expression
+
+```sql
+SELECT arrDelay, origin, destination, minio.flight_db.delay_bucket(arrDelay) AS flight_delay
+FROM flights_t;
+```
+
+We can also adpapt the other statement we have used with Spark SQL in [Workshop 04 - Data Reading and Writing using DataFrames](../04-spark-dataframe), which groups all the flights by the `flight_delay` bucket and returns the number of flights for each bucket
+
+```sql
+SELECT year, month, flight_delay, count(*) AS count
+FROM (
+  SELECT year, month, destination, minio.flight_db.delay_bucket(arrDelay) AS flight_delay
+  FROM flights_t
+)
+GROUP BY year, month, flight_delay;
+```
+
+### Python user-defined functions
+
+A Python user-defined function is a user-defined function that uses the Python programming language and statements for the definition of the function.
+
+#### Inline UDF `python_delay_bucket`
+
+Let's first also see how to create an inline UDF calcuating the delays in python. To test it we can just call it in a `SELECT` without reading from a table.
+
+```sql
+WITH
+  FUNCTION python_delay_bucket(delay int)
+    RETURNS varchar
+    LANGUAGE PYTHON
+    WITH (handler = 'delay_bucket')
+    AS $$
+    def delay_bucket(delay):
+      if delay > 360:
+        return 'Very Long Delays'
+      elif 120 < delay <= 360:
+        return 'Long Delays'
+      elif 60 < delay <= 120:
+        return 'Short Delays'
+      elif 0 < delay <= 60:
+        return 'Tolerable Delays'
+      elif delay == 0:
+        return 'No Delays'
+      else:
+        return 'Early'
+    $$
+SELECT python_delay_bucket(100);    
+```
+
+#### Catalog UDF `minio.flight_db.python_delay_bucket`
+
+Let's create the same function as a catalog UDF using the SQL routine language
+
+```sql
+CREATE OR REPLACE FUNCTION minio.flight_db.python_delay_bucket(delay int) 
+  RETURNS varchar
+  LANGUAGE PYTHON
+  WITH (handler = 'delay_bucket')
+  AS $$
+  def delay_bucket(delay):
+    if delay > 360:
+      return 'Very Long Delays'
+    elif 120 < delay <= 360:
+      return 'Long Delays'
+    elif 60 < delay <= 120:
+      return 'Short Delays'
+    elif 0 < delay <= 60:
+      return 'Tolerable Delays'
+    elif delay == 0:
+      return 'No Delays'
+    else:
+      return 'Early'
+    $$;
+```
+
+To test it we can also call it in a `SELECT` without reading from a table.
+
+```sql
+SELECT minio.flight_db.python_delay_bucket(100);
+```
+
+We can now of course use it in the same way as we have used the SQL user-defined function before.
 
 ## Using Trino to access a Relational Database
 

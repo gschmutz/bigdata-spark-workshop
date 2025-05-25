@@ -501,15 +501,15 @@ SELECT arrDelay, origin, destination,
          WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
          WHEN arrDelay = 0 THEN 'No Delays'
          ELSE 'Early'
-    END AS flight_delays
-         FROM flights
+    END AS flight_delay
+FROM flights
 ```
 
 and with that get an overview of the 
 
 ```sql
 %sql
-SELECT year, month, flight_delays, count(*) AS count
+SELECT year, month, flight_delay, count(*) AS count
 FROM (
     SELECT year, month, arrDelay, origin, destination,
         CASE
@@ -519,10 +519,10 @@ FROM (
              WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
              WHEN arrDelay = 0 THEN 'No Delays'
              ELSE 'Early'
-        END AS flight_delays
-             FROM flights
+        END AS flight_delay
+    FROM flights
 )
-GROUP BY year, month, flight_delays
+GROUP BY year, month, flight_delay
 ```
 
 ## Provide result as permanent table
@@ -542,7 +542,7 @@ and then we create the table within that database
 %sql
 CREATE TABLE flight_db.count_delaygroups_t
 AS
-SELECT year, month, flight_delays, count(*) AS count
+SELECT year, month, flight_delay, count(*) AS count
 FROM (
     SELECT year, month, arrDelay, origin, destination,
         CASE
@@ -552,10 +552,10 @@ FROM (
              WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
              WHEN arrDelay = 0 THEN 'No Delays'
              ELSE 'Early'
-        END AS flight_delays
+        END AS flight_delay
              FROM flights
 )
-GROUP BY year, month, flight_delays
+GROUP BY year, month, flight_delay
 ```
 
 If we execute a `show tables` command
@@ -677,7 +677,7 @@ and we get the same result, just formatted a bit nicer
 ```sql
 0: jdbc:hive2://spark-thriftserver:10000> select * from flight_db.count_delaygroups_t limit 10;
 +-------+--------+-------------------+--------+
-| year  | month  |   flight_delays   | count  |
+| year  | month  |   flight_delay    | count  |
 +-------+--------+-------------------+--------+
 | 2008  | 4      | Long Delays       | 200    |
 | 2008  | 4      | Short Delays      | 721    |
