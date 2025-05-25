@@ -30,11 +30,11 @@ docker exec -ti minio-mc mc cp --recursive /data-transfer/flight-data/refined mi
 
 ## Using Trino to access Object Storage
 
-In order for us to use Trino with Object Storage or HDFS, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage/HDFS)
+In order for us to use Trino with Object Storage, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage)
 
 ### Create Airport Table in Hive Metastore
 
-In order to access data in HDFS or Object Storage using Trino, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/refined/..` points to the data we have uploaded before.
+In order to access data in Object Storage using Trino, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/refined/..` points to the data we have created in the [previous workshop](../04-spark-dataframe)/uploaded before.
 
 Connect to Hive Metastore CLI
 
@@ -59,22 +59,16 @@ and create a table `airport_t`:
 
 ```
 CREATE EXTERNAL TABLE airport_t (id int
-									  , ident string
-									  , type string
+                                , ident string
+                                , type string
                                 , name string
                                 , latitude_deg double
                                 , longitude_deg double
-                                , elevation_ft int
-                                , continent string
-                                , iso_country string
-                                , iso_region string
-                                , municipality string
-                                , scheduled_service string
-                                , gps_code string
+                                , elevation_ft int                                , continent string                                , iso_country string
+                                , iso_region string                                , municipality string                                , scheduled_service string                                , gps_code string
                                 , iata_code string
                                 , local_code string
-                                , home_link string
-                                , wikipedia_link string
+                                , home_link string                                , wikipedia_link string
                                 , keywords string
                                 )
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
@@ -127,15 +121,31 @@ and you should get the following result
 
 ```sql
 trino:flight_db> DESCRIBE minio.flight_db.airport_t;
- Column  |  Type   | Extra | Comment
----------+---------+-------+---------
- iata    | varchar |       |
- airport | varchar |       |
- city    | varchar |       |
- state   | varchar |       |
- country | varchar |       |
- lat     | double  |       |
- long    | double  |       |
+      Column       |  Type   | Extra | Comment 
+-------------------+---------+-------+---------
+ id                | integer |       |         
+ ident             | varchar |       |         
+ type              | varchar |       |         
+ name              | varchar |       |         
+ latitude_deg      | double  |       |         
+ longitude_deg     | double  |       |         
+ elevation_ft      | integer |       |         
+ continent         | varchar |       |         
+ iso_country       | varchar |       |         
+ iso_region        | varchar |       |         
+ municipality      | varchar |       |         
+ scheduled_service | varchar |       |         
+ gps_code          | varchar |       |         
+ iata_code         | varchar |       |         
+ local_code        | varchar |       |         
+ home_link         | varchar |       |         
+ wikipedia_link    | varchar |       |         
+ keywords          | varchar |       |         
+(18 rows)
+
+Query 20250525_133931_00004_83kbj, FINISHED, 1 node
+Splits: 5 total, 5 done (100.00%)
+0.64 [18 rows, 1.12KiB] [28 rows/s, 1.76KiB/s]
 ```
 
 We can also leave out the `minio.fligth_db` qualifier, because it is the current database.
@@ -163,14 +173,29 @@ We can use everything SQL provides, so for example let's see the airports in sta
 
 ```sql
 SELECT * FROM airport_t 
-WHERE state = 'CA' AND country = 'USA';
+WHERE iso_region = 'US-CA' AND iso_country = 'US';
 ```
 
 if you just want to know how many, then let's use `COUNT(*)` 
 
 ```sql
 SELECT count(*) FROM airport_t 
-WHERE state = 'CA' AND country = 'USA';
+WHERE iso_region = 'US-CA' AND iso_country = 'US';
+```
+
+and you should see a result similar to that
+
+```sql
+trino:flight_db> SELECT count(*) FROM airport_t 
+              -> WHERE iso_region = 'US-CA' AND iso_country = 'US';
+ _col0 
+-------
+  2364 
+(1 row)
+
+Query 20250525_134202_00014_83kbj, FINISHED, 1 node
+Splits: 5 total, 5 done (100.00%)
+0.93 [81.2K rows, 23.7MiB] [87K rows/s, 25.4MiB/s]
 ```
 
 Exit from the Trino CLI
@@ -222,7 +247,7 @@ STORED AS parquet
 LOCATION 's3a://flight-bucket/refined/flights';
 ```
 
-Before we can query the table using Trino, we also have to repair the table, so that it recognises the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store / HDFS.
+Before we can query the table using Trino, we also have to repair the table, so that it recognises the partitions underneath it. You have to repeat that statement whenever you add new data to the location in Object Store.
 
 ```sql
 MSCK REPAIR TABLE flights_t;
@@ -232,7 +257,7 @@ Now we are ready to query it.
 
 Exit from the Hive Metastore CLI 
 
-```
+```sql
 exit;
 ```
 
@@ -286,6 +311,121 @@ GROUP BY origin, destination;
 Of course there is much more. Consult the Trino documentation to learn more about [Trino in general](https://trino.io/docs/current/) as well as the available [Functions and Operators](https://trino.io/docs/current/functions.html).
 
 Of course you can also join the `flights_t` table with the `airports_t` table to enrich it, similar than we have done it in the Spark DataFrame workshop. We leave that as an exercise and show a different way of joining data in the next section.
+
+
+## Using Trino build-in Functions
+
+Trino supports a lot of built-in SQL functions and opperators. They allow you to implement complex capabilities and behavior of the queries executed by Trino operating on the underlying data sources.
+
+You can find the list of supported functions in the Trino documention:
+
+  * [List of functions and operators](https://trino.io/docs/current/functions/list.html)
+  * [List of functions by topic](https://trino.io/docs/current/functions/list-by-topic.html)
+
+Alternativily you can use `SHOW FUNCTIONS` to list the available functions in the CLI
+
+```sql
+SHOW FUNCTIONS;
+```
+
+and you get a paged list of functions, similar to shown below
+
+```sql
+            Function             |         Return Type          |                                 Argument Types                                 | Function Type | Deterministic |            >
+---------------------------------+------------------------------+--------------------------------------------------------------------------------+---------------+---------------+------------>
+ abs                             | bigint                       | bigint                                                                         | scalar        | true          | Absolute va>
+ abs                             | decimal(p,s)                 | decimal(p,s)                                                                   | scalar        | true          | Absolute va>
+ abs                             | double                       | double                                                                         | scalar        | true          | Absolute va>
+ abs                             | integer                      | integer                                                                        | scalar        | true          | Absolute va>
+ abs                             | real                         | real                                                                           | scalar        | true          | Absolute va>
+ abs                             | smallint                     | smallint                                                                       | scalar        | true          | Absolute va>
+ abs                             | tinyint                      | tinyint                                                                        | scalar        | true          | Absolute va>
+ acos                            | double                       | double                                                                         | scalar        | true          | Arc cosine >
+ all_match                       | boolean                      | array(t), function(t,boolean)                                                  | scalar        | true          | Returns tru>
+ any_match                       | boolean                      | array(t), function(t,boolean)                                                  | scalar        | true          | Returns tru>
+ any_value                       | t                            | t                                                                              | aggregate     | true          | Return an a>
+ any_value                       | t                            | t                                                                              | aggregate     | true          | Return an a>
+ approx_distinct                 | bigint                       | boolean                                                                        | aggregate     | true          |            >
+ approx_distinct                 | bigint                       | boolean, double                                                                | aggregate     | true          |            >
+ approx_distinct                 | bigint                       | t                                                                              | aggregate     | true          |            >
+ approx_distinct                 | bigint                       | t, double                                                                      | aggregate     | true          |            >
+ approx_distinct                 | bigint                       | unknown                                                                        | aggregate     | true          |            >
+ approx_distinct                 | bigint                       | unknown, double                                                                | aggregate     | true          |            >
+ approx_most_frequent            | map(bigint,bigint)           | bigint, bigint, bigint                                                         | aggregate     | true          |            >
+ approx_most_frequent            | map(varchar,bigint)          | bigint, varchar, bigint                                                        | aggregate     | true          |            >
+ approx_percentile               | array(bigint)                | bigint, array(double)                                                          | aggregate     | true          |            >
+ approx_percentile               | array(bigint)                | bigint, double, array(double)                                                  | aggregate     | true          |            >
+ approx_percentile               | array(double)                | double, array(double)                                                          | aggregate     | true          |            >
+ approx_percentile               | array(double)                | double, double, array(double)                                                  | aggregate     | true          |            >
+ approx_percentile               | array(real)                  | real, array(double)                                                            | aggregate     | true          |            >
+ approx_percentile               | array(real)                  | real, double, array(double)                                                    | aggregate     | true          |            >
+ approx_percentile               | bigint                       | bigint, double                                                                 | aggregate     | true          |            >
+ approx_percentile               | bigint                       | bigint, double, double                                                         | aggregate     | true          |            >
+ approx_percentile               | bigint                       | bigint, double, double, double                                                 | aggregate     | true          |            >
+ approx_percentile               | double                       | double, double                                                                 | aggregate     | true          |            >
+ approx_percentile               | double                       | double, double, double                                                         | aggregate     | true          |            >
+ approx_percentile               | double                       | double, double, double, double                                                 | aggregate     | true          |            >
+ approx_percentile               | real                         | real, double                                                                   | aggregate     | true          |            >
+ approx_percentile               | real                         | real, double, double                                                           | aggregate     | true          |            >
+ approx_percentile               | real                         | real, double, double, double                                                   | aggregate     | true          |            >
+ approx_set                      | hyperloglog                  | bigint                                                                         | aggregate     | true          |            >
+ approx_set                      | hyperloglog                  | double                                                                         | aggregate     | true          |            >
+ approx_set                      | hyperloglog                  | varchar(x)                                                                     | aggregate     | true          |            >
+ arbitrary                       | t                            | t                                                                              | aggregate     | true          | Return an a>
+ arbitrary                       | t                            | t                                                                              | aggregate     | true          | Return an a>
+ array_agg                       | array(t)                     | t                                                                              | aggregate     | true          | return an a>
+ array_distinct                  | array(e)                     | array(e)                                                                       | scalar        | true          | Remove dupl>
+ array_except                    | array(e)                     | array(e), array(e)                                                             | scalar        | true          | Returns an >
+ array_histogram                 | map(t,bigint)                | array(t)                                                                       | scalar        | true          | Return a ma>
+:
+```
+
+you can also use the `LIKE` clause to only show certain functions, e.g. the ones starting with `array`
+
+```sql
+SHOW FUNCTIONS LIKE 'array%';
+```
+
+and you get the following result
+
+```
+trino:flight_db> SHOW FUNCTIONS LIKE 'array%';
+    Function     |  Return Type  |         Argument Types          | Function Type | Deterministic |                                              Description                                 >
+-----------------+---------------+---------------------------------+---------------+---------------+------------------------------------------------------------------------------------------>
+ array_agg       | array(t)      | t                               | aggregate     | true          | return an array of values                                                                >
+ array_distinct  | array(e)      | array(e)                        | scalar        | true          | Remove duplicate values from the given array                                             >
+ array_except    | array(e)      | array(e), array(e)              | scalar        | true          | Returns an array of elements that are in the first array but not the second, without dupl>
+ array_histogram | map(t,bigint) | array(t)                        | scalar        | true          | Return a map containing the counts of the elements in the array                          >
+ array_intersect | array(e)      | array(e), array(e)              | scalar        | true          | Intersects elements of the two given arrays                                              >
+ array_join      | varchar       | array(e), varchar               | scalar        | true          | Concatenates the elements of the given array using a delimiter and an optional string to >
+ array_join      | varchar       | array(e), varchar, varchar      | scalar        | true          | Concatenates the elements of the given array using a delimiter and an optional string to >
+ array_max       | t             | array(t)                        | scalar        | true          | Get maximum value of array                                                               >
+ array_min       | t             | array(t)                        | scalar        | true          | Get minimum value of array                                                               >
+ array_position  | bigint        | array(t), t                     | scalar        | true          | Returns the position of the first occurrence of the given value in array (or 0 if not fou>
+ array_remove    | array(e)      | array(e), e                     | scalar        | true          | Remove specified values from the given array                                             >
+ array_sort      | array(e)      | array(e)                        | scalar        | true          | Sorts the given array in ascending order according to the natural ordering of its element>
+ array_sort      | array(t)      | array(t), function(t,t,integer) | scalar        | true          | Sorts the given array with a lambda comparator.                                          >
+ array_union     | array(e)      | array(e), array(e)              | scalar        | true          | Union elements of the two given arrays                                                   >
+ arrays_overlap  | boolean       | array(e), array(e)              | scalar        | true          | Returns true if arrays have common elements                                              >
+(15 rows)
+```
+
+Let's see how to use some of the [Geospational fucntions](https://trino.io/docs/current/functions/geospatial.html) on the `airport_t` table. 
+
+To calculate the distance between two airports, e.g. between New Jork (JFK) and San Francisco (SFO), we can use the following statement
+
+```sql
+SELECT orig.name
+, 	orig.latitude_deg
+, 	orig.longitude_deg
+, 	dest.name
+, 	dest.latitude_deg
+, 	dest.longitude_deg
+, 	ST_Distance(to_spherical_geography(ST_Point(orig.longitude_deg, orig.latitude_deg)), to_spherical_geography(ST_Point(dest.longitude_deg, dest.latitude_deg))) / 1000 AS distance_km
+FROM airport_t   AS orig
+JOIN airport_t  AS dest
+ON (orig.iata_code = 'SFO' AND dest.iata_code = 'JFK');
+```
 
 ## Using Trino to access a Relational Database
 
@@ -376,9 +516,9 @@ SELECT * FROM pg_airport_t;
 Of course you can also do analytical queries:
 
 ```sql
-SELECT country, count(*)
+SELECT iso_country, count(*)
 FROM pg_airport_t
-GROUP BY country;
+GROUP BY iso_country;
 ```
 
 ## Query Federation using Trino
@@ -386,14 +526,16 @@ GROUP BY country;
 With the `pg_airport_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Trino's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
 
 ```sql
-SELECT ao.airport, ao.city, ad.airport, ad.city, f.*
+SELECT ao.name, ao.municipality, ad.name, ad.municipality, f.*
 FROM minio.flight_db.flights_t  AS f
 LEFT JOIN postgresql.flight_data.pg_airport_t AS ao
-ON (f.origin = ao.iata)
+ON (f.origin = ao.iata_code)
 LEFT JOIN postgresql.flight_data.pg_airport_t AS ad
-ON (f.destination = ad.iata);
+ON (f.destination = ad.iata_code);
 ```
 
 
-Trino supports among the Hive and PostgreSQL (RDBMS) we have seen so far many more data sources. Find [here the list of connectors](https://trino.io/docs/current/connector.html) Trino provides to connect to the various data sources.
+Trino supports many other data sources in addition to Hive and PostgreSQL (RDBMS). 
+
+Find [here the actual list of connectors](https://trino.io/docs/current/connector.html) Trino provides to connect to the various data sources.
 
