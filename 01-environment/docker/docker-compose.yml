@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__b7c03cf33cc677004b69b343ca98ce3dd119cd06
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__b7c03cf33cc677004b69b343ca98ce3dd119cd06
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__0a44a6b17c2ef9926b0f9bbe9bb0fea7d402a642
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__0a44a6b17c2ef9926b0f9bbe9bb0fea7d402a642
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -1026,8 +1026,11 @@ services:
     labels:
       com.platys.name: data-provisioning
       com.platys.description: Provisioning sample data
+    environment:
+      ADDITIONAL_DATA_FOLDER: /data-provisioning/additional-data
     volumes:
       - ./data-transfer:/data-transfer
+      - ../data/:/data-provisioning/additional-data
     init: true
 volumes:
   data-transfer-vol:
