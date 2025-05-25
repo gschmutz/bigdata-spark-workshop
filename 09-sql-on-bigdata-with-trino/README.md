@@ -14,7 +14,7 @@ The docker image we use for the Trino container is from [Starburst Data](https:/
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 4 - [Data Reading and Writing using DataFrames](../04-spark-dataframe). You can skip this section, if you still have the data available in MinIO.
+The data needed here has been uploaded in [Workshop 4 - Data Reading and Writing using DataFrames](../04-spark-dataframe). You can skip this section, if you still have the data available in MinIO.
 
 Create the flight bucket:
  
