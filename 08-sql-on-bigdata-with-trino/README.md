@@ -444,7 +444,7 @@ ON (orig.iata_code = 'SFO' AND dest.iata_code = 'JFK');
 
 ## Using Trino User-defined Functions (UDF)
 
-Instead of calculating the "delay buckets" in SQL using the CASE expression as shown before, we can also make the bucket creation more reusable by creating a user-defined function (UDF). UDFs are scalar functions that return a single output value, similar to built-in functions, we seen above.
+Instead of classifying the delays in SQL using the CASE expression as shown before, we can also make the bucket creation more reusable by creating a user-defined function (UDF). UDFs are scalar functions that return a single output value, similar to built-in functions, we seen above.
 
 User defined functions can either be written in Java/Python or using the SQL routine language. We will see an example with SQL routing language first, followed by an example using Python. Java is a bit more  complicated and you have to [create a plugin](https://trino.io/docs/current/develop/functions.html), which is not covered in this workshop.
 
@@ -454,13 +454,13 @@ A UDF can be declared as an [inline UDF](https://trino.io/docs/current/udf/intro
 
 A [SQL user-defined function](https://trino.io/docs/current/udf/sql.html), also known as SQL routine, is a user-defined function that uses the SQL routine language and statements for the definition of the function.
 
-#### Inline UDF `delay_bucket`
+#### Inline UDF `classify_delay`
 
 Let's first see how to create an inline UDF calcuating the delays. To test it we can just call it in a `SELECT` without reading from a table.
 
 ```sql
 WITH 
-  FUNCTION delay_bucket(delay int) 
+  FUNCTION classify_delay(delay int) 
     RETURNS varchar
 	 RETURN CASE
 		         WHEN delay > 360 THEN 'Very Long Delays'
@@ -471,14 +471,14 @@ WITH
 		         ELSE 'Early'
            END
     
-SELECT delay_bucket(100); 
+SELECT classify_delay(100); 
 ```
 
 And we can see that the value `100` is in the bucket `Short Delays`
 
 ```sql
 trino:flight_db> WITH 
-              ->   FUNCTION delay_bucket(delay int) 
+              ->   FUNCTION classify_delay(delay int) 
               ->     RETURNS varchar
               ->     RETURN CASE
               ->                 WHEN delay > 360 THEN 'Very Long Delays'
@@ -489,7 +489,7 @@ trino:flight_db> WITH
               ->                 ELSE 'Early'
               ->            END
               ->     
-              -> SELECT delay_bucket(100); 
+              -> SELECT classify_delay(100); 
     _col0     
 --------------
  Short Delays 
@@ -500,12 +500,12 @@ Splits: 1 total, 1 done (100.00%)
 0.04 [0 rows, 0B] [0 rows/s, 0B/s]
 ```
 
-#### Catalog UDF `minio.flight_db.delay_bucket`
+#### Catalog UDF `minio.flight_db.classify_delay`
 
 Let's create the same function as a catalog UDF using the SQL routine language
 
 ```sql
-CREATE OR REPLACE FUNCTION minio.flight_db.delay_bucket(delay int) 
+CREATE OR REPLACE FUNCTION minio.flight_db.classify_delay(delay int) 
   RETURNS varchar
   BEGIN
 	 RETURN CASE
@@ -522,13 +522,13 @@ CREATE OR REPLACE FUNCTION minio.flight_db.delay_bucket(delay int)
 To test it we can also call it in a `SELECT` without reading from a table.
 
 ```sql
-SELECT minio.flight_db.delay_bucket(100);
+SELECT minio.flight_db.classify_delay(100);
 ```
 
 And we can see that the value `100` is in the bucket `Short Delays`
 
 ```sql
-trino:flight_db> SELECT minio.flight_db.delay_bucket(100);
+trino:flight_db> SELECT minio.flight_db.classify_delay(100);
     _col0     
 --------------
  Short Delays 
@@ -542,7 +542,7 @@ Splits: 1 total, 1 done (100.00%)
 Now let's change the statement from before to use the function instead of the CASE expression
 
 ```sql
-SELECT arrDelay, origin, destination, minio.flight_db.delay_bucket(arrDelay) AS flight_delay
+SELECT arrDelay, origin, destination, minio.flight_db.classify_delay(arrDelay) AS flight_delay
 FROM flights_t;
 ```
 
@@ -551,7 +551,7 @@ We can also adpapt the other statement we have used with Spark SQL in [Workshop 
 ```sql
 SELECT year, month, flight_delay, count(*) AS count
 FROM (
-  SELECT year, month, destination, minio.flight_db.delay_bucket(arrDelay) AS flight_delay
+  SELECT year, month, destination, minio.flight_db.classify_delay(arrDelay) AS flight_delay
   FROM flights_t
 )
 GROUP BY year, month, flight_delay;
@@ -561,18 +561,18 @@ GROUP BY year, month, flight_delay;
 
 A Python user-defined function is a user-defined function that uses the Python programming language and statements for the definition of the function.
 
-#### Inline UDF `python_delay_bucket`
+#### Inline UDF `python_classify_delay`
 
 Let's first also see how to create an inline UDF calcuating the delays in python. To test it we can just call it in a `SELECT` without reading from a table.
 
 ```sql
 WITH
-  FUNCTION python_delay_bucket(delay int)
+  FUNCTION python_classify_delay(delay int)
     RETURNS varchar
     LANGUAGE PYTHON
-    WITH (handler = 'delay_bucket')
+    WITH (handler = 'classify_delay')
     AS $$
-    def delay_bucket(delay):
+    def classify_delay(delay):
       if delay > 360:
         return 'Very Long Delays'
       elif 120 < delay <= 360:
@@ -586,20 +586,20 @@ WITH
       else:
         return 'Early'
     $$
-SELECT python_delay_bucket(100);    
+SELECT python_classify_delay(100);    
 ```
 
-#### Catalog UDF `minio.flight_db.python_delay_bucket`
+#### Catalog UDF `minio.flight_db.python_classify_delay`
 
 Let's create the same function as a catalog UDF using the SQL routine language
 
 ```sql
-CREATE OR REPLACE FUNCTION minio.flight_db.python_delay_bucket(delay int) 
+CREATE OR REPLACE FUNCTION minio.flight_db.python_classify_delay(delay int) 
   RETURNS varchar
   LANGUAGE PYTHON
-  WITH (handler = 'delay_bucket')
+  WITH (handler = 'classify_delay')
   AS $$
-  def delay_bucket(delay):
+  def classify_delay(delay):
     if delay > 360:
       return 'Very Long Delays'
     elif 120 < delay <= 360:
@@ -618,7 +618,7 @@ CREATE OR REPLACE FUNCTION minio.flight_db.python_delay_bucket(delay int)
 To test it we can also call it in a `SELECT` without reading from a table.
 
 ```sql
-SELECT minio.flight_db.python_delay_bucket(100);
+SELECT minio.flight_db.python_classify_delay(100);
 ```
 
 We can now of course use it in the same way as we have used the SQL user-defined function before.

@@ -525,7 +525,7 @@ FROM (
 GROUP BY year, month, flight_delay
 ```
 
-## Provide result as permanent table
+## Provide delay classification as permanent table
 
 So far we have only worked with temporary views, which are only visible while the Spark session is active and will be removed as soon as it is closed. 
 
@@ -726,6 +726,56 @@ Navigate to the **Data** tab and you should see the same data as before
 ![](./images/dbeaver-show-data.png)
 
 You can of course also use the SQL Console to execute ad-hoc SQL statements. In the **Database Navigator**, right-click on the database and select **SQL Editor** | **Open SQL console**. Start entering a SELECT statement and you get help by DBeaver's IntelliSense feature.
+
+## Using Python User-Defined Functions (UDF) in Spark SQL
+
+In Apache Spark SQL, you can create a User-Defined Function (UDF) in Python using PySpark to extend the built-in SQL functions with your own logic.
+
+Instead of calculating the delay classifciation in SQL using the CASE expression as shown above, we can also make the classification more reusable by creating a user-defined function (UDF). UDFs are scalar functions that return a single output value, similar to built-in functions, we seen above.
+
+First create a python function with the delay classification logic
+
+```python
+%pyspark
+from pyspark.sql.functions import udf
+
+def classify_delay(delay):
+    if delay > 360:
+        return 'Very Long Delays'
+    elif 120 < delay <= 360:
+        return 'Long Delays'
+    elif 60 < delay <= 120:
+        return 'Short Delays'
+    elif 0 < delay <= 60:
+        return 'Tolerable Delays'
+    elif delay == 0:
+        return 'No Delays'
+    else:
+        return 'Early'
+```
+
+Register it as a Spark UDF
+
+```python
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+
+classify_delay_udf = udf(classify_delay, StringType())
+spark.udf.register("classify_delay", classify_delay_udf)
+```
+
+And then you can use it in Spark SQL. We can rewrite the `SELECT` statement from above using the UDF instead of the CASE expression. 
+
+```python
+spark.sql("""
+		SELECT arrDelay
+		, 	origin
+		, 	destination
+		, 	classify_delay(arrDelay) AS flight_delay
+		FROM flights
+		""").show()
+```
+
 
 ![](./images/dbeaver-sql-editor.png)
 
