@@ -446,7 +446,7 @@ ON (orig.iata_code = 'SFO' AND dest.iata_code = 'JFK');
 
 Instead of calculating the "delay buckets" in SQL using the CASE expression as shown before, we can also make the bucket creation more reusable by creating a user-defined function (UDF). UDFs are scalar functions that return a single output value, similar to built-in functions, we seen above.
 
-User defined functions can either be written in Java/Python or using the SQL routine language. We will see an example with SQL routing language first, followed by an example using Python.  
+User defined functions can either be written in Java/Python or using the SQL routine language. We will see an example with SQL routing language first, followed by an example using Python. Java is a bit more  complicated and you have to [create a plugin](https://trino.io/docs/current/develop/functions.html), which is not covered in this workshop.
 
 A UDF can be declared as an [inline UDF](https://trino.io/docs/current/udf/introduction.html#udf-inline) to be used in the current query, or declared as a [catalog UDF](https://trino.io/docs/current/udf/introduction.html#udf-catalog) to be used in any future query, if the connector used for the catalog supports UDF storage. Our `minio` catalog, which is using the `Hive Connector`, supports that. 
 
