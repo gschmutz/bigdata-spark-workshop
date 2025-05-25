@@ -770,12 +770,13 @@ And then you can use it in Spark SQL. We can rewrite the `SELECT` statement from
 
 ```python
 spark.sql("""
-		SELECT arrDelay
-		, 	origin
-		, 	destination
-		, 	classify_delay(arrDelay) AS flight_delay
-		FROM flights
-		""").show()
+       SELECT arrDelay
+       , 	origin
+       , 	destination
+       , 	classify_delay(arrDelay) AS flight_delay
+       FROM flights
+       """
+   ).show()
 ```
 
 
