@@ -556,6 +556,9 @@
       # ===== Apache Airflow  ========
       #
       AIRFLOW_enable: true
+      # either 2 or 3
+      AIRFLOW_major_version: 2
+      AIRFLOW_custom_image_name: ''
       # "celery" or "sequential" or "local"
       AIRFLOW_executor: local
       AIRFLOW_workers: 1

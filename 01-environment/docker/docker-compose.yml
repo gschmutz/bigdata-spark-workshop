@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__f6e94d5b9855c3db7f8413dbc676c99d12c4f9be
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__f6e94d5b9855c3db7f8413dbc676c99d12c4f9be
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__73cb5f4e48f3e713e4d5e4880abf7f9cc0067517
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__73cb5f4e48f3e713e4d5e4880abf7f9cc0067517
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -388,7 +388,7 @@ services:
 #    restart: unless-stopped
   #  ================================== NiFi 2 ========================================== #
   nifi2-1:
-    image: apache/nifi:2.2.0
+    image: apache/nifi:2.4.0
     container_name: nifi2-1
     hostname: nifi2-1
     labels:
@@ -442,7 +442,7 @@ services:
     restart: unless-stopped
 #  ================================== Airflow ========================================== #
   airflow:
-    image: apache/airflow:2.10.2-python3.10
+    image: apache/airflow:2.11.0-python3.10
     container_name: airflow
     hostname: airflow
     labels:
@@ -496,7 +496,7 @@ services:
       retries: 5
       start_period: 30s
   airflow-scheduler:
-    image: apache/airflow:2.10.2-python3.10
+    image: apache/airflow:2.11.0-python3.10
     container_name: airflow-scheduler
     hostname: airflow-scheduler
     labels:
@@ -565,7 +565,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   airflow-init:
-    image: apache/airflow:2.10.2-python3.10
+    image: apache/airflow:2.11.0-python3.10
     container_name: airflow-init
     hostname: airflow-init
     labels:
