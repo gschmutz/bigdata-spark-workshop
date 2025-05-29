@@ -1,18 +1,18 @@
 # Job Scheduling with Airflow
 
-In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) to schedule a Spark Job. We will also use Airflow to upload the data from a local folder to S3. 
+In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
 
 ## Create the S3 bucket, if not available
 
-Create the flight bucket using the `s3cmd` from a terminal window
+Create the flight bucket using the `mc mb` command from a terminal window
 
 ```bash
-docker exec -ti awscli s3cmd mb s3://flight-bucket
+docker exec -ti minio-mc mc mb minio-1/flight-bucket
 ```
 
 ## Create the Spark Python program
 
-We will reuse the application created in [Workshop 5 - Creating and running a self-contained Spark Application](../05-spark-application). 
+For the Spark application we reuse the application created in [Workshop 5 - Creating and running a self-contained Spark Application](../05-spark-application). But for Airflow to run it, we will upload it into the `flight-bucket` bucket on S3 (MinIO).
 
 First let's create a folder for the Spark application 
 
@@ -76,13 +76,20 @@ if __name__ == "__main__":
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
 
-The application accepts 3 parameters to specify the S3 bucket name, the raw folder and the refined folder.
+The application accepts 3 parameters to specify the **S3 bucket name**, the **raw folder** and the **refined folder**.
+
+Now let's make it available in S3 by uploading it to the `app` folder in the `flight-bucket`. 
+
+```bash
+cd $DATAPLATFORM_HOME
+docker exec -ti minio-mc mc cp --recursive /data-transfer/app/ minio-1/flight-bucket/app
+```
 
 ## Create the Airflow DAG
 
 Creating an Airflow DAG (Directed Acyclic Graph) involves defining a workflow as a Python script. 
 
-Let's create a python script by creating a file in the `scripts/airflow/dags` folder within the dataplatform root. From there the running Airflow instance will automatically pickup the DAG and load it at runtime. In a terminal window perform
+Let's create a python script by creating a file `spark_airport_and_flight_refined.py` in the `scripts/airflow/dags` folder within the dataplatform root. From there the running Airflow instance will automatically pickup the DAG (after maximum 60s) and load it at runtime. In a terminal window perform
 
 ```bash
 cd $DATAPLATFORM_HOME/scripts/airflow/dags
@@ -178,7 +185,7 @@ with DAG(
     spark_submit_task = SparkSubmitOperator(
         task_id='spark_submit_task',
         conn_id='spark-cluster',
-        application='/data-transfer/app/prep_refined.py',
+        application='s3://flight-bucket/app/prep_refined.py',
         name='Airports and Flight Refinement application',
         application_args=[
             '--s3-bucket', 'flight-bucket',
@@ -189,6 +196,8 @@ with DAG(
 
     delete_raw_folder_task >> delete_refined_folder_task >> upload_airports_local_to_s3_task >> upload_flights_local_folder_to_s3_task >> spark_submit_task
 ```
+
+Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
 
 Navigate to <http://dataplatform:28139> and login as `airflow` and password `abc123!`. Repeat clicking on **DAGs** in the top menu and after a while the `spark_airport_and_flight_refined` should show up. 
 

@@ -84,7 +84,7 @@ with DAG(
     spark_submit_task = SparkSubmitOperator(
         task_id='spark_submit_task',
         conn_id='spark-cluster',
-        application='/data-transfer/app/prep_refined.py',
+        application='s3a://flight-bucket/app/prep_refined.py',
         name='Airports and Flight Refinement application',
         application_args=[
             '--s3-bucket', 'flight-bucket',
