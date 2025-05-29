@@ -70,7 +70,7 @@ def main(s3_bucket: str, s3_raw_path: str, s3_refined_path: str):
     
     airportsRawDF = spark.read.csv(f"{s3_raw_uri}/airports", \
     			sep=",", inferSchema="true", header="true")
-    airportsRawDF.write.json(f"{s3_refined_uri}/airports")
+    airportsRawDF.write.mode("overwrite").json(f"{s3_refined_uri}/airports")
 
     flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOfWeek` INTEGER, `depTime` INTEGER, `crsDepTime` INTEGER, `arrTime` INTEGER, `crsArrTime` INTEGER, `uniqueCarrier` STRING, `flightNum` STRING, `tailNum` STRING, `actualElapsedTime` INTEGER,\
                    `crsElapsedTime` INTEGER, `airTime` INTEGER, `arrDelay` INTEGER,`depDelay` INTEGER,`origin` STRING, `destination` STRING, `distance` INTEGER, `taxiIn` INTEGER, `taxiOut` INTEGER, `cancelled` STRING, `cancellationCode` STRING, `diverted` STRING,
@@ -79,7 +79,7 @@ def main(s3_bucket: str, s3_raw_path: str, s3_refined_path: str):
     flightsRawDF = spark.read.csv(f"{s3_raw_uri}/flights", \
     			sep=",", inferSchema="false", header="false", schema=flightSchema)
 
-    flightsRawDF.write.partitionBy("year","month").parquet(f"{s3_refined_uri}/flights")
+    flightsRawDF.write.mode("overwrite").partitionBy("year","month").parquet(f"{s3_refined_uri}/flights")
 
     spark.stop()
     
@@ -97,14 +97,14 @@ if __name__ == "__main__":
     parser.add_argument("--s3-refined-path", required=True, help="Path in the S3 bucket to the refined data")
     args = parser.parse_args()
 
-    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)    
+    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)   
 ```
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
 
 The application accepts 3 parameters to specify the S3 bucket name, the raw folder and the refined folder.
 
-## Run the application against the Spark Cluster using `spark-submit`
+## Execute the application on the Spark Cluster using the `spark-submit` command
 
 Before we submit the application, let's make sure that the `refined` folder does not exists. Otherwise we will get an error when trying to write to the folder. 
 
