@@ -1,18 +1,14 @@
 # Job Scheduling with Airflow
 
-In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) to schedule a Spark Job. 
+In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) to schedule a Spark Job. We will also use Airflow to upload the data from a local folder to S3. 
 
-## Prepare the data, if no longer available
+## Create the S3 bucket, if not available
 
-The data needed here has been uploaded in [Workshop 2 - Working with MinIO Object Storage](../02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
-
-Create the flight bucket:
+Create the flight bucket using the `s3cmd` from a terminal window
 
 ```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
-
-
 
 ## Create the Spark Python program
 
