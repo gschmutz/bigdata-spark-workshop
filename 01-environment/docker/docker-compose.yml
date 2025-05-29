@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__d10e3ef6471ccce98dd0a268a1cc934820d8b395
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__d10e3ef6471ccce98dd0a268a1cc934820d8b395
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__aa15dcabc47041907ac3dd531b1a24113cfc0e50
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__aa15dcabc47041907ac3dd531b1a24113cfc0e50
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -462,8 +462,8 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       - AIRFLOW__CELERY__BROKER_URL=redis://:@airflow-redis:6379/0
-      - AIRFLOW__CORE__FERNET_KEY= ''
-      - AIRFLOW__WEBSERVER__SECRET_KEY=${PLATYS_AIRFLOW_SECRET:-abc123!}
+      - AIRFLOW__CORE__FERNET_KEY= 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${PLATYS_AIRFLOW_SECRET:-E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE=}
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
@@ -513,8 +513,8 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       - AIRFLOW__CELERY__BROKER_URL=redis://:@airflow-redis:6379/0
-      - AIRFLOW__CORE__FERNET_KEY= ''
-      - AIRFLOW__WEBSERVER__SECRET_KEY=abc123!
+      - AIRFLOW__CORE__FERNET_KEY= 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
+      - AIRFLOW__WEBSERVER__SECRET_KEY=E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE=
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
@@ -634,7 +634,7 @@ services:
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       - AIRFLOW__CELERY__BROKER_URL=redis://:@airflow-redis:6379/0
       - AIRFLOW__CORE__FERNET_KEY= ''
-      - AIRFLOW__WEBSERVER__SECRET_KEY=${PLATYS_AIRFLOW_SECRET_KEY:-abc123!}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${PLATYS_AIRFLOW_SECRET_KEY:-E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE=}
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session

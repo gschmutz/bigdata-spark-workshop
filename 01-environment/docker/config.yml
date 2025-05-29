@@ -561,7 +561,8 @@
       AIRFLOW_workers: 1
       AIRFLOW_admin_username: 'airflow'
       AIRFLOW_admin_password: 'abc123!'
-      AIRFLOW_secret_key: 'abc123!'
+      AIRFLOW_fernet_key: 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
+      AIRFLOW_secret_key: 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
       AIRFLOW_additional_requirements: 'apache-airflow[amazon] apache-airflow-providers-apache-spark'
       AIRFLOW_volume_map_logs: false
       AIRFLOW_provision_examples: false
@@ -1104,6 +1105,7 @@
       #=====  MinIO Object Storage ========
       #
       MINIO_enable: true
+      #MINIO_version: RELEASE.2025-04-22T22-12-26Z
       MINIO_volume_map_data: false
       MINIO_datacenters: 1
       # "single" or "cluster"
