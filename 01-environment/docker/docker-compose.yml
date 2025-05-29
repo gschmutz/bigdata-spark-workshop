@@ -74,6 +74,7 @@ services:
       - ./container-volume/spark/logs/:/var/log/spark/logs
 #      - ./scripts/docker/maven-download.sh:/usr/src/app/maven-download.sh
       - spark-3-5-3-vol:/opt/bitnami/spark
+      - spark-3-5-3-java-vol:/opt/bitnami/java
     restart: unless-stopped
     healthcheck:
       test: [CMD-SHELL, "python3 -c 'import socket; socket.create_connection((\"localhost\", 28304), timeout=5)'"]
@@ -471,6 +472,7 @@ services:
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
       - SPARK_HOME=/opt/spark
+      - JAVA_HOME=/opt/bitnami/java
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
       - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
@@ -482,6 +484,7 @@ services:
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
       - spark-3-5-3-vol:/opt/spark:RO
+      - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
@@ -522,6 +525,7 @@ services:
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
       - SPARK_HOME=/opt/spark
+      - JAVA_HOME=/opt/bitnami/java      
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
       - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
@@ -533,6 +537,7 @@ services:
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
       - spark-3-5-3-vol:/opt/spark:RO
+      - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
@@ -1038,3 +1043,4 @@ volumes:
   aws-credentials-vol:
   nifi-config-vol:
   spark-3-5-3-vol:
+  spark-3-5-3-java-vol:
