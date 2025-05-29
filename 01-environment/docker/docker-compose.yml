@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__65c29c054e8878d063c37b0f2170b58e91e7f3e5
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__65c29c054e8878d063c37b0f2170b58e91e7f3e5
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__f6e94d5b9855c3db7f8413dbc676c99d12c4f9be
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__f6e94d5b9855c3db7f8413dbc676c99d12c4f9be
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -478,7 +478,6 @@ services:
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
       - AIRFLOW__OPENLINEAGE__DISABLED=true
-      - LD_PRELOAD=false
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
@@ -486,8 +485,8 @@ services:
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
+      - ./container-volume/spark/logs/:/var/log/spark/logs
       - aws-credentials-vol:/home/airflow/.aws:RO
-      - ./container-volume/spark/logs/:/var/log/spark/logs      
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
@@ -527,7 +526,7 @@ services:
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
       - SPARK_HOME=/opt/bitnami/spark
-      - JAVA_HOME=/opt/bitnami/java      
+      - JAVA_HOME=/opt/bitnami/java
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
       - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
@@ -540,8 +539,8 @@ services:
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
+      - ./container-volume/spark/logs/:/var/log/spark/logs
       - aws-credentials-vol:/home/airflow/.aws:RO
-      - ./container-volume/spark/logs/:/var/log/spark/logs      
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
