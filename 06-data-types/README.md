@@ -26,13 +26,13 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 **Airports:**
 
 ```bash
-docker exec -ti awscli s3cmd put /data-transfer/airports-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
+docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
 ```
 
 or with `mc`
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/airports-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
+docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 ## Read CSV File
@@ -41,7 +41,7 @@ Let's read the raw airport data in CSV file format. You can either use Zeppelin,
 
 ```python
 from pyspark.sql.types import *
-airportsRawDF = spark.read.csv("file:///data-transfer/airports-data/airports.csv", 
+airportsRawDF = spark.read.csv("file:///data-transfer/airport-data/airports.csv", 
     	sep=",", inferSchema="true", header="true")
 airportsRawDF.show(5)
 ```
@@ -820,7 +820,7 @@ Finally let's import the data from the data-transfer folder.
 
 ```sql
 COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg, elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords) 
-FROM '/data-transfer/airports-data/airports.csv' DELIMITER ',' CSV HEADER;
+FROM '/data-transfer/airport-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
 Now in Pyspark (for example from Zeppelin) use the following statement to read from the `flight_data.pg_airport_t` table.

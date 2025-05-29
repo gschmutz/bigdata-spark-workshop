@@ -117,7 +117,7 @@ The `admin-bucket` has been created when starting the platform.
 To upload a file we are going to use the `cp` command of the `minio-mc`. First for the `airports.csv`
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/airports-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
+docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 and then also for the `plane-data.csv` file. 

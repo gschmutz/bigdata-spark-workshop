@@ -670,7 +670,7 @@ Finally let's import the data from the data-transfer folder.
 
 ```sql
 COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg, elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords) 
-FROM '/data-transfer/airports-data/airports.csv' DELIMITER ',' CSV HEADER;
+FROM '/data-transfer/airport-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
 ### Query Table from Trino

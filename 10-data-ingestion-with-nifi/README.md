@@ -18,6 +18,12 @@ In a terminal, navigate to the `data-transfer` folder.
 cd $DATAPLATFORM_HOME/data-transfer
 ```
 
+We will use a folder `landing-zone` which we need to create
+
+```bash
+mkdir -p landing-zone
+```
+
 now perform a `chown` to change the owner of all subfolders
 
 ```bash
@@ -28,22 +34,31 @@ check that the folders are now under the right user
 
 ```bash
 $ ls -lsa
-4 drwxr-xr-x 10 root   root   4096 Jun  6 10:33 .
-4 drwxr-xr-x 17 root   root   4096 Jun  6 10:22 ..
-4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:33 adventureworks
-4 drwxr-xr-x  3 ubuntu ubuntu 4096 Jun  6 10:22 cookbook-data
-4 drwxr-xr-x  5 ubuntu ubuntu 4096 Jun  6 10:33 flight-data
-4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:33 graphdb-news
-4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:33 imdb-movies
-4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 12:21 landing-zone
-4 -rw-r--r--  1 ubuntu ubuntu   59 Jun  6 10:22 readme.txt
-4 drwxr-xr-x  2 ubuntu ubuntu 4096 Jun  6 10:22 synthetic-load-generator
+4 drwxr-xr-x 16 ubuntu ubuntu 4096 May 29 20:39 .
+4 drwxr-xr-x 15 ubuntu ubuntu 4096 May 29 19:41 ..
+8 -rw-r--r--  1 ubuntu ubuntu 5472 May 22 11:55 00000000000000000000.json
+8 -rw-r--r--  1 ubuntu ubuntu 4597 May 22 18:12 00000000000000000001.json
+4 -rw-r--r--  1 ubuntu ubuntu 2893 May 22 18:18 00000000000000000002.json
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 adventureworks
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 airport-data
+4 drwxrwxr-x  2 ubuntu ubuntu 4096 May 29 17:06 app
+4 drwxr-xr-x  5 ubuntu ubuntu 4096 May 29 19:46 flight-data
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 graphdb-news
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 imdb-movies
+4 drwxrwxr-x  2 ubuntu ubuntu 4096 May 29 20:39 landing-zone
+4 drwxr-xr-x  4 ubuntu ubuntu 4096 May 20 19:58 movie-lens-small
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 nyc-film-permits
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 orion-star
+4 drwxr-xr-x  3 ubuntu ubuntu 4096 May 20 19:58 platys-cookbooks
+4 -rw-r--r--  1 ubuntu ubuntu   59 May 20 19:47 readme.txt
+4 drwxr-xr-x  4 ubuntu ubuntu 4096 May 22 11:37 result
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 20 19:47 synthetic-load-generator
+4 drwxr-xr-x  2 ubuntu ubuntu 4096 May 29 19:46 wordcount
 ```
-
 
 ## Create the Nifi data flow
 
-In a browser navigate to <https://dataplatform:18080/nifi> (make sure to replace `dataplatform` by the IP address of the machine where docker runs on,). We have enabled authentication for NiFi, therefore you have to use https to access it. Due to the use of a self-signed certificate, you have to initially confirm that the page is safe and you want to access the page.
+In a browser navigate to <https://dataplatform:18083/nifi> (make sure to replace `dataplatform` by the IP address of the machine where docker runs on,). We have enabled authentication for NiFi, therefore you have to use https to access it. Due to the use of a self-signed certificate, you have to initially confirm that the page is safe and you want to access the page.
 
 ![Alt Image Text](./images/nifi-login.png "Nifi Login")
 
@@ -63,7 +78,7 @@ We can now begin creating our data flow by adding a Processor to our canvas. To 
 
 ![Alt Image Text](./images/nifi-drag-processor-into-canvas.png "Schema Registry UI")
 
-This will give us a dialog that allows us to choose which Processor we want to add. We can see that there are a total of 260 processors currently available. We can browse through the list or use the tag cloud on the left to filter the processors by type.
+This will give us a dialog that allows us to choose which Processor we want to add. We can see that there are a total of 290 processors currently available. We can browse through the list or use **filter types** box to filter-down to one or more processors.
 
 ![Alt Image Text](./images/nifi-add-processor.png "Schema Registry UI")
 
@@ -75,9 +90,11 @@ You should now see the canvas with the **GetFile** processor. A yellow marker is
 
 ![Alt Image Text](./images/nifi-canvas-with-getfile-processor-1.png "Schema Registry UI")
 
-Double-click on the **GetFile** processor and the properties page of the processor appears. Here you can change the name of the processor among other general properties.
+Double-click on the **GetFile** processor and the **Settings** page of the processor appears. Here you can change the name of the processor among other general properties.
 
-Click on **PROPERTIES** tab to switch to the properties page.
+![Alt Image Text](./images/nifi-getfile-processor-settings-1.png "Schema Registry UI")
+
+Click on **Properties** tab to switch to the properties page.
 
 ![Alt Image Text](./images/nifi-getfile-processor-properties-1.png "Schema Registry UI")
 
@@ -94,7 +111,7 @@ The **Configure Processor** should look as shown below
 
 ![Alt Image Text](./images/nifi-getfile-processor-properties-2.png "Schema Registry UI")
 
-Click **APPLY** to close the window.
+Click **Apply** to close the window.
 
 The `GetFile` processor still shows the yellow marker, this is because the out-going relationship is neither used nor terminated. Of course we want to use it, but for that we first need another Processor to store the data in S3 object storage. 
 
@@ -102,22 +119,24 @@ The `GetFile` processor still shows the yellow marker, this is because the out-g
 
 Drag a new Processor onto the Canvas, just below the **GetFile** processor. 
 
-Enter **PutS3** into the Filter field on top right. Only a single processor, the `PutS3Object` is shown.
+Enter **PutS3** into the **Filter types** field on top left. Only a single processor, the `PutS3Object` is shown.
 
 ![Alt Image Text](./images/nifi-add-processor-search-puts3.png "Schema Registry UI")
 
-Click on **ADD** to add it to the canvas as well. The canvas should now look like shown below. You can drag around the processor to organize them in the right order. It is recommended to organize the in main flow direction, either top-to-bottom or left-to-right. 
+Click on **Add** to add it to the canvas as well. The canvas should now look like shown below. You can drag around the processor to organize them in the right order. It is recommended to organize the in main flow direction, either top-to-bottom or left-to-right. 
 
 ![Alt Image Text](./images/nifi-canvas-with-two-processor.png "Schema Registry UI")
 
-Let's configure the new processor. Double-click on the `PutS3Object` and navigate to **PROPERTIES**.
+Let's configure the new processor. Double-click on the `PutS3Object` and navigate to **Properties**. Enter the following values:
 
-  * **Object Key**: `/raw/airport/${ingestionTime}/${filename}`
   * **Bucket**: `flight-nifi-bucket`
-  * **Access Key ID**: V42FCGRVMK24JJ8DHUYG`
-  * **Secret Access Key**: `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza`
+  * **Object Key**: `/raw/airport/${ingestionTime}/${filename}`
+  * **Region**: `US East (N. Virginia)`
   * **Endpoint Override URL**: `http://minio-1:9000`
   * **Use Path Style Access**: `true`
+  * **AWS Credentials Provider Service**: click on the 3 dots and select **Create new service** and click **Add** to add a new service of type **AWSCredentialsProviderControllerService**. Click again on the 3 dots and select **Go To Service** and confirm with **Yes**. On the **Controller Services** pop-up page, click on the 3 dots right to the ` AWSCredentialsProviderControllerService` and select **Edit**. Navigate to the **Properties** tab and enter these values and click **Apply** and **Back to Processor**
+  	* **Access Key ID**: `admin`
+	* **Secret Access Key**: `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza`
 
 The **Configure Processor** should look as shown below. 
 
@@ -125,31 +144,29 @@ The **Configure Processor** should look as shown below.
 
 **Note**: NiFi does not display username and password values, they are instead shown as `Sensitive value set` when they hold a value.
 
-**Note2**: you can also use an [AWSCredentialsProviderControllerService](https://nifi.apache.org/docs/nifi-docs/components/org.apache.nifi/nifi-aws-nar/current/org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService/index.html) to define the credentials for S3. This also allows for externalising the AWS access key and secret key in properties file format.
+Because we already saved the settings, we can click **Cancel** to close the pop-up window. 
 
-Click **APPLY** to close the window.
-
-We also use a variable `ingestionTime` in the **Object Key** expression, which we need to set to the current timestamp when a file is processed. We will do that now by adding an additional **UpdateAttribute** processor.
+We also use a variable `ingestionTime` in the **Object Key** expression above, which we need to set to the current timestamp when a file is processed. We will do that now by adding an additional **UpdateAttribute** processor.
 
 ### Set Variable using `UpdateAttribute` processor
 
 Drag a new Processor onto the Canvas, in between the **GetFile** and **PutS3Object** processor. 
 
-Enter **updateA** into the Filter field on top right. Only a single processor, the `UpdateAttribute ` is shown. Click **ADD** to add it to the canvas as well
+Enter **updateA** into the Filter field on top right. Only a single processor, the `UpdateAttribute ` is shown. Click **Add** to add it to the canvas as well.
 
-Now let's configure the new processor. Double-click on the `UpdateAttribute ` and navigate to **PROPERTIES**. In this case we do not have to update an existing property but instead add a new one. Click on **+** in the upper right corner of the **Configure Processor** window. 
+Now let's configure the new processor. Double-click on the `UpdateAttribute ` and navigate to **Properties**. In this case we do not have to update an existing property but instead add a new one. Click on **+** in the upper right corner of the **Edit Processor** window. 
 
-Enter `ingestionTime` into the **Property Name** and click **OK**. Enter the following expression `${now():format("yyyy-MM-dd'T'HH:mm:ss")}` into the pop-up window for the value. 
+Enter `ingestionTime` into the **Property Name** and click **Ok**. Enter the following expression `${now():format("yyyy-MM-dd'T'HH:mm:ss")}` into the pop-up window for the value. 
 
 ![Alt Image Text](./images/nifi-updateattribute-processor-properties-1.png "Schema Registry UI")
 
-Click **OK** and then **APPLY**.
+Click **Ok** and then **Apply**.
 
-Now with the 3 processors on the canvas, ordered in the direction of the data flow
+Now we have 3 processors on the canvas, and we should organize them in the direction of the data flow, either horizontal (left to right) or vertical (top to bottom)
 
 ![Alt Image Text](./images/nifi-canvas-with-three-processor.png "Schema Registry UI")
 
-all we have to do before we can run it is connecting the processors.
+Before we can run the pipeline, we of course have to connect the processors. 
 
 ### Connecting the Processors
 
@@ -157,34 +174,39 @@ Drag a connection from the **GetFile** processor to the **UpdateProcessor** and 
 
 ![Alt Image Text](./images/nifi-drag-connection.png "Schema Registry UI")
 
-Make sure that **For Relationship** is enabled for the `success` relationship and click **ADD**. 
+Make sure that the `success` **Relationship** is enabled and click **Add**. 
 
 Repeat it for the connection from **UpdateAttribute** to **PutS3Object**. The data flow on the canvas should now look as shown below
 
 ![Alt Image Text](./images/nifi-canvas-with-connected-processor.png "Schema Registry UI")
 
-The first two processor no longer hold the yellow marker, but now show the red stop marker, meaning that these two processors can be started. But what about the last one, the **PutS3Object** processor?
+The first two processor no longer hold the yellow marker, but instead show the red stop marker, meaning that these two processors can be started. But what about the last one, the **PutS3Object** processor?
 
 If you navigate to the marker, a tool-tip will show the errors. 
 
 ![Alt Image Text](./images/nifi-puts3object-error-marker.png "Schema Registry UI")
 
-We can see that the processor has two outgoing relationships, which are not "used". We have to terminate them, if we have no use for it. 
-Double-click on the **PutS3Object** processor and navigate to **RELATIONSHIPS** and set the check-boxes for both relationships to **terminate**. 
+We can see that there are 3 errors on the **PutS3Object** processor. The first one indicates, that the controller service we have created before is still disabled. We can easily enable it by right-clicking on the canvas and selecting **Enable All Controller Services** from the context menu. 
+
+![](./images/nifi-enable-all-controller-services.png)
+
+The other two errors are caused by the processor having two outgoing relationships, which are not "used". We have to terminate them, if we have no use for it. 
+
+Double-click on the **PutS3Object** processor and navigate to **Relationships** and set the check-boxes for both relationships to **terminate**. 
 
 ![Alt Image Text](./images/nifi-terminate-relationships.png "Schema Registry UI")
 
-Click **APPLY** to save the settings.
+Click **Apply** to save the settings.
 
 Now our data flow is ready, so let's run it. 
 
 ### Starting the Data Flow 
 
-Select all 3 processor and click on the start arrow 
+Select all 3 processor (click ctrl-A) and navigate to the start arrow and click on it
 
 ![Alt Image Text](./images/nifi-start-dataflow.png "Schema Registry UI")
 
-to run the data flow. All three processors now show the green "started" or "running" marker. 
+This will run the 3 processors. All three processors now show the green "started" or "running" marker. 
 
 ![Alt Image Text](./images/nifi-running-dataflow.png "Schema Registry UI")
 
@@ -192,13 +214,13 @@ to run the data flow. All three processors now show the green "started" or "runn
 
 Now let's copy a file to be uploaded into the `/data-transfer/landing-zone` folder. You can either use a terminal window to do that or the file browser UI, as shown here. 
 
-Navigate to <http://dataplatform:28178> and login with `admin` for the user and the password. 
+Navigate to <http://dataplatform:28178> and login with `admin` for the **Username** and also `admin` for the **Password**. 
 
 ![Alt Image Text](./images/file-browser-home.png "Schema Registry UI")
 
-Navigate to **flight-data** folder by double-clicking on it and select the **airports.csv** file. 
+Navigate to **airport-data** folder by double-clicking on it and select the **airports.csv** file. 
 
-![Alt Image Text](./images/file-browser-flight-folder.png "Schema Registry UI")
+![Alt Image Text](./images/file-browser-airport-folder.png "Schema Registry UI")
 
 In the menu bar, click on the **Copy file** icon 
 
@@ -209,6 +231,10 @@ and navigate to the **landing-zone** folder and click **COPY**
 ![Alt Image Text](./images/file-browser-copy-file-2.png "Schema Registry UI")
 
 Let's see if our NiFi data flow has done its work!
+
+```bash
+docker exec -ti minio-mc mc mb minio-1/flight-nifi-bucket
+```
 
 In a terminal, use the `mc tree` command to  view the `flight-nifi-bucket`
 
