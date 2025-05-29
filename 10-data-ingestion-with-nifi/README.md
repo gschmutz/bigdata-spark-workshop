@@ -232,10 +232,6 @@ and navigate to the **landing-zone** folder and click **COPY**
 
 Let's see if our NiFi data flow has done its work!
 
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-nifi-bucket
-```
-
 In a terminal, use the `mc tree` command to  view the `flight-nifi-bucket`
 
 ```bash
@@ -245,16 +241,15 @@ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
 if should show an output similar to the one below
 
 ```bash
-$ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer$ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
 minio-1/flight-nifi-bucket/
 └─ raw
-   └─ nifi
-      └─ airport
-         └─ 2023-05-21T18:40:39
-            └─ airports.csv
+   └─ airport
+      └─ 2025-05-29T21:03:52
+         └─ airports.csv
 ```
 
-We can see that the file has been loaded under a folder with the timestamp of the file ingestion.
+We can see that the file has been loaded into a folder with the timestamp of the file ingestion.
 
 ### Additional steps
 
