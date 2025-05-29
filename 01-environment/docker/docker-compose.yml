@@ -478,6 +478,7 @@ services:
       - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
       - AIRFLOW__OPENLINEAGE__DISABLED=true
+      - LD_PRELOAD=false
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
@@ -486,6 +487,7 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - aws-credentials-vol:/home/airflow/.aws:RO
+      - ./container-volume/spark/logs/:/var/log/spark/logs      
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
@@ -539,6 +541,7 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - aws-credentials-vol:/home/airflow/.aws:RO
+      - ./container-volume/spark/logs/:/var/log/spark/logs      
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
