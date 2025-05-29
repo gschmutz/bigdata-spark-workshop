@@ -471,7 +471,7 @@ services:
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow[amazon] apache-airflow-providers-apache-spark
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
-      - SPARK_HOME=/opt/spark
+      - SPARK_HOME=/opt/bitnami/spark
       - JAVA_HOME=/opt/bitnami/java
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
       - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
@@ -483,7 +483,7 @@ services:
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-      - spark-3-5-3-vol:/opt/spark:RO
+      - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
@@ -524,7 +524,7 @@ services:
       - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow[amazon] apache-airflow-providers-apache-spark
       - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
-      - SPARK_HOME=/opt/spark
+      - SPARK_HOME=/opt/bitnami/spark
       - JAVA_HOME=/opt/bitnami/java      
       - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
       - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
@@ -536,7 +536,7 @@ services:
       - ./scripts/airflow/dags:/opt/airflow/dags:Z
       - ./plugins/airflow/:/opt/airflow/plugins:Z
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-      - spark-3-5-3-vol:/opt/spark:RO
+      - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
