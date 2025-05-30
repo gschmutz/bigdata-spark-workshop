@@ -5,10 +5,10 @@ Airflow DAG to submit Apache Spark applications using
 import airflow
 import os
 from datetime import timedelta
+from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator 
-from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.transfers.local_to_s3 import (
     LocalFilesystemToS3Operator,
 )
@@ -22,6 +22,8 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 default_args = {
  'owner': 'airflow',
  'depends_on_past': False,
+ 'start_date': datetime.now(),
+ 'catchup': False,
  'retries':1,
  'retry_delay': timedelta(minutes=1),    
 }
@@ -41,10 +43,9 @@ def upload_local_folder_to_s3(local_folder, s3_bucket, s3_prefix, aws_conn_id):
             )
 
 with DAG(
- dag_id='example_spark_operator',
+ dag_id='spark_airport_and_flight_refined',
  default_args=default_args,
- schedule_interval=timedelta(days=1),
- start_date=days_ago(0),
+ schedule='@daily',
  tags=['cas-dataengineering'],
 ) as dag:
 

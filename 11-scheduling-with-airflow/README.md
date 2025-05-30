@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--s3-refined-path", required=True, help="Path in the S3 bucket to the refined data")
     args = parser.parse_args()
 
-    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)    
+    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)
 ```
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
@@ -100,8 +100,8 @@ copy/paste the following python script into the editor window
 
 ```python
 """
-Airflow DAG to upload data to S3 using `LocalFilesystemToS3Operator` / `PythonOperator` and submit Apache Spark applications using
-`SparkSubmitOperator`.
+Airflow DAG to submit Apache Spark applications using
+`SparkSubmitOperator`, `SparkJDBCOperator` and `SparkSqlOperator`.
 """
 import airflow
 import os
@@ -142,7 +142,7 @@ def upload_local_folder_to_s3(local_folder, s3_bucket, s3_prefix, aws_conn_id):
             )
 
 with DAG(
- dag_id='spark_airport_and_flight_refined',
+ dag_id='example_spark_operator',
  default_args=default_args,
  schedule_interval=timedelta(days=1),
  start_date=days_ago(0),
@@ -164,7 +164,7 @@ with DAG(
 
     upload_airports_local_to_s3_task = LocalFilesystemToS3Operator(
         task_id="upload_airports_local_to_s3_job",
-        filename="/data-transfer/airport-data/airports.csv",
+        filename="/data-transfer/airports-data/airports.csv",
         dest_key="raw/airports/airports.csv",
         dest_bucket="flight-bucket",
         aws_conn_id="aws-s3",
@@ -185,7 +185,7 @@ with DAG(
     spark_submit_task = SparkSubmitOperator(
         task_id='spark_submit_task',
         conn_id='spark-cluster',
-        application='s3://flight-bucket/app/prep_refined.py',
+        application='s3a://flight-bucket/app/prep_refined.py',
         name='Airports and Flight Refinement application',
         application_args=[
             '--s3-bucket', 'flight-bucket',
