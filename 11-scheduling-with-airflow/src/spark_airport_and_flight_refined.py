@@ -64,7 +64,7 @@ with DAG(
 
     upload_airports_local_to_s3_task = LocalFilesystemToS3Operator(
         task_id="upload_airports_local_to_s3_job",
-        filename="/data-transfer/airports-data/airports.csv",
+        filename="/data-transfer/airport-data/airports.csv",
         dest_key="raw/airports/airports.csv",
         dest_bucket="flight-bucket",
         aws_conn_id="aws-s3",
