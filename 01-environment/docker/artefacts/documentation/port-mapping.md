@@ -74,6 +74,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 3000 | 3000 | grafana |
 3001 | 3000 | wetty (dc1) |
 3002 | 3000 | wetty (dc2 |
+3003 | 3003 | opik-backend |
 3005 | 3000 | marquez-web |
 3010 | 3000 | postman |
 3006 | 3000 | retool-api |
@@ -90,6 +91,11 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 3333 | 3333 | taskcafe |
 3355 | 3355 | vector-admin | 
 3838 | 3838 | shiny-server |
+3900 | 3900 | garage |
+3901 | 3901 | garage |
+3902 | 3902 | garage |
+3903 | 3903 | garage |
+3909 | 3909 | garage-webui |
 4000 | 4000 | graphql-mesh |
 4001 | 4000 | supabase-analytics |
 4002 | 4000 | litellm |
@@ -122,6 +128,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 5050 | 5050 | zeppelin |
 5051 | 5050 | data-product-portal-nginx |
 5115 | 5115 | arroyo |
+5173 | 5173 | opik-frontend |
 5432 | 5432 | postgresql |
 5433 | 5432 | timescaledb |
 5434 | 5432 | marquez-db |
@@ -268,6 +275,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 9043 | 9042 | dse-2 |
 9044 | 9042 | dse-3 |
 9047 | 9047 | dremio |
+9097 | 9097 | mcp-trino |
 9101 | 9001 | mosquitto-1 |
 9102 | 9002 | mosquitto-2 |
 9103 | 9003 | mosquitto-3 |
@@ -492,7 +500,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28136 | 80 | mqtt-ui |
 28137 | 9000 | portainer |
 28138 | 8080 | cadvisor |
-28139 | 8080 | airflow |
+28139 | 8080 | airflow (2.x) or airflow-apiserver (3.x) |
 28140 | 8080 | code-server |
 28141 | 8000 | kafka-topics-ui |
 28142 | 8080 | datahub-gms |
@@ -528,7 +536,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28190 | 80 | adminio_ui |
 28191 | 8080 | adminio_api |
 28192 | 8334 | filestash |
-28193 | 9090 | minio-console |
+28193 | 5000 | mcp-toolbox-for-dbs |
 28194 | 3000 | sqlpad |
 28195 | 80 | streams-explorer |
 28200 | 9090 | thingsbaord (http) |
@@ -550,7 +558,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28221 | 5000 | lakefs-webhook |
 28222 | 9000 | whisper |
 28223 | 80 | audio-transcriber |
-28224 | |  |
+28224 | 8082 | centralmind-gateway  |
 28225 | |  |
 28226 | 9000 | questdb |
 28227 | 8080 | debezium-ui |

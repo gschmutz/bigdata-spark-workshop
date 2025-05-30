@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__d36829a75dd49f3c11c817d2027067bd9e1c945b
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__d36829a75dd49f3c11c817d2027067bd9e1c945b
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__60b33d2abcbeeb3ede05d3326bc8ee68609bbe52
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__60b33d2abcbeeb3ede05d3326bc8ee68609bbe52
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -441,22 +441,32 @@ services:
         ../scripts/start.sh
     restart: unless-stopped
 #  ================================== Airflow ========================================== #
-  airflow:
-    image: apache/airflow:2.11.0-python3.10
-    container_name: airflow
-    hostname: airflow
+  airflow-apiserver:
+    image: apache/airflow:3.0.1-python3.10
+    container_name: airflow-apiserver
+    hostname: airflow-apiserver
     labels:
       com.platys.name: airflow
       com.platys.description: Job Orchestration & Scheduler
       com.platys.webui.title: Airflow UI
       com.platys.webui.url: http://dataplatform:28139
-      com.platys.restapi.title: Airflow REST API (dags as sample)
-      com.platys.restapi.url: http://dataplatform:28139/api/v1/dags
-      com.platys.password.envvars: PLATYS_AIRFLOW_SECRET
+      com.platys.restapi.title: Airflow REST API (apiserver)
+      com.platys.restapi.url: http://dataplatform:28139/api/v2/version
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+        required: true
+      airflow-db:
+        condition: service_healthy
+    command:
+      - api-server
     ports:
       - 28139:8080
-    command: webserver
     environment:
+      - AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      - AIRFLOW__CORE__EXECUTION_API_SERVER_URL='http://airflow-apiserver:8080/execution/'
+      # provide a health service on port 8974
+      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       # For backward compatibility, with Airflow <2.3
@@ -464,7 +474,7 @@ services:
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       - AIRFLOW__CELERY__BROKER_URL=redis://:@airflow-redis:6379/0
       - AIRFLOW__CORE__FERNET_KEY= 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
-      - AIRFLOW__WEBSERVER__SECRET_KEY=${PLATYS_AIRFLOW_SECRET:-037223d1eda59bb91822f6ea04e892f0}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=037223d1eda59bb91822f6ea04e892f0
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
@@ -490,13 +500,13 @@ services:
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
-      test: [CMD, curl, --fail, http://localhost:8080/health]
+      test: [CMD, curl, --fail, http://localhost:8080/api/v2/version]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
   airflow-scheduler:
-    image: apache/airflow:2.11.0-python3.10
+    image: apache/airflow:3.0.1-python3.10
     container_name: airflow-scheduler
     hostname: airflow-scheduler
     labels:
@@ -512,6 +522,8 @@ services:
     command:
       - scheduler
     environment:
+      - AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      - AIRFLOW__CORE__EXECUTION_API_SERVER_URL='http://airflow-apiserver:8080/execution/'
       # provide a health service on port 8974
       - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
@@ -552,6 +564,65 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+  airflow-dag-processor:
+    image: apache/airflow:3.0.1-python3.10
+    container_name: airflow-processor
+    hostname: airflow-processor
+    labels:
+      com.platys.name: airflow
+      com.platys.description: Job Orchestration & Scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+        required: true
+      airflow-db:
+        condition: service_healthy
+        required: true
+    command:
+      - dag-processor
+    environment:
+      - AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      - AIRFLOW__CORE__EXECUTION_API_SERVER_URL='http://airflow-apiserver:8080/execution/'
+      # provide a health service on port 8974
+      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
+      # For backward compatibility, with Airflow <2.3
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
+      - AIRFLOW__CELERY__BROKER_URL=redis://:@airflow-redis:6379/0
+      - AIRFLOW__CORE__FERNET_KEY= 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
+      - AIRFLOW__WEBSERVER__SECRET_KEY=037223d1eda59bb91822f6ea04e892f0
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.session
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow[amazon] apache-airflow-providers-apache-spark
+      - AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
+      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+      - SPARK_HOME=/opt/bitnami/spark
+      - JAVA_HOME=/opt/bitnami/java
+      - AIRFLOW_VAR_S3_ENDPOINT=http://minio-1:9000
+      - AIRFLOW_VAR_S3_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
+      - AIRFLOW_VAR_S3_SECRET_ACCESS_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      - AIRFLOW_VAR_S3_PATH_STYLE_ACCESS='true'
+      - AIRFLOW__OPENLINEAGE__DISABLED=true
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./scripts/airflow/dags:/opt/airflow/dags:Z
+      - ./plugins/airflow/:/opt/airflow/plugins:Z
+      - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
+      - spark-3-5-3-vol:/opt/bitnami/spark:RO
+      - spark-3-5-3-java-vol:/opt/bitnami/java:RO
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+      - aws-credentials-vol:/home/airflow/.aws:RO
+    user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'airflow jobs check --job-type DagProcessorJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
   airflow-db:
     image: postgres:13
     container_name: airflow-db
@@ -573,7 +644,7 @@ services:
       retries: 5
       start_period: 5s
   airflow-init:
-    image: apache/airflow:2.11.0-python3.10
+    image: apache/airflow:3.0.1-python3.10
     container_name: airflow-init
     hostname: airflow-init
     labels:
@@ -663,6 +734,8 @@ services:
         ls -la /opt/airflow/{logs,dags,plugins,config}
     # yamllint enable rule:line-length
     environment:
+      - AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      - AIRFLOW__CORE__EXECUTION_API_SERVER_URL='http://airflow-apiserver:8080/execution/'
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:${PLATYS_AIRFLOW_POSTGRESQL_PASSWORD:-abc123!}@airflow-db/airflowdb
       # For backward compatibility, with Airflow <2.3

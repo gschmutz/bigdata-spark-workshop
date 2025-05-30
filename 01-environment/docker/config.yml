@@ -329,6 +329,19 @@
       TIKA_enable: false
       # 'minimal' or 'full'
       TIKA_edition: 'minimal'
+
+      #
+      # ===== MCP Toolbox for Databases ========
+      #
+      MCP_TOOLBOX_enable: false
+
+      #
+      # ===== MCP for Trino ========
+      #
+      MCP_TRINO_enable: false
+      MCP_TRINO_default_catalog: memory
+      MCP_TRINO_allow_write_queries: false
+
       #
       # ===== Apache Hive ========
       #
@@ -557,7 +570,7 @@
       #
       AIRFLOW_enable: true
       # either 2 or 3
-      AIRFLOW_major_version: 2
+      AIRFLOW_major_version: 3
       AIRFLOW_custom_image_name: ''
       # "celery" or "sequential" or "local"
       AIRFLOW_executor: local
