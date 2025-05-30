@@ -221,6 +221,9 @@ services:
       com.platys.webui.url: http://dataplatform:28117
       com.platys.restapi.title: Spark History Server
       com.platys.restapi.url: http://dataplatform:28117/api/v1
+    depends_on:
+      spark-master:
+        condition: service_healthy      
     expose:
       - 18080
     ports:
@@ -268,6 +271,9 @@ services:
       com.platys.description: Spark Thriftserver
       com.platys.webui.title: Spark Thriftserver UI
       com.platys.webui.url: http://dataplatform:28298
+    depends_on:
+      spark-master:
+        condition: service_healthy      
     ports:
       - 28118:10000
       - 28298:4040
