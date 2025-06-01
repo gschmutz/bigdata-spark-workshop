@@ -570,7 +570,7 @@
       #
       AIRFLOW_enable: true
       # either 2 or 3
-      AIRFLOW_major_version: 2
+      AIRFLOW_major_version: 3
       AIRFLOW_custom_image_name: ''
       # "celery" or "sequential" or "local"
       AIRFLOW_executor: local
@@ -579,7 +579,17 @@
       AIRFLOW_admin_password: 'abc123!'
       AIRFLOW_fernet_key: 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
       AIRFLOW_secret_key: '037223d1eda59bb91822f6ea04e892f0'
+      AIRFLOW_jwt_secret: 'jUnJ/Vt17d04x0UqHRMRGg=='
       AIRFLOW_additional_requirements: 'apache-airflow[amazon] apache-airflow-providers-apache-spark'
+      # valid only for Airflow 2.x
+      AIRFLOW_auth_backends: 'airflow.api.auth.backend.session'
+      # valid only for Airflow 3.x
+      AIRFLOW_auth_manager: 'airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager'      
+      # either 'local' or 's3'
+      AIRFLOW_logging_strategy: s3
+      AIRFLOW_logging_s3_bucket_name: 'admin-bucket'
+      AIRFLOW_logging_s3_key_prefix: 'airflow-logs'  
+      AIRFLOW_logging_level: INFO    
       AIRFLOW_volume_map_logs: false
       AIRFLOW_provision_examples: false
       AIRFLOW_dag_dir_list_interval: 60
