@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--s3-refined-path", required=True, help="Path in the S3 bucket to the refined data")
     args = parser.parse_args()
 
-    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)    
+    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)
 ```
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
