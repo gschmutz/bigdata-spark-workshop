@@ -1,6 +1,6 @@
 # Job Scheduling with Airflow 3.x
 
-In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
+In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) 3.x to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
 
 ## Create the S3 bucket, if not available
 
