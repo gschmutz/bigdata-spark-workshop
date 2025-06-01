@@ -1,6 +1,6 @@
 # Job Scheduling with Airflow 2.x
 
-This workshop **will not work** with the dataplatform which is part of this course, as it runs with Airflow 3.x. See [Job Scheduling with Airflow 3.x](../11a-scheduling-with-airflow/README.md) for the same workshop covering Airflow 3.x.
+This workshop **will not work** with the dataplatform which is part of this course, as it runs with Airflow 3.x. See [Job Scheduling with Airflow 3.x](../11a-scheduling-with-airflow-3.x/README.md) for the same workshop covering Airflow 3.x.
 
 In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) 2.x to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
 
