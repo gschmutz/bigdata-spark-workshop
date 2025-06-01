@@ -1,4 +1,4 @@
-# Job Scheduling with Airflow
+# Job Scheduling with Airflow 2.x
 
 In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--s3-refined-path", required=True, help="Path in the S3 bucket to the refined data")
     args = parser.parse_args()
 
-    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)
+    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)    
 ```
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
@@ -200,36 +200,27 @@ with DAG(
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
 
-Navigate to <http://dataplatform:28139> and login as `airflow` and password `abc123!`. Click on **Dags** in the legt menu and reload it until the `spark_airport_and_flight_refined` shows up in the details pane to the right.
+Navigate to <http://dataplatform:28139> and login as `airflow` and password `abc123!`. Repeat clicking on **DAGs** in the top menu and after a while the `spark_airport_and_flight_refined` should show up. 
 
 ![](./images/airflow-with-dag.png)
 
-The loading of the DAG **was successfull!**. 
+The loading of the DAG **was successfull!** If there is an error in the script, you will see an error message just below the menu. 
 
-If there is an error in the script, you will see a red error icon just right to the **Dags** menu item. 
-
-![](./images/airflow-with-dag-error.png)
-
-Click on the error icon and expand the drop-down to see the error message (I just misstyped the first import statment to force this error).
-
-![](./images/airflow-with-dag-error1.png)
-
-With the script beeing loaded successfully, click on the `spark_airport_and_flight_refined` link to see the details page of the DAG.
+Click on the `spark_airport_and_flight_refined` link to see the details page of the DAG.
 
 ![](./images/airflow-with-dag-details.png)
  
-This is the page where we will later see the task executions and the status of each execution. 
-Currently the DAG is in **paused** state, which can be seen by the **toogle button** right to the name of the DAG. We can not yet **Unpause** it, because we first have to create the two connections used in the DAG. 
+This is the page where we will later see the task executions and the status of each execution. Currently the DAG is in **paused** state, which can be seen by the **toogle button** in the top left corner. We can not yet **Unpause** it, because we first have to createt the two connections used in the DAG. 
 
-We can also use the various Tabs on the detail window to navigate to the **Code** view (to see the python code) or to the **Logs** to see the log statement for each task execution, once the DAG has run at least once.
-
-Click on the icon in the top left corner to view a **Graphical** representation of the DAG. You can zoom in using the **+/-** buttons and change to the **Top to Bottom** orientation by expanding the **Options** drop-down and select the **Graph Direction** accordingly.
+We can also use the various Tabs on the detail window to navigate to the **Graph** view (to see a grapical representation of the DAG).
 
 ![](./images/airflow-with-dag-details-graph.png)
 
-You cann see in the graph, that our Airflow DAG will first delete the `raw` and `refined` folders (if they exist), then upload the airport & flight data and last but not least start the Spark application to create the refined data.
+to the **Code** view (to see the python code), to the **Logs** to see the log statement for each task execution, once the DAG has run at least once.
 
-To perform the different steps, we have used various predefined operators in the code, such as 
+The Airflow DAG will first delete the `raw` and `refined` folders, if they exist, then upload the airport & flight data and last but not least start the Spark application to create the refined data.
+
+To perform the different steps, we have used various predefined operators such as 
 
   * `S3DeleteObjectsOperator` - for deleting the existing folders in S3 (MinIO)
   * `LocalFilesystemToS3Operator` - for uploading a single file from the local filesystem to S3
@@ -246,14 +237,14 @@ In Airflow, you can create connections to various external systems, including S3
     
 First let's create the S3 connection. 
 
-Naviate to the **Admin** item in the menu to the left and click on **Connections**. Create a new connection by  clicking on the **+ Add Connection** button. Fill in following connection details:
+Naviate to the **Admin** top menu item and click on **Connections**. Create a new connection by  clicking on the **+** button. Fill in following connection details:
 
-  * **Connection ID**: `aws-s3`
-  * **Connection Type**: Select `aws` as the connection type.
+  * **Connection Id**: `aws-s3`
+  * **Connection Type**: Select **Amazon Web Services** as the connection type.
   * **AWS Access Key ID**: `admin`
   * **AWS Secret Access Key**: `abc123!abc123!`
   
-  * **Extra Fields JSON**: Expand the drop-down to provide additional configuration options in JSON format. Add the following JSON document    
+  * **Extra**: You can provide additional configuration options in JSON format. Add the following JSON document    
 
 	```json    
 	{
@@ -262,16 +253,16 @@ Naviate to the **Admin** item in the menu to the left and click on **Connections
 	}
 	```
 
-Save the Connection by clicking on **Save** twice.    
+Save the Connection by clicking on **Save**.    
 
 ### Spark Connection
 
 Now let's do the same for the Spark cluster connection
 
-Clicking again on the  **+ Add Connection** button to create another connection. 
+Clicking again on the **+** button to create a new connection. 
 
-  * **Connection ID**: `spark-cluster`
-  * **Connection Type**: Select `spark` as the connection type.
+  * **Connection Id**: `spark-cluster`
+  * **Connection Type**: Select **Spark** as the connection type.
   * **Host**: `spark://spark-master:7077`
 
 Save the Connection by clicking on **Save**. 
@@ -280,28 +271,28 @@ Now the Airflow environment is ready and we can run the DAG for the first time.
 
 ## Activating and starting the Airflow DAG
 
-Navigate back to the **Dags** view by clicking on the item in the menubar to the left. 
+Navigate back to the **DAG** view by clicking on the item in the top menu. 
 
 Click on the **Toggle** button to **Unpause** the `spark_airport_and_flight_refined`. Click on the DAG to navigate to the details. 
-
 The DAG is now active, but not yet started, as in the python script we did not specify a `start-date` in the past.
 
 ```python
 with DAG(
  dag_id='spark_airport_and_flight_refined',
  default_args=default_args,
- schedule='@daily',
+ schedule_interval=timedelta(days=1),
+ start_date=days_ago(0),
  tags=['cas-dataengineering'],
 ) as dag:
 ```
 
-We can manually start the DAG for the first time by clicking on the **> Trigger** button in the top right corner. On the pop-up window, leave the **Single Run** option selected and click on the **> Trigger** button to start a single run.
+We can manually start the DAG for the first time by clicking on the **play** button in the top right corner, right to the **Next Run ID**.
 
 We can see the total of five tasks our DAG is made of on the left. Airflow will run one after the other and the status of each execution is shown in different colors.  
 
 ![](./images/airflow-with-dag-details-run.png)
 
-After a while all 5 should be green with the checkmark, indicating that the DAG has **finished successfully!**
+After a while all 5 should be in dark green, the DAG has run successfully!
 
 ![](./images/airflow-with-dag-details-run2.png)
 
@@ -309,7 +300,7 @@ Click on one of the dark green cells and navigate to the **Logs** tab to see the
 
 ![](./images/airflow-with-dag-details-run3.png)
 
-This is very helpful for debugging, should you run into an error with one of the tasks. We can see that the logs are stored in S3 (in the `admin-bucket` in MinIO).
+This is very helpful for debugging, should you run into an error with one of the tasks.
 
 Use the Minio Console to check that the raw data has been loaded an the refined data created.
 
@@ -319,44 +310,21 @@ You can easily simulate a problem by changing one of the Airflow connections wit
 
 Navigate to the S3 connection `aws-s3` and replace the **AWS Access Key ID** with `minio` (instead of `admin`). Click on **Save** to make it active. 
 
-Now navigate back to the detail page for the `spark_airport_and_flight_refined` DAG and click on the **> Trigger** button to trigger the DAG once again and confirm the **single run** on the pop-up window. 
+Now navigate back to the detail page for the `spark_airport_and_flight_refined` DAG and click again on the **Play** button to trigger the DAG once more. 
 
 ![](./images/airflow-with-dag-details-error.png)
 
-You will immediately see that there is something wrong in the first task, as its cell is colored in yellow (meaning that it is doing a retry due to an error). 
+You will immediately see that there is something wrong in the first task, as its cell is colored in yellow. After a few seconds it will change to red, and it will execute the task 2 times (because of the configured retry). 
 
-After a few seconds the first task will change to red and the job execution will halt.  
-
-![](./images/airflow-with-dag-details-error1.png)
-
-If you click on the red cell and navigate to **Logs**, you can see that there were **two tries** (we configured 1 retry) and we can see in the details the exception clearly mentioning the reason for the problem:
-
-```
-ClientError: An error occurred (InvalidAccessKeyId) when calling the ListObjectsV2 operation: 
-The Access Key Id you provided does not exist in our records.
-``` 
+If you click on the red cell and navigate to **Logs**, you can see the exception in red, clearly mentioning the reason for the problem. 
 
 ![](./images/airflow-with-dag-details-error2.png)
 
 Change the **AWS Access Key ID** in the `aws-s3` connection back to `admin`. 
 
-Navigate back to the detail page for the `spark_airport_and_flight_refined` DAG and click again on the red cell right to the first task, where we got the error. 
+Now navigate back to the detail page for the `spark_airport_and_flight_refined` DAG and click again on the red cell right to the first task, where we got the error. Click on **Clear Task** button and on the pop-up dialog click **Clear** to re-run the problematic task. 
 
-Click on **Clear Task Instance** button and on the pop-up dialog click **Confirm** to re-run the problematic task.
-
-![](./images/airflow-with-dag-details-error3.png)
-
-If the taks run successfully, then you can now also run the other 4 downstream tasks. 
-
-![](./images/airflow-with-dag-details-error4.png)
-
-Click on the large red bar representing the task (right above the green cell for the first task) to see the details for this job run. Here also click on **Clear Run** button and on the pop-up window select **Clear only failed tasks**
-
-![](./images/airflow-with-dag-details-error5.png)
-
-and click **Confirm**
-
-This will run the other 4 tasks, after the first as well and they should all run successfully.
+This time the whole DAG should again run successfullly.
 
 
 
