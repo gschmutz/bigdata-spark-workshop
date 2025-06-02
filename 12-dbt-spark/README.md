@@ -251,7 +251,7 @@ host (yourorg.sparkhost.com): 18.158.72.138
 [3] thrift
 Desired authentication method option (enter a number): 3
 port [443]: 28118
-schema (default schema that dbt will build objects in): flight
+schema (default schema that dbt will build objects in): flight_db
 threads (1 or more) [1]: 1
 18:22:11  Profile spark_flight written to /home/ubuntu/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
 ```
@@ -581,10 +581,34 @@ Now re-run dbt
 
 `dbt run` 
 
-and the views should get replaced by tables.
+and the views should get replaced by tables, as shown in the log
 
-
-
+```bash
+(venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ dbt run
+19:21:42  Running with dbt=1.9.6
+WARNING:thrift.transport.sslcompat:using legacy validation callback
+19:21:42  Registered adapter: spark=1.9.2
+19:21:43  Unable to do partial parsing because a project config has changed
+19:21:44  Found 4 models, 2 sources, 473 macros
+19:21:44
+19:21:44  Concurrency: 1 threads (target='dev')
+19:21:44
+19:21:44  1 of 4 START sql table model flight_db.airport_prep_t .......................... [RUN]
+19:21:47  1 of 4 OK created sql table model flight_db.airport_prep_t ..................... [OK in 2.98s]
+19:21:47  2 of 4 START sql table model flight_db.flight_prep_t ........................... [RUN]
+19:21:50  2 of 4 OK created sql table model flight_db.flight_prep_t ...................... [OK in 2.58s]
+19:21:50  3 of 4 START sql table model flight_db.flight_delays_ref_t ..................... [RUN]
+19:21:52  3 of 4 OK created sql table model flight_db.flight_delays_ref_t ................ [OK in 1.90s]
+19:21:52  4 of 4 START sql table model flight_db.flight_ref_t ............................ [RUN]
+19:21:56  4 of 4 OK created sql table model flight_db.flight_ref_t ....................... [OK in 3.88s]
+19:21:56
+19:21:56  Finished running 4 table models in 0 hours 0 minutes and 11.69 seconds (11.69s).
+19:21:56
+19:21:56  Completed successfully
+19:21:56
+19:21:56  Done. PASS=4 WARN=0 ERROR=0 SKIP=0 TOTAL=4
+(venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$
+```
 
 
 
