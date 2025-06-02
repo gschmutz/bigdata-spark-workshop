@@ -144,13 +144,24 @@ You can see that both string as well as double datatypes have been used and that
 
 ```python
 root
- |-- iata: string (nullable = true)
- |-- airport: string (nullable = true)
- |-- city: string (nullable = true)
- |-- state: string (nullable = true)
- |-- country: string (nullable = true)
- |-- lat: double (nullable = true)
- |-- long: double (nullable = true)
+ |-- id: integer (nullable = true)
+ |-- ident: string (nullable = true)
+ |-- type: string (nullable = true)
+ |-- name: string (nullable = true)
+ |-- latitude_deg: double (nullable = true)
+ |-- longitude_deg: double (nullable = true)
+ |-- elevation_ft: integer (nullable = true)
+ |-- continent: string (nullable = true)
+ |-- iso_country: string (nullable = true)
+ |-- iso_region: string (nullable = true)
+ |-- municipality: string (nullable = true)
+ |-- scheduled_service: string (nullable = true)
+ |-- gps_code: string (nullable = true)
+ |-- iata_code: string (nullable = true)
+ |-- local_code: string (nullable = true)
+ |-- home_link: string (nullable = true)
+ |-- wikipedia_link: string (nullable = true)
+ |-- keywords: string (nullable = true)
 ``` 
  
 Next let’s ask for the total number of rows in the dataset. 
