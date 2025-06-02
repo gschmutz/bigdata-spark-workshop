@@ -1,0 +1,33 @@
+WITH flight_prep_t AS (
+   SELECT year, 
+        month,
+        dayOfMonth,
+        dayOfWeek,
+        depTime, 
+        crsDepTime, 
+        arrTime,
+        crsArrTime, 
+        uniqueCarrier, 
+        flightNum, 
+        tailNum, 
+        actualElapsedTime,
+        crsElapsedTime, 
+        airTime, 
+        arrDelay,
+        depDelay,
+        origin, 
+        destination, 
+        distance, 
+        taxiIn, 
+        taxiOut, 
+        cancelled, 
+        cancellationCode, 
+        diverted,
+        carrierDelay, 
+        weatherDelay, 
+        nasDelay, 
+        securityDelay, 
+        lateAircraftDelay 
+    from {{ source('flight_db', 'flight_raw_t') }} 
+)select * 
+from flight_prep_t

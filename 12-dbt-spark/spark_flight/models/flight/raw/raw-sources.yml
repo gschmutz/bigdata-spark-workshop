@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: flight_db
+    config:
+      meta:
+        technical_owner: PeterMuster
+        data_tier: Raw
+    tables:
+      - name: airport_raw_t
+
+      - name: flight_raw_t

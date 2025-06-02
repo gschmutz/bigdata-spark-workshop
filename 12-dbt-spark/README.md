@@ -610,5 +610,9 @@ WARNING:thrift.transport.sslcompat:using legacy validation callback
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$
 ```
 
+## Query the results from Trino
+
+
+
 
 
