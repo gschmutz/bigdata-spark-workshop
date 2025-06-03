@@ -6,7 +6,7 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
  
 ## Prepare the raw data, if no longer available
 
-The data needed here has been uploaded in [Workshop 2 - Working with MinIO Object Storage](../02a-minio-object-storage). You can skip this section, if you still have the raw data available in MinIO. We are using the `mc` command to load the data:
+The data needed here has been uploaded in [Workshop 2 - Working with MinIO Object Storage](../02a-minio-object-storage). You can skip this section, if you still have the raw data available in MinIO. We are using the `mc` command to load the raw airport and flight data:
 
 Create the flight bucket:
 
@@ -18,18 +18,6 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 
 ```bash
 docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
-```
-
-**Plane-Data:**
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
-```
-
-**Carriers:**
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/carriers.json minio-1/flight-bucket/raw/carriers/carriers.json
 ```
 
 **Flights:**
@@ -44,7 +32,7 @@ docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_
 
 ## Register tables for Raw data
 
-In order to access data in HDFS or Object Storage using dbt, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/raw/..` points to the data we have uploaded before.
+In order to access data in Object Storage using `dbt`, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/raw/..` points to the data we have uploaded before.
 
 Connect to Hive Metastore CLI
 
@@ -65,7 +53,7 @@ switch into that database
 USE flight_db;
 ```
 
-Register airports as table `airport_raw_t `
+and register the airport data as table `airport_raw_t `
 
 ```
 DROP TABLE IF EXISTS airport_raw_t;
@@ -99,8 +87,7 @@ LOCATION 's3a://flight-bucket/raw/airports';
 
 We use `string` as the datatype for all columns in the raw layer. We will later cast to the correct datatypes when creating the data in the prepared layer.
 
-
-Register flights as table `flight_raw_t`
+Register the flights data as table `flight_raw_t`
 
 ```
 DROP TABLE IF EXISTS flight_raw_t;
@@ -139,22 +126,24 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 LOCATION 's3a://flight-bucket/raw/flights';
 ```
 
+These two tables provide the base infrastructure to run dbt on top.
+
 ## Install `dbt`
 
-Create a virtual environment
+Let's install `dbt` in virtual environment. You can perfom the steps in this workshop either on the cloud Linux VM (e.g. AWS Lightsail) or on your local workstation (you need to have Python 3.x available and you might need to adapt the Linux shell commands to Windows). In a terminal window.
 
 ```bash
 mkdir -p workspace/dbt
 cd workspace/dbt
 ```
 
-Install venv support if not available
+Install `venv` support if not available
 
 ```bash
 sudo apt install python3.12-venv
 ```
 
-now create a virtual environment
+Now create a virtual environment
 
 ```bash
 python3 -m venv venv
@@ -162,7 +151,13 @@ source venv/bin/activate
 python3 -m pip install --upgrade pip
 ```
 
-Create the `requirements.txt` file (if it does not yet exist) and add the following data to install `dbt-core` and `dbt-spark`
+Create the `requirements.txt` file
+
+```bash
+nano requirements.txt
+```
+
+and add the following lines to install `dbt-core` and `dbt-spark`
 
 ```bash
 # dbt Core 1.9
@@ -172,7 +167,9 @@ dbt-core>=1.9.6
 dbt-spark>=1.9.1
 
 dbt-spark[PyHive]
-```		
+```
+
+Save by hitting `Crtl-O` and exit by hitting `Ctrl-X`.
 
 Install requirements into virtual environment
 
@@ -180,7 +177,7 @@ Install requirements into virtual environment
 python3 -m pip install -r requirements.txt
 ```
 	
-Verify installation
+Verify the `dbt` installation by displaying the version of `dbt`
 
 ```bash
 dbt --version
@@ -200,8 +197,9 @@ Plugins:
 ```
 
 You now have successfully installed `dbt-core` with `dbt-spark` on your machine.	
-
 ## Create the `dbt` project
+
+Now we can create the skeleton of a `dbt` project. The following statement will provide the necessary folder structure as well as some configuration files. 
 
 ```bash
 dbt init
@@ -216,6 +214,8 @@ Enter the following values:
   * **Thrift Server Port**: `28118`
   * **Schema**: `flight_db`
   * **Threads**: `1`
+
+The question/answer flow should look similar to that
 
 ```bash
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt$ dbt init
@@ -256,10 +256,44 @@ threads (1 or more) [1]: 1
 18:22:11  Profile spark_flight written to /home/ubuntu/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
 ```
 
-Now let's see if the dbt project is ready
+Navigate into the newly created folder called `spark_flight` (same as the name of the project entered above)
+
+```
+cd spark_flight
+```
+
+We can see the directory structure created by the `init` easily by using the `tree` command (if available)
 
 ```bash
-cd spark_flight
+(venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ tree
+.
+├── README.md
+├── analyses
+├── dbt_project.yml
+├── logs
+│   └── dbt.log
+├── macros
+├── models
+│   └── example
+│       ├── my_first_dbt_model.sql
+│       ├── my_second_dbt_model.sql
+│       └── schema.yml
+├── seeds
+├── snapshots
+└── tests
+
+9 directories, 6 files
+```
+
+We won`t use the example in models, so let's remove it for now. 
+
+```bash
+rm -R models/example
+```
+
+Now let's see if the dbt project is ready by using the `dbt debug` command
+
+```bash
 dbt debug
 ```
 
@@ -299,35 +333,6 @@ WARNING:thrift.transport.sslcompat:using legacy validation callback
 
 If it shows `All checks passed!` then we are ready to work with dbt. 
 
-We can see the directory structure created by the `init`
-
-```bash
-(venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ tree
-.
-├── README.md
-├── analyses
-├── dbt_project.yml
-├── logs
-│   └── dbt.log
-├── macros
-├── models
-│   └── example
-│       ├── my_first_dbt_model.sql
-│       ├── my_second_dbt_model.sql
-│       └── schema.yml
-├── seeds
-├── snapshots
-└── tests
-
-9 directories, 6 files
-```
-
-We won`t use the example in models, so let's remove it for now. 
-
-```bash
-rm -R models/example
-```
-
 ## Create models
 
 Let's create the folder structure underneath the `models` folder to organize the models.
@@ -345,6 +350,8 @@ First we have to "register" the raw sources.
 ```bash
 nano models/flight/raw/raw-sources.yml
 ```
+
+Add the following YAML definition
 
 ```yaml
 version: 2
@@ -365,9 +372,15 @@ The tables we register here have to match the ones we created above in Hive Meta
 
 ### Prepared Layer
 
+Now with the raw tables listed, we can start creating the transformations for the prepared layer. 
+
+First let's transform the airport data
+
 ```bash
 nano models/flight/prepared/airport_prep_t.sql
 ```
+
+Add the following SQL statment
 
 ```sql
 WITH airport_prep_t AS (
@@ -395,10 +408,17 @@ WITH airport_prep_t AS (
 FROM airport_prep_t
 ```
 
+As you can see the SQL statement only returns the data in a SELECT clause. We can see that we change (CAST) some of the values to the appropriate data types (in the raw table everything is a string).  
+
+Everything this clause returns will be part of either a view or a table created (depending on the `dbt` materialization strategy, which you can change according to your needs). We will see it later in use. 
+
+Now let's also create the transformation for the flight data. 
+
 ```bash
 nano models/flight/prepared/flight_prep_t.sql
 ```
 
+with the following SELECT clause
 
 ```sql
 WITH flight_prep_t AS (
@@ -436,7 +456,7 @@ WITH flight_prep_t AS (
 from flight_prep_t
 ```
 
-Now let's run dbt for the two prepared layer objects
+Now with these two transformations in place, let's run dbt
 
 ```bash
 dbt run
@@ -468,14 +488,54 @@ There are 1 unused configuration paths:
 19:02:31  Done. PASS=2 WARN=0 ERROR=0 SKIP=0 TOTAL=2
 ```
 
-The two objects in the prepared layer have been created as views (as shown by `view model`).
+The two objects in the prepared layer have been created as views (as shown by `view model`). You can check these either by using Hive Metastore CLI or DBeaver. 
+
+Using Hive Metastore CLI
+
+```bash
+docker exec -ti hive-metastore hive
+
+use flight_db;
+show vies;
+```
+
+and you should see an output similar to the one below
+
+```
+(venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ docker exec -ti hive-metastore hive
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/opt/hive/lib/log4j-slf4j-impl-2.17.1.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/opt/hadoop/share/hadoop/common/lib/slf4j-log4j12-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
+Hive Session ID = 46a42ae8-5342-480b-a77b-c89f9f2c6eef
+
+Logging initialized using configuration in file:/opt/hive/conf/hive-log4j2.properties Async: true
+Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+Hive Session ID = 7d44efe4-44bf-42f2-b480-1bccf550b94e
+WARNING: Directory for Hive history file: /home/hive does not exist.   History will not be available during this session.
+hive> use flight_db;
+OK
+Time taken: 0.635 seconds
+hive> show views;
+OK
+airport_prep_t
+flight_prep_t
+Time taken: 0.148 seconds, Fetched: 4 row(s)
+hive>
+```
 
 ### Refined Layer
+
+Now with the prepared layer defined and created, we can start creating the transformations for the refined layer. 
+
+First let's create the joined version of fligth data with airport data (once for the origin and once for the destination)
 
 ```bash
 nano models/flight/refined/flight_ref_t.sql
 ```
 
+with the base SQL statement we have used in Workhop 4
 
 ```sql
 WITH flight_ref_t as (
@@ -495,9 +555,13 @@ WITH flight_ref_t as (
 FROM flight_ref_t
 ```
 
+Let's also create the delay information by time bucket
+
 ```bash
 nano models/flight/refined/flight_delays_ref_t.sql
 ```
+
+and use the same base SQL statement as used in Workshop 4
 
 ```sql
 WITH flight_delays_ref_t AS (
@@ -515,7 +579,7 @@ WITH flight_delays_ref_t AS (
 FROM flight_delays_ref_t
 ```
 
-Let's rerun `dbt run` for the two new refined objects:
+With the two more refined transformation in place, let's rerun `dbt run`
 
 ```bash
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ dbt run
@@ -610,7 +674,7 @@ WARNING:thrift.transport.sslcompat:using legacy validation callback
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$
 ```
 
-## Query the results from Trino
+## Query the results from Trino (t.b.d)
 
 
 
