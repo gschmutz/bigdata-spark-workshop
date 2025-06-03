@@ -28,7 +28,7 @@ To avoid problems with not being able to write to `spark/logs` folder, execute o
 
 ```bash
 cd $DATAPLATFORM_HOME
-chmod 777 container-volume/spark/logs
+sudo chmod 777 container-volume/spark/logs
 ```
 
 Now to start PySpark use the `pyspark` command. 
