@@ -88,6 +88,9 @@ sudo echo "export DATAPLATFORM_HOME=$PWD" | sudo tee -a /etc/profile.d/platys-pl
 # allow all on spark/logs folder
 sudo chmod 777 container-volume/spark/logs
 
+# copy refined data to ./data-transfer folder
+cp -R ../data/flight-data/refined ./data-transfer
+
 # Startup Environment
 sudo -E docker compose up -d
 ```
