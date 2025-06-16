@@ -21,7 +21,7 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 and then copy the refined data 
 
 ```bash
-docker exec -ti minio-mc mc cp --recursive /data-transfer/flight-data/refined minio-1/flight-bucket/
+docker exec -ti minio-mc mc cp --recursive /data-transfer/refined minio-1/flight-bucket/
 ```
 
 ## Using Starrocks to access Object Storage (tbd)
