@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__9066886da9f1a916edd886e01532476e43a8f956
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__9066886da9f1a916edd886e01532476e43a8f956
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__3cdf9ac3865baf85d2148766a50bb8f8621fd57c
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__3cdf9ac3865baf85d2148766a50bb8f8621fd57c
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -937,6 +937,7 @@ services:
       - ./init/jupyter/on-startup-jupyter-finished/:/usr/local/bin/before-notebook.d/
       - ./init/jupyter/on-startup-notebook-kernel:/home/jovyan/.ipython/profile_default/startup/
       - ./scripts/docker/maven-download.sh:/maven-download.sh
+      - spark-3-5-3-vol:/opt/bitnami/spark:RO
     #  - "./conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf"
     command:
       # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
