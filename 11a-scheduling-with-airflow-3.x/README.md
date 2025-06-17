@@ -227,7 +227,7 @@ Click on the icon in the top left corner to view a **Graphical** representation 
 
 ![](./images/airflow-with-dag-details-graph.png)
 
-You cann see in the graph, that our Airflow DAG will first delete the `raw` and `refined` folders (if they exist), then upload the airport & flight data and last but not least start the Spark application to create the refined data.
+You can see in the graph, that our Airflow DAG will first delete the `raw` and `refined` folders (if they exist), then upload the airport & flight data and last but not least start the Spark application to create the refined data.
 
 To perform the different steps, we have used various predefined operators in the code, such as 
 
