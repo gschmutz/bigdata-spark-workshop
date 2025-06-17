@@ -38,8 +38,43 @@ docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/
 This workshop is written for Zeppelin, if you want to use `pyspark` instead, you have to specify the dependencies for Delta Lake.
 
 ```python
-spark.sparkContext.addPyFile("/spark/jars/delta-spark_2.12-3.2.1.jar")
-spark.sparkContext.addPyFile("/spark/jars/delta-storage-3.2.1.jar")
+spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar")
+spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-storage-3.2.1.jar")
+```
+
+So the initialization code block would like the following
+
+```python
+import os
+# get the accessKey and secretKey from Environment
+accessKey = os.environ['AWS_ACCESS_KEY_ID']
+secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
+
+import pyspark
+from pyspark.sql import SparkSession
+
+conf = pyspark.SparkConf()
+
+# point to mesos master or zookeeper entry (e.g., zk://10.10.10.10:2181/mesos)
+conf.setMaster("spark://spark-master:7077")
+
+# set other options as desired
+conf.set("spark.executor.memory", "8g")
+conf.set("spark.executor.cores", "1")
+conf.set("spark.core.connection.ack.wait.timeout", "1200")
+conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
+conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
+conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
+conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+
+spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
+spark.sparkContext.setLogLevel("INFO")
+spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar")
+spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-storage-3.2.1.jar")
+
+sc = spark.sparkContext
 ```
 
 For Apache Zeppelin, this is not necessary and the configuration in `spark.jars` is used.

@@ -51,8 +51,8 @@ services:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__53846de887857449ae8296e6b538bef4c19ef66e
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__53846de887857449ae8296e6b538bef4c19ef66e
+#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__9066886da9f1a916edd886e01532476e43a8f956
+#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__9066886da9f1a916edd886e01532476e43a8f956
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
@@ -983,7 +983,7 @@ services:
       retries: 5
   #  ================================== Trino ========================================== #
   trino-1:
-    image: trinodb/trino:475
+    image: trinodb/trino:476
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -991,12 +991,15 @@ services:
       com.platys.description: SQL Virtualization Engine
       com.platys.webui.title: Trino UI
       com.platys.webui.url: http://dataplatform:28082/ui/preview
+      com.platys.password.envvars: PLATYS_GSHEET_CREDENTIALS_KEY
     ports:
       - 28082:8080
-      - 28083:8443
+      - 28087:8443
     environment:
-      # this is only generated to keep the structure valid if no other env variables are present
-      DUMMY: make-it-valid
+      COORDINATOR_HOST: trino-1
+      CATALOG_MANAGEMENT: static
+      CATALOG_CONFIG_DIR: /catalog
+      #CATALOG_STORE: file
       S3_ENDPOINT: http://minio-1:9000
       S3_REGION: us-east-1
       S3_AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
@@ -1019,9 +1022,9 @@ services:
       - ./conf/trino/single/config.properties:/etc/trino/config.properties
       - ./conf/trino/single/node.properties:/etc/trino/node.properties
       - ./conf/trino/single/log-debug.properties:/etc/trino/log.properties
-      - ./conf/trino/catalog/minio.properties:/etc/trino/catalog/minio.properties
-      - ./conf/trino/catalog/delta.properties:/etc/trino/catalog/delta.properties
-      - ./conf/trino/catalog/postgresql.properties:/etc/trino/catalog/postgresql.properties
+      - ./conf/trino/catalog/minio.properties:/catalog/minio.properties
+      - ./conf/trino/catalog/delta.properties:/catalog/delta.properties
+      - ./conf/trino/catalog/postgresql.properties:/catalog/postgresql.properties
       - ./custom-conf/trino/security:/etc/trino/security
     restart: unless-stopped
     healthcheck:
@@ -1199,6 +1202,7 @@ services:
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
       PLATYS_PLATFORM_STACK_VERSION: develop
       PLATYS_COPY_COOKBOOK_DATA: 'True'
+      PLATYS_DATACENTER:
       SERVICE_LIST_VERSION: 2
     volumes:
       - ./artefacts/templates:/templates
