@@ -35,14 +35,7 @@ docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/
 
 ## If you want to use `pyspark` instead of Zeppelin
 
-This workshop is written for Zeppelin, if you want to use `pyspark` instead, you have to specify the dependencies for Delta Lake.
-
-```python
-spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar")
-spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-storage-3.2.1.jar")
-```
-
-So the initialization code block would like the following
+This workshop is written for Zeppelin, if you want to use `pyspark` instead, you have to add additional configuration settings to the init script
 
 ```python
 import os
@@ -68,11 +61,13 @@ conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
 conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
 conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
 conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+conf.set("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+conf.set("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+conf.set("spark.jars", "/opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar")
+conf.set("spark.jar.packages", "com.google.guava:guava:30.1-jre")
 
 spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
 spark.sparkContext.setLogLevel("INFO")
-spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar")
-spark.sparkContext.addPyFile("/opt/bitnami/spark/jars/delta-storage-3.2.1.jar")
 
 sc = spark.sparkContext
 ```

@@ -32,16 +32,24 @@ echo "$DOCKER_HOST_IP     dataplatform" | sudo tee -a /etc/hosts
 Now install docker and docker compose if not yet available.
 
 ```
-# Install Docker
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge"
-apt-get install -y docker-ce
-sudo usermod -aG docker $USERNAME
+# Remove conflicting packages
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
-# Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
 Optionally install platys as well as other utilities.
@@ -91,10 +99,10 @@ And finally let's start the environment:
 
 ```
 # Make sure that the environment is not running
-docker-compose down
+docker compose down
 
 # Startup Environment
-docker-compose up -d
+docker compose up -d
 ```
 
 The environment should start immediately, as all the necessary images should already be available in the local docker image registry. 
@@ -110,7 +118,7 @@ Your instance is now ready to use. Complete the post installation steps document
 To stop the environment, execute the following command:
 
 ```
-docker-compose stop
+docker compose stop
 ```
 
 after that it can be re-started using `docker-compose start`.
@@ -118,7 +126,7 @@ after that it can be re-started using `docker-compose start`.
 To stop and remove all running container, execute the following command:
 
 ```
-docker-compose down
+docker compose down
 ```
 
 
