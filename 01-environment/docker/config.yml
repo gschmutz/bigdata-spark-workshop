@@ -17,26 +17,25 @@
       uid: '1000'
       data_centers: 'dc1,dc2'
       data_center_to_use: 0
+
+      # either 'minio' or 'rustfs'
+      s3_service_to_use: minio
+      table_formats_to_use: delta,iceberg
+
       copy_cookbook_data_folder: true
-      # ========================================================================
-      # External Services
-      # ========================================================================
-      external:
-          KAFKA_enable: false
-          KAFKA_bootstrap_servers:
-          KAFKA_security_protocol:
-          KAFKA_sasl_mechanism:
-          SCHEMA_REGISTRY_enable: false
-          SCHEMA_REGISTRY_url:
-          S3_enable: false
-          S3_endpoint:
-          S3_default_region:
-          S3_path_style_access: false
+
       # ========================================================================
       # Platys Services
       # ========================================================================
       PROVISIONING_DATA_enable: true
       PROVISIONING_DATA_additional_data_folder: '../data/'
+      #
+      # ===== Platys Modern Data Platform Init ========
+      #    
+      PLATYS_MDP_INIT_enable: true
+      PLATYS_MDP_INIT_env_variables: ''
+      PLATYS_MDP_INIT_use_env_file: false
+      PLATYS_MDP_INIT_env_filename: '.env'      
       #
       # ===== Apache Zookeeper ========
       #
@@ -150,6 +149,7 @@
       CONFLUENT_SCHEMA_REGISTRY_schema_compatibility_level: backward
       CONFLUENT_SCHEMA_REGISTRY_log4j_root_loglevel: info
       CONFLUENT_SCHEMA_REGISTRY_debug: false
+
       # ===== Apicurio Schema Registry ========
       # either "mem","sql","kafkasql"
       APICURIO_SCHEMA_REGISTRY_storage: kafkasql
@@ -286,7 +286,6 @@
       SPARK_enable: true
       # either 2.4 or 3.1 or 3.2 or 3.3 or 3.4 or 3.5
       SPARK_base_version: 3.5
-      #SPARK_major_version: 2        # has been replaced by SPARK_base_version
       
       # "hive" or "in-memory"
       SPARK_catalog: hive
@@ -302,13 +301,15 @@
       SPARK_jars_excludes: ''
       SPARK_jars: ''
       SPARK_jars_ivySettings: ''
-      SPARK_install_jars_packages: 'org.postgresql:postgresql:42.3.4'
-      SPARK_driver_extraJavaOptions: ''
+      SPARK_install_java_packages: 'org.postgresql:postgresql:42.3.4'
+      # a space separated list of python packages
+      SPARK_install_python_packages: ''
       SPARK_executor_extraJavaOptions: ''
       SPARK_sql_warehouse_dir: 's3a://admin-bucket/hive/warehouse'
+      SPARK_sql_default_catalog: 
       SPARK_cores_max: 2
       SPARK_executor_memory: 2048mb 
-      SPARK_table_format_type: 'delta'
+      SPARK_table_format_type: 'iceberg'
       # misc spark 'addons'
       SPARK_HISTORY_enable: true
       SPARK_THRIFTSERVER_enable: true
@@ -619,6 +620,7 @@
       JUPYTER_enable: true
       # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'pyspark', 'all-spark'
       JUPYTER_edition: 'all-spark'
+      JUPYTER_spark_base_version: 3.5
       JUPYTER_volume_map_data: false
       JUPYTER_python_packages: 'pyspark==3.5.3 jupysql boto3'
       JUPYTER_spark_jars_packages: ''
@@ -628,8 +630,9 @@
       # JUPYTER_notebook_args: '--log-level='DEBUG' --dev-mode'
       JUPYTER_notebook_args: ''
       # one of 'lab', 'notebook', 'nbclassic', 'server'
-      JUPYTER_startup_cmd: 'lab'      
-      JUPYTER_download_jars: 'com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.1-jre'
+      JUPYTER_startup_cmd: 'lab'
+      # this is for Spark 3.5.2      
+      JUPYTER_download_jars: 'com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.0-jre'
       JUPYTER_volume_map_docker_daemon: false
       #
       # ===== RStudio ========
@@ -737,6 +740,23 @@
       METABASE_postgres_dbname: 'metabasedb'
       METABASE_postgres_user: 'metabase'
       METABASE_postgres_password: 'abc123!'
+      #
+      # ===== Lightdash ========
+      #
+      LIGHTDASH_enable: true
+      LIGHTDASH_volume_map_dbt_project: false
+      LIGHTDASH_dbt_project_path:
+      LIGHTDASH_secret: 'changeme-use-a-long-random-secret-here'
+      LIGHTDASH_license_key: ''
+      # either internal or external
+      LIGHTDASH_db_type: internal
+      # for external: postgres connection (requires POSTGRESQL_enable: true)
+      LIGHTDASH_postgres_dbname: 'lightdash'
+      LIGHTDASH_postgres_user: 'lightdash'
+      LIGHTDASH_postgres_password: 'abc123!'
+      # optional: S3/MinIO for file storage
+      LIGHTDASH_s3_bucket: ''
+      LIGHTDASH_s3_results_bucket: ''      
       #
       # ===== Superset ========
       #
@@ -978,9 +998,9 @@
       POSTGRESQL_enable: true
       POSTGRESQL_volume_map_data: false
       POSTGRESQL_database: postgres
-      POSTGRESQL_multiple_databases: 'demodb'
-      POSTGRESQL_multiple_users: 'demo'
-      POSTGRESQL_multiple_passwords: 'abc123!'
+      POSTGRESQL_multiple_databases: 'demodb,lightdash'
+      POSTGRESQL_multiple_users: 'demo,lightdash'
+      POSTGRESQL_multiple_passwords: 'abc123!,abc123!'
       POSTGRESQL_user: postgres
       POSTGRESQL_password: abc123!
       POSTGRESQL_schema: demo
@@ -1278,3 +1298,100 @@
       PYTHON_script_file: ''
       PYTHON_requirements_file: ''
       
+      # ========================================================================
+      # External Services
+      # ========================================================================
+
+      external:
+        KAFKA_enable: false
+        KAFKA_bootstrap_servers:
+        KAFKA_security_protocol: 
+        KAFKA_sasl_mechanism:
+        KAFKA_login_module:
+        # Username to use for the tools to connect to the Kafka cluster, either set it here or use PLATYS_KAFKA_USERNAME and PLATYS_KAFKA_PASSWORD environment variable
+        KAFKA_sasl_username: 
+        KAFKA_sasl_password: 
+
+        SCHEMA_REGISTRY_enable: false
+        SCHEMA_REGISTRY_url:
+
+        SPARK_enable: false
+        SPARK_master_url: 'spark://spark-master:7077'
+
+        HIVE_METASTORE_enable: false
+        HIVE_METASTORE_host: hive-metastore
+        HIVE_METASTORE_port: 9083
+        HIVE_METASTORE_rest_catalog_port: 9084
+
+        S3_enable: false
+        S3_endpoint: s3.amazonaws.com
+        S3_default_region:
+        S3_path_style_access: false
+        S3_admin_bucket_name: 'admin-bucket'
+
+        POSTGRESQL_enable: false
+        POSTGRESQL_host:
+        POSTGRESQL_port: 5432
+        POSTGRESQL_database:
+        POSTGRESQL_user:
+        POSTGRESQL_password:
+
+        MYSQL_enable: false
+        MYSQL_host:
+        MYSQL_port: 5432
+        MYSQL_database:
+        MYSQL_user:
+        MYSQL_password:
+
+        ADLS_enable: false
+        ADLS_storage_account:
+
+        SNOWFLAKE_enable: false
+        SNOWFLAKE_account:
+        SNOWFLAKE_user:
+        SNOWFLAKE_password:
+        SNOWFLAKE_database:
+        SNOWFLAKE_role:
+        SNOWFLAKE_warehouse:
+
+        DATAHUB_enable: false
+        DATAHUB_gms_url:
+
+        OLLAMA_enable: false
+        OLLAMA_url: http://${PUBLIC_IP}:11434
+
+        LMSTUDIO_enable: false
+        LMSTUDIO_url: http://${PUBLIC_IP}:1234/v1
+
+        ANTHROPIC_enable: false
+        ANTHROPIC_api_key: ${ANTHROPIC_API_KEY}
+
+        OPENAI_enable: false
+        OPENAI_api_key: ${OPENAI_API_KEY}
+        OPENAI_base_url:
+        OPENAI_model_name:
+        OPENAI_small_model_name:
+
+        GROQ_enable: false
+        GROQ_api_key:
+
+        OPENROUTER_enable: false
+        OPENROUTER_api_key:
+
+        LANGSMITH_enable: false
+        LANGSMITH_api_key: 
+        LANGSMITH_project:
+
+        LANGWATCH_enable: false
+        LANGWATCH_url: 
+
+        LANGFUSE_enable: false
+        LANGFUSE_secret_key:
+        LANGFUSE_public_key:
+        LANGFUSE_url: 
+
+        BRAVE_enable: false
+        BRAVE_api_key:
+
+        SEARXNG_enable: false
+        SEARXNG_url:

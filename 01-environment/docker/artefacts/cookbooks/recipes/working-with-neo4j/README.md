@@ -13,7 +13,7 @@ This recipe will show how to use Neo4J.
 First [initialise a platys-supported data platform](../documentation/getting-started) with the following services enabled
 
 ```
-platys init --enable-services NEO4J -s trivadis/platys-modern-data-platform -w 1.15.0
+platys init --enable-services NEO4J -s trivadis/platys-modern-data-platform
 ```
 
 Now generate and start the data platform.
@@ -32,7 +32,7 @@ Connect to the `cypher-shell` in the `neo4j-1` container:
 docker exec -ti neo4j-1 ./bin/cypher-shell -u neo4j -p abc123!
 ```
 
-Alternatively you can also connect through the Neo4J Browser: <http://dataplatform:7474>
+Alternatively you can also connect through the Neo4J Browser: <http://127.0.0.1:7474>
 
 Create a plain node
 

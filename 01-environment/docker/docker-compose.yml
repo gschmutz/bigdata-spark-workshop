@@ -7,9 +7,9 @@ networks:
   default:
     name: bigdata-minio-platform
 services:
-  #  ================================== Apache Spark 2.x ========================================== #
+  #  ================================== Apache Spark ========================================== #
   spark-master:
-    image: bitnami/spark:3.5.3
+    image: bitnamilegacy/spark:3.5.3
     container_name: spark-master
     hostname: spark-master
     labels:
@@ -33,7 +33,7 @@ services:
       # spark standard env vars
       SPARK_MASTER_WEBUI_PORT: 28304
       SPARK_MASTER_OPTS: -Dspark.deploy.defaultCores=2
-      SPARK_PUBLIC_DNS: ${PUBLIC_IP}
+      SPARK_PUBLIC_DNS: ${PUBLIC_IP:-127.0.0.1}
       # env vars for config files
 #     INIT_DAEMON_STEP: setup_spark
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -41,27 +41,46 @@ services:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
-      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
-      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
-      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
-#      SPARK_DEFAULTS_CONF_spark_sql_extensions: __omit_place_holder__3fef367aeceeb81e6d7397fb7a2698c7affa86cd
-#      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: __omit_place_holder__3fef367aeceeb81e6d7397fb7a2698c7affa86cd
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
+      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
+      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
+      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.2.1,io.delta:delta-storage:3.2.1,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.0,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -83,7 +102,7 @@ services:
       retries: 10
       start_period: 20s
   spark-worker-1:
-    image: bitnami/spark:3.5.3
+    image: bitnamilegacy/spark:3.5.3
     container_name: spark-worker-1
     hostname: spark-worker-1
     labels:
@@ -105,32 +124,53 @@ services:
       # spark standard env vars
       SPARK_WORKER_WEBUI_PORT: '28111'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
-      SPARK_PUBLIC_DNS: ${PUBLIC_IP}
+      SPARK_PUBLIC_DNS: ${PUBLIC_IP:-127.0.0.1}
       # env vars for config files
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
-      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
-      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
-      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
+      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
+      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
+      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.2.1,io.delta:delta-storage:3.2.1,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.0,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -147,7 +187,7 @@ services:
       retries: 10
       start_period: 20s
   spark-worker-2:
-    image: bitnami/spark:3.5.3
+    image: bitnamilegacy/spark:3.5.3
     container_name: spark-worker-2
     hostname: spark-worker-2
     labels:
@@ -169,32 +209,53 @@ services:
       # spark standard env vars
       SPARK_WORKER_WEBUI_PORT: '28112'
       SPARK_WORKER_OPTS: -Dspark.worker.cleanup.enabled=true
-      SPARK_PUBLIC_DNS: ${PUBLIC_IP}
+      SPARK_PUBLIC_DNS: ${PUBLIC_IP:-127.0.0.1}
       # env vars for config files
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
-      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
-      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
-      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
+      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
+      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
+      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.2.1,io.delta:delta-storage:3.2.1,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.0,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -211,7 +272,7 @@ services:
       retries: 10
       start_period: 20s
   spark-history:
-    image: bitnami/spark:3.5.3
+    image: bitnamilegacy/spark:3.5.3
     container_name: spark-history
     hostname: spark-history
     labels:
@@ -229,29 +290,52 @@ services:
     ports:
       - 28117:18080
     environment:
-      SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
-      SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.2.1,io.delta:delta-storage:3.2.1,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.0,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
-      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
-      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
-      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
-      CORE_CONF_fs_defaultFS: s3a://admin-bucket
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /opt/bitnami/spark/hive-site.xml
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_cores_max: 2
       SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
+      # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
+      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
+      SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
+      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
+      SPARK_DEFAULTS_CONF_spark_jars_repositories:
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12
+      SPARK_DEFAULTS_CONF_spark_jars_excludes:
+      # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
+      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
       # the 3 conf files are mapped to conf.default folder, they are copied with env variable interpolation into conf upon start of container
@@ -263,7 +347,7 @@ services:
     command: /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer
     restart: unless-stopped
   spark-thriftserver:
-    image: bitnami/spark:3.5.3
+    image: bitnamilegacy/spark:3.5.3
     container_name: spark-thriftserver
     hostname: spark-thriftserver
     labels:
@@ -284,23 +368,46 @@ services:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_cores_max: 2
+      SPARK_DEFAULTS_CONF_spark_executor_memory: 2048mb
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_jars: builtin
       # SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_version: 3.1.2    
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
       SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
+      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_extensions: io.delta.sql.DeltaSparkSessionExtension
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
+      SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
       SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JARS_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.2.1,io.delta:delta-storage:3.2.1,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.7.0,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
       - ./data-transfer:/data-transfer
@@ -316,16 +423,23 @@ services:
     restart: unless-stopped
   #  ================================== Apache Hive Metastore ========================================== #
   hive-metastore:
-    image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
+    image: trivadis/apache-hive:4.2.0-postgresql-standalone-metastore-s3
     container_name: hive-metastore
     hostname: hive-metastore
     labels:
       com.platys.name: hive-metastore
       com.platys.description: Hive Metastore
+    depends_on:
+      hive-metastore-db:
+        condition: service_healthy
     ports:
       - 9083:9083
+      - 9084:9084
     environment:
-      HIVE_VER: 3.1.2
+      HIVE_VER: 4.2.0
+      # configure iceberg catalog service (if HMS >= 4.1.0)
+      HIVE_SITE_CONF_metastore_catalog_servlet_port: 9084
+      HIVE_SITE_CONF_metastore_catalog_servlet_auth: none
       CORE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -334,6 +448,8 @@ services:
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       HIVE_SITE_CONF_hive_metastore_uris: thrift://hive-metastore:9083
+      HIVE_SITE_CONF_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
+      HIVE_SITE_CONF_hive_metastore_warehouse_external_dir: s3a://admin-bucket/warehouse
       HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: jdbc:postgresql://hive-metastore-db/metastore_db
       HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName: org.postgresql.Driver
       HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName: hive
@@ -344,11 +460,16 @@ services:
       HIVE_SITE_CONF_metastore_storage_schema_reader_impl: org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader
       SERVICE_PRECONDITION: hive-metastore-db:5432
       DB_DRIVER: postgres
-      SERVICE_NAME: metastore
+      SERVICE_NAME: standalone-metastore
       SERVICE_OPTS: -Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://hive-metastore-db/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=${PLATYS_HMS_POSTGRESQL_PASSWORD:-abc123!}
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+    healthcheck:
+      test: [CMD, nc, -z, hive-metastore, '9083']
+      interval: 30s
+      timeout: 10s
+      retries: 10
   hive-metastore-db:
     image: postgres
     container_name: hive-metastore-db
@@ -366,6 +487,8 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+    healthcheck:
+      test: [CMD, psql, -U, hive, metastore_db]
   #  ================================== Apache Avro Tools ========================================== #
   avro-tools:
     image: trivadis/apache-avro-tools:latest
@@ -394,7 +517,7 @@ services:
 #    restart: unless-stopped
   #  ================================== NiFi 2 ========================================== #
   nifi2-1:
-    image: apache/nifi:2.4.0
+    image: apache/nifi:2.7.2
     container_name: nifi2-1
     hostname: nifi2-1
     labels:
@@ -415,7 +538,7 @@ services:
     environment:
       NIFI_WEB_HTTPS_PORT: '18083'
       NIFI_WEB_HTTPS_HOST: 0.0.0.0
-      NIFI_WEB_PROXY_HOST: ${PUBLIC_IP}:18083,${DOCKER_HOST_IP}:18083
+      NIFI_WEB_PROXY_HOST: ${PUBLIC_IP:-127.0.0.1}:18083,${DOCKER_HOST_IP:-localhost}:18083
       NIFI_SECURITY_USER_AUTHORIZER: single-user-authorizer
       NIFI_SECURITY_USER_LOGIN_IDENTITY_PROVIDER: single-user-provider
       S3_ENDPOINT: http://minio-1:9000
@@ -448,7 +571,7 @@ services:
     restart: unless-stopped
   #  ================================== Airflow ========================================== #
   airflow-apiserver:
-    image: apache/airflow:3.0.1-python3.10
+    image: apache/airflow:3.1.6-python3.10
     container_name: airflow-apiserver
     hostname: airflow-apiserver
     labels:
@@ -529,7 +652,7 @@ services:
       retries: 5
       start_period: 30s
   airflow-dag-processor:
-    image: apache/airflow:3.0.1-python3.10
+    image: apache/airflow:3.1.6-python3.10
     container_name: airflow-processor
     hostname: airflow-processor
     labels:
@@ -604,7 +727,7 @@ services:
       retries: 5
       start_period: 30s
   airflow-scheduler:
-    image: apache/airflow:3.0.1-python3.10
+    image: apache/airflow:3.1.6-python3.10
     container_name: airflow-scheduler
     hostname: airflow-scheduler
     labels:
@@ -698,8 +821,20 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
+  airflow-statsd-exporter:
+    image: prom/statsd-exporter:v0.24.0
+    container_name: airflow-statsd-exporter
+    hostname: airflow-statsd-exporter
+    labels:
+      com.platys.name: statsd-exporter
+      com.platys.description: StatsD Exporter for Prometheus
+    volumes:
+      - ./conf/airflow/statsd/statsd.yaml:/home/statsd-mapping-configs.yaml
+    entrypoint: [/bin/sh, -c, --]
+    command: [statsd_exporter --statsd.listen-udp=:9125 --web.listen-address=:9102 --log.level debug --statsd.mapping-config=/home/statsd-mapping-configs.yaml]
+    restart: unless-stopped
   airflow-init:
-    image: apache/airflow:3.0.1-python3.10
+    image: apache/airflow:3.1.6-python3.10
     container_name: airflow-init
     hostname: airflow-init
     labels:
@@ -920,7 +1055,7 @@ services:
       GRANT_SUDO: "'yes'"
       JUPYTER_TOKEN: ${PLATYS_JUPYTER_TOKEN:-abc123!}
       DOCKER_STACKS_JUPYTER_CMD: lab
-      MAVEN_DOWNLOAD_JARS: com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.1-jre
+      MAVEN_DOWNLOAD_JARS: com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,com.google.guava:guava:27.0-jre
       # remove some JARS if they are conflicting with the ones installed above
       REMOVE_JARS: guava-14.0.1.jar
       # for awscli & s3cmd
@@ -930,31 +1065,71 @@ services:
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
       #PYSPARK_PYTHON: /opt/bitnami/python/bin/python3.12
-      PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12
+      #PYSPARK_DRIVER_PYTHON: /usr/bin/python3.12   
     volumes:
       - ./data-transfer:/data-transfer
       - ./init/jupyter/on-startup-jupyter/:/usr/local/bin/start-notebook.d/
       - ./init/jupyter/on-startup-jupyter-finished/:/usr/local/bin/before-notebook.d/
       - ./init/jupyter/on-startup-notebook-kernel:/home/jovyan/.ipython/profile_default/startup/
       - ./scripts/docker/maven-download.sh:/maven-download.sh
-      - spark-3-5-3-vol:/opt/bitnami/spark:RO
-    #  - "./conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf"
+#      - spark-3-5-3-vol:/opt/bitnami/spark:RO
     command:
       # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
       - bash
       - -c
       - |
-        conda create -y --name py312 python=3.12.8
-        source /opt/conda/etc/profile.d/conda.sh
-        conda activate py312
-        pip install ipykernel    
-        python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
+        #conda create -y --name py312 python=3.12.8
+        #source /opt/conda/etc/profile.d/conda.sh
+        #conda activate py312
+        #pip install ipykernel    
+        #python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
         pip install pyspark==3.5.3 jupysql boto3
         start-notebook.sh
     restart: unless-stopped
+  #  ================================== Lightdash ========================================== #
+  lightdash:
+    image: lightdash/lightdash:latest
+    platform: linux/amd64
+    hostname: lightdash
+    container_name: lightdash
+    labels:
+      com.platys.name: lightdash
+      com.platys.description: Open-source BI tool for dbt and SQL
+      com.platys.webui.title: Lightdash UI
+      com.platys.webui.url: http://dataplatform:28422
+    depends_on:
+      - postgresql
+    ports:
+      - 28422:8080
+    environment:
+      LIGHTDASH_SECRET: changeme-use-a-long-random-secret-here
+      PORT: 8080
+      SECURE_COOKIES: 'false'
+      TRUST_PROXY: 'false'
+      LIGHTDASH_LOG_LEVEL: info
+      PGHOST: postgresql
+      PGPORT: 5432
+      PGUSER: lightdash
+      PGPASSWORD: abc123!
+      PGDATABASE: lightdash
+      S3_ENDPOINT: http://minio-1:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      S3_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      S3_BUCKET:
+      S3_FORCE_PATH_STYLE: 'true'
+      #S3_EXPIRATION_TIME:
+      RESULTS_S3_REGION: us-east-1
+      RESULTS_S3_BUCKET:
+      RESULTS_S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      RESULTS_S3_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}§
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./scripts/docker/:/platys-scripts/
+    restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
   postgresql:
-    image: postgres:17
+    image: postgres:18
     container_name: postgresql
     hostname: postgresql
     labels:
@@ -967,9 +1142,10 @@ services:
       - POSTGRES_PASSWORD=${PLATYS_POSTGRESQL_PASSWORD:-abc123!}
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
-      - POSTGRES_MULTIPLE_DATABASES=demodb
-      - POSTGRES_MULTIPLE_USERS=demo
-      - POSTGRES_MULTIPLE_PASSWORDS=${PLATYS_POSTGRESQL_MULTIPLE_PASSWORD:-abc123!}
+#      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --data-checksums      
+      - POSTGRES_MULTIPLE_DATABASES=demodb,lightdash
+      - POSTGRES_MULTIPLE_USERS=demo,lightdash
+      - POSTGRES_MULTIPLE_PASSWORDS=${PLATYS_POSTGRESQL_MULTIPLE_PASSWORD:-abc123!,abc123!}
       - POSTGRES_MULTIPLE_ADDL_ROLES=
       - PGDATA=/var/lib/postgresql/data/pgdata
       - DB_SCHEMA=demo
@@ -984,7 +1160,7 @@ services:
       retries: 5
   #  ================================== Trino ========================================== #
   trino-1:
-    image: trinodb/trino:476
+    image: trinodb/trino:479
     hostname: trino-1
     container_name: trino-1
     labels:
@@ -1001,19 +1177,21 @@ services:
       CATALOG_MANAGEMENT: static
       CATALOG_CONFIG_DIR: /catalog
       #CATALOG_STORE: file
+      QUERY_MAX_MEMORY_PER_NODE: 4GB
+      HMS_ICEBERG_REST_CATALOG_URI: http://hive-metastore:9084/iceberg
+      HMS_ICEBERG_REST_CATALOG_WAREHOUSE: s3a://admin-bucket/iceberg/warehouse
       S3_ENDPOINT: http://minio-1:9000
       S3_REGION: us-east-1
       S3_AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
       S3_AWS_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       S3_PATH_STYLE_ACCESS: 'true'
+      HIVE_METASTORE_URI: thrift://hive-metastore:9083
       HIVE_STORAGE_FORMAT: ORC
       HIVE_COMPRESSION_CODEC: GZIP
       HIVE_VIEWS_ENABLED: 'false'
       HIVE_RUN_AS_INVOKER: 'false'
       HIVE_LEGACY_TRANSLATION: 'false'
       NESSIE_CATALOG_WAREHOUSE_DIR: s3a://admin-bucket/hive/warehouse
-      ICEBERG_REST_CATALOG_URI: http://iceberg-rest-catalog:8181
-      ICEBERG_REST_CATALOG_WAREHOUSE: s3a://admin-bucket/iceberg/warehouse
       POSTGRESQL_DATABASE: postgres
       POSTGRESQL_USER: demo
       POSTGRESQL_PASSWORD: abc123!
@@ -1024,6 +1202,8 @@ services:
       - ./conf/trino/single/node.properties:/etc/trino/node.properties
       - ./conf/trino/single/log-debug.properties:/etc/trino/log.properties
       - ./conf/trino/catalog/minio.properties:/catalog/minio.properties
+      - ./conf/trino/catalog/iceberg-hive.properties:/catalog/iceberg_hive.properties
+      - ./conf/trino/catalog/iceberg-hive-rest.properties:/catalog/iceberg_hive_rest.properties
       - ./conf/trino/catalog/delta.properties:/catalog/delta.properties
       - ./conf/trino/catalog/postgresql.properties:/catalog/postgresql.properties
       - ./custom-conf/trino/security:/etc/trino/security
@@ -1035,7 +1215,7 @@ services:
       retries: 5
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2025-05-24T17-08-30Z
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -1056,7 +1236,7 @@ services:
       #MINIO_REGION_NAME: us-east-1
       #MINIO_REGION: us-east-1
       MINIO_DOMAIN: minio
-      MINIO_SERVER_URL: http://${PUBLIC_IP}:9000
+      MINIO_SERVER_URL: http://${PUBLIC_IP:-127.0.0.1}:9000
       MINIO_COMPRESSION_ENABLE: off
       MINIO_PROMETHEUS_AUTH_TYPE: public
       MINIO_PROMETHEUS_URL: http://prometheus-1:9090
@@ -1085,15 +1265,11 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
-      - ./security/aws/credentials:/tmp/credentials.templ
-      - aws-credentials-vol:/tmp/.aws:RO
     entrypoint:
       - /bin/sh
       - -c
       - |
         /usr/src/app/wait-for-it.sh -t 180 minio-1:9000
-        mkdir -p /tmp/.aws
-        eval "echo \"$$(cat /tmp/credentials.templ)\"" >> /tmp/.aws/credentials
         mc mb --ignore-existing minio-1/admin-bucket
               for bucket in $$(tr ',' '\n' <<< "")
         do
@@ -1154,7 +1330,7 @@ services:
     ports:
       - 3001:3000
     environment:
-      - SSHHOST=${DOCKER_HOST_IP}
+      - SSHHOST=${DOCKER_HOST_IP:-localhost}
       - SSHPORT=22
       - SSHUSER=
       - SSHAUTH=password
@@ -1196,8 +1372,8 @@ services:
       com.platys.description: Platys Platform homepage rendering
     environment:
       USE_PUBLIC_IP: 'True'
-      PUBLIC_IP: ${PUBLIC_IP}
-      DOCKER_HOST_IP: ${DOCKER_HOST_IP}
+      PUBLIC_IP: ${PUBLIC_IP:-127.0.0.1}
+      DOCKER_HOST_IP: ${DOCKER_HOST_IP:-localhost}
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: bigdata-minio-platform
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
@@ -1226,6 +1402,45 @@ services:
       - ./data-transfer:/data-transfer
       - ../data/:/data-provisioning/additional-data
     init: true
+  #  ================================== Platys Modern Data Platform Init Service ========================================== #
+  platys-mdp-init:
+    image: trivadis/platys-mdp-init:latest
+    container_name: platys-mdp-init
+    hostname: platys-mdp-init
+    labels:
+      com.platys.name: platys-mdp-init
+      com.platys.description: Platys MDP Init Service
+    environment:
+      AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      S3_ENDPOINT: http://minio-1:9000
+      S3_PATH_STYLE_ACCESS: 'true'
+      MC_HOST_minio-1: http://${PLATYS_AWS_ACCESS_KEY:-admin}:${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}@minio-1:9000
+      MINIO_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      MINIO_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      MINIO_URL: http://minio-1:9000
+      NIFI2_URL: https://nifi2-1:18083
+      NIFI2_VERSION: 2.0.0
+      NIFI2_USERNAME: nifi
+      NIFI2_PASSWORD: ${PLATYS_NIFI2_PASSWORD:-1234567890ACD}
+      AIRFLOW_URL: http://airflow:8080
+      AIRFLOW_USERNAME: airflow
+      AIRFLOW_PASSWORD: ${PLATYS_AIRFLOW_ADMIN_PASSWORD:-abc123!}
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./init/platys-mdp-init:/docker-entrypoint-init.d/
+      - ./security/platys-mdp-init/credentials:/tmp/credentials.templ
+      - aws-credentials-vol:/tmp/.aws:RO
+      - nifi-config-vol:/opt/nifi/conf/
+    init: true
+    command:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /tmp/.aws
+        eval "echo \"$$(cat /tmp/credentials.templ)\"" >> /tmp/.aws/credentials
+        sleep 30
+    restart: no
 volumes:
   data-transfer-vol:
     name: data_transfer_vol
