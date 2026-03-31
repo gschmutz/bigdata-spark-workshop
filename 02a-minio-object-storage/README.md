@@ -47,9 +47,9 @@ This can also be found on the [S3cmd usage page](https://s3tools.org/usage).
 
 **Using MinIO MC**
 
-In our environment, `mc` is accessible inside the `minio-mcs`.  
+In our environment, `mc` is accessible inside the `minio-mc`.  
 
-Running `mc -h` will show the help page of s3cmd.
+Running `mc -h` will show the help page of mc.
 
 ```bash
 docker exec -ti minio-mc mc -h
@@ -85,14 +85,14 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 
 **Note**: add the `--with-lock` if you want to enable object locking on the bucket.
 
-and you should get the bucket created method as shown below
+and you should get the confirmation message as shown below
 
 ```bash
 bigdata@bigdata:~$ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 Bucket created successfully `minio-1/flight-bucket`.
 ```
 
-Navigate to the MinIO UI (<http://dataplatform:9000/buckets)>) and you should see the newly created bucket. 
+Navigate to the MinIO UI (<http://dataplatform:9000/buckets>) and you should see the newly created bucket. 
 
 ![Alt Image Text](./images/minio-show-bucket.png "Minio show bucket")
 
@@ -126,7 +126,7 @@ and then also for the `plane-data.csv` file.
 docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
 ```
 
-Let's use the `s3cmd ls` command once more but now to display the content of the `flight-bucket`
+Let's use the `mc ls` command once more but now to display the content of the `flight-bucket`
 
 ```bash
 docker exec -ti minio-mc mc ls minio-1/flight-bucket/
@@ -175,11 +175,10 @@ if we use the `--files` option we can see the files as well
 docker exec -ti minio-mc mc tree --files minio-1/flight-bucket/
 ```
 
-we can see the folder hierarchy as well. 
+we can see the files within the folder hierarchy as well. 
 
 ```bash
 bigdata@bigdata:~$ docker exec -ti minio-mc mc tree --files minio-1/flight-bucket/
-minio-1/flight-bucket/
 minio-1/flight-bucket/
 └─ raw
    ├─ airports
@@ -190,7 +189,7 @@ minio-1/flight-bucket/
 
 We can see the same in the MinIO Browser. Navigate to **Object Browser** and click on the **flight-bucket** bucket and then on **raw** and **airports**:  
 
-![Alt Image Text](./images/MinIO-list-objects.png "MinIO list objects")
+![Alt Image Text](./images/minio-list-objects.png "MinIO list objects")
 
 ### Upload the Carriers JSON file to the new bucket
 
@@ -238,13 +237,9 @@ A pop-up window will appear from where you can copy the link by clicking on the 
 
 ![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
 
-Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:9000` by `<public-ip-address>:9010` and you should get the PDF rendered as shown in the image below
+Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:9000` by `<public-ip-address>:9000` and you should get the PDF rendered as shown in the image below
 
 ![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
 
-We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over this URLs. 
-
-
-
-
+We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over these URLs.
 
