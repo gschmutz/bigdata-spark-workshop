@@ -202,7 +202,7 @@ Now our data flow is ready, so let's run it.
 
 ### Starting the Data Flow 
 
-Select all 3 processor (click ctrl-A) and navigate to the start arrow and click on it
+Select all 3 processors (click ctrl-A) and navigate to the start arrow and click on it
 
 ![Alt Image Text](./images/nifi-start-dataflow.png "Schema Registry UI")
 

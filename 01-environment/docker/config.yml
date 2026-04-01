@@ -297,7 +297,7 @@
       SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
       SPARK_jars_repositories: ''
       # spark graphframes dependency taken from here: https://spark-packages.org/package/graphframes/graphframes
-      SPARK_jars_packages: 'org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12'
+      SPARK_jars_packages: 'org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12'
       SPARK_jars_excludes: ''
       SPARK_jars: ''
       SPARK_jars_ivySettings: ''

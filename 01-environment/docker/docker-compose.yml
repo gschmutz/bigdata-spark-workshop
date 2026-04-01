@@ -75,7 +75,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -165,7 +165,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -250,7 +250,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -329,7 +329,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -402,7 +402,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.2,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -975,7 +975,7 @@ services:
     init: true
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: apache/zeppelin:0.11.2
+    image: apache/zeppelin:0.12.0
     container_name: zeppelin
     hostname: zeppelin
     labels:
@@ -1055,7 +1055,7 @@ services:
       GRANT_SUDO: "'yes'"
       JUPYTER_TOKEN: ${PLATYS_JUPYTER_TOKEN:-abc123!}
       DOCKER_STACKS_JUPYTER_CMD: lab
-      MAVEN_DOWNLOAD_JARS: com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,com.google.guava:guava:27.0-jre
+      MAVEN_DOWNLOAD_JARS: com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.0-jre
       # remove some JARS if they are conflicting with the ones installed above
       REMOVE_JARS: guava-14.0.1.jar
       # for awscli & s3cmd
