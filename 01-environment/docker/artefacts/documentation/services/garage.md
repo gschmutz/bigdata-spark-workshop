@@ -39,7 +39,7 @@ docker exec -ti garage /garage layout apply --version 1
 
 ## How to use it?
 
-Navigate to <http://127.0.0.1:3909> for the Garage WebUI. 
+Navigate to <http://dataplatform:3909> for the Garage WebUI. 
 
 
 

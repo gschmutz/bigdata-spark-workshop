@@ -13,7 +13,7 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://127.0.0.1:28080>
+Navigate to <http://dataplatform:28080>
 
 ## Install `s3cmd`
 

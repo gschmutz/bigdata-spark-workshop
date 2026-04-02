@@ -15,7 +15,7 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://127.0.0.1:28422>
+Navigate to <http://dataplatform:28422>
 
 On first access, create your admin account and connect a dbt project or warehouse directly.
 

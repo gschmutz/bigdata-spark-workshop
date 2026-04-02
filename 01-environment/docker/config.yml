@@ -351,6 +351,7 @@
       # ===== Apache Hive Metastore ========
       #
       HIVE_METASTORE_enable: true
+      HIVE_METASTORE_major_version: 3
       HIVE_METASTORE_transactional_event_listener_enabled: false
       HIVE_METASTORE_transactional_event_listeners: 'org.apache.hive.hcatalog.listener.DbNotificationListener'
       HIVE_METASTORE_volume_map_data: false

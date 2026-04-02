@@ -60,16 +60,6 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
@@ -150,16 +140,6 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
@@ -235,16 +215,6 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
@@ -314,16 +284,6 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
@@ -387,16 +347,6 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_type: rest
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest: org.apache.iceberg.spark.SparkCatalog
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_uri: http://hive-metastore:9084/iceberg
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_token: not_used
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_warehouse: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_io___impl: org.apache.iceberg.aws.s3.S3FileIO
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_endpoint: http://minio-1:9000
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
@@ -423,7 +373,7 @@ services:
     restart: unless-stopped
   #  ================================== Apache Hive Metastore ========================================== #
   hive-metastore:
-    image: trivadis/apache-hive:4.2.0-postgresql-standalone-metastore-s3
+    image: trivadis/apache-hive:3.1.2-postgresql-standalone-metastore-s3
     container_name: hive-metastore
     hostname: hive-metastore
     labels:
@@ -436,10 +386,7 @@ services:
       - 9083:9083
       - 9084:9084
     environment:
-      HIVE_VER: 4.2.0
-      # configure iceberg catalog service (if HMS >= 4.1.0)
-      HIVE_SITE_CONF_metastore_catalog_servlet_port: 9084
-      HIVE_SITE_CONF_metastore_catalog_servlet_auth: none
+      HIVE_VER: 3.1.2
       CORE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -1085,11 +1032,11 @@ services:
       - bash
       - -c
       - |
-        conda create -y --name py312 python=3.12.8
-        source /opt/conda/etc/profile.d/conda.sh
-        conda activate py312
-        pip install ipykernel    
-        python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
+        #conda create -y --name py312 python=3.12.8
+        #source /opt/conda/etc/profile.d/conda.sh
+        #conda activate py312
+        #pip install ipykernel    
+        #python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
         pip install pyspark==3.5.3 jupysql boto3
         start-notebook.sh
     restart: unless-stopped
@@ -1210,7 +1157,6 @@ services:
       - ./conf/trino/single/log-debug.properties:/etc/trino/log.properties
       - ./conf/trino/catalog/minio.properties:/catalog/minio.properties
       - ./conf/trino/catalog/iceberg-hive.properties:/catalog/iceberg_hive.properties
-      - ./conf/trino/catalog/iceberg-hive-rest.properties:/catalog/iceberg_hive_rest.properties
       - ./conf/trino/catalog/delta.properties:/catalog/delta.properties
       - ./conf/trino/catalog/postgresql.properties:/catalog/postgresql.properties
       - ./custom-conf/trino/security:/etc/trino/security
