@@ -1013,9 +1013,9 @@ services:
       ZEPPELIN_NOTEBOOK_CRON_ENABLE: 'True'
       # Will replace values in shiro.ini
       ZEPPELIN_ADMIN_USERNAME: admin
-      ZEPPELIN_ADMIN_PASSWORD: ${PLATYS_ZEPPELIN_ADMIN_PASSWORD:-changeme}
+      ZEPPELIN_ADMIN_PASSWORD: ${PLATYS_ZEPPELIN_ADMIN_PASSWORD:-abc123!}
       ZEPPELIN_USER_USERNAME: zeppelin
-      ZEPPELIN_USER_PASSWORD: ${PLATYS_ZEPPELIN_USER_PASSWORD:-changeme}
+      ZEPPELIN_USER_PASSWORD: ${PLATYS_ZEPPELIN_USER_PASSWORD:-abc123!}
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/zeppelin:/opt/zeppelin/conf.templates
@@ -1085,11 +1085,11 @@ services:
       - bash
       - -c
       - |
-        #conda create -y --name py312 python=3.12.8
-        #source /opt/conda/etc/profile.d/conda.sh
-        #conda activate py312
-        #pip install ipykernel    
-        #python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
+        conda create -y --name py312 python=3.12.8
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate py312
+        pip install ipykernel    
+        python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
         pip install pyspark==3.5.3 jupysql boto3
         start-notebook.sh
     restart: unless-stopped
