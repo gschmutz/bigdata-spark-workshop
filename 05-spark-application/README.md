@@ -2,7 +2,9 @@
 
 In this workshop we will create a Spark Application to submit to a Spark cluster. The application will perform the logic to create the `refined` layer as seen in [Workshop 4 - Data Reading and Writing using DataFrames](../04-spark-dataframe).
 
-We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
+We assume that the **Data Platform** described [here](../01-environment) is running and accessible.
+
+The workshop is written in a way that it has to be executed on the same machine where the dataplatform is running. 
 
 ## Prepare the data, if no longer available
 
@@ -40,7 +42,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 To create a Spark application using Python, you use PySpark, the Python API for Apache Spark.
 
-First let's create a folder for the Spark application 
+First let's create a folder for the Spark application (**Note**: make sure that `DATAPLAFORM_HOME` environment variable points to the folder which contains the `docker-compose.yml` of the dataplatform)
 
 ```bash
 cd $DATAPLATFORM_HOME
@@ -1193,5 +1195,3 @@ message spark_schema {
 25/05/25 20:04:38 INFO MetricsSystemImpl: s3a-file-system metrics system stopped.
 25/05/25 20:04:38 INFO MetricsSystemImpl: s3a-file-system metrics system shutdown complete.
 ```
-
-
