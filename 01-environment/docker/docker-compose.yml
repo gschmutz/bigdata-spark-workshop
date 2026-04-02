@@ -373,7 +373,7 @@ services:
     restart: unless-stopped
   #  ================================== Apache Hive Metastore ========================================== #
   hive-metastore:
-    image: trivadis/apache-hive:3.1.2-postgresql-standalone-metastore-s3
+    image: trivadis/apache-hive:3.1.2-postgresql-metastore-s3
     container_name: hive-metastore
     hostname: hive-metastore
     labels:
@@ -407,7 +407,7 @@ services:
       HIVE_SITE_CONF_metastore_storage_schema_reader_impl: org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader
       SERVICE_PRECONDITION: hive-metastore-db:5432
       DB_DRIVER: postgres
-      SERVICE_NAME: standalone-metastore
+      SERVICE_NAME: metastore
       SERVICE_OPTS: -Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://hive-metastore-db/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=${PLATYS_HMS_POSTGRESQL_PASSWORD:-abc123!}
     volumes:
       - ./data-transfer:/data-transfer

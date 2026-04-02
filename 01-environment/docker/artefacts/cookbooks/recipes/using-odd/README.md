@@ -46,7 +46,7 @@ WARN[0000] The "DATAPLATFORM_HOME" variable is not set. Defaulting to a blank st
 guido.schmutz@AMAXDKFVW0HYY ~/w/platys-catalog>
 ```
 
-and then navigate to <http://dataplatform:28399>.
+and then navigate to <http://127.0.0.1:28399>.
 
 Depending on the choice above, you will either see the catalog be empty or the sample data loaded similar to shown here.
 
