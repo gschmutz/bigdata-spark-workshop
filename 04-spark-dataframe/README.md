@@ -1,10 +1,10 @@
 # Data Reading and Writing using DataFrames
 
-In this workshop we will work with [Apache Spark](https://spark.apache.org/) DataFrames and Spark SQL.
+In this workshop we will use [Apache Spark](https://spark.apache.org/) DataFrames and Spark SQL to work with (semi-)structured data.
 
 We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
 
-The same data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
+The same flight and airport data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
 We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
  
@@ -82,8 +82,9 @@ docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_
 
 ## Create a new Zeppelin notebook
 
-For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you should be able to easily adapt it to **Jupyter** or **PySpark**, if you whish for.  
-In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin homepage. Click on **Login** and use `admin` as the **User Name** and `changeme` as the **Password** and click on **Login**. 
+For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you can also use **Jupyter** if you prefer.
+  
+In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin login page. Login with `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
 
 Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
 
@@ -306,14 +307,14 @@ and you should see an output similar to
 
 ```bash
 ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
-2025-05-18 16:54            0  s3://flight-bucket/refined/flights/_SUCCESS
-2025-05-18 16:54       377251  s3://flight-bucket/refined/flights/year=2008/month=4/part-00001-b6c9ceb9-6c45-42e7-9835-91e83e5c78c1.c000.snappy.parquet
-2025-05-18 16:54       461116  s3://flight-bucket/refined/flights/year=2008/month=5/part-00000-b6c9ceb9-6c45-42e7-9835-91e83e5c78c1.c000.snappy.parquet
+2026-04-02 18:56            0  s3://flight-bucket/refined/flights/_SUCCESS
+2026-04-02 18:56       377251  s3://flight-bucket/refined/flights/year=2008/month=4/part-00001-78e4939e-cf76-476c-a699-222d75714fcc.c000.snappy.parquet
+2026-04-02 18:56       461116  s3://flight-bucket/refined/flights/year=2008/month=5/part-00000-78e4939e-cf76-476c-a699-222d75714fcc.c000.snappy.parquet
 ```	
 	
 Should you want to execute the write a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution of the write will throw an error. 
 
-You can remove it using the following s3cmd
+**Note**: If you want to rerun the creation of the data, then you first have to remove the folder using the following command
 
 ```bash
 docker exec -ti awscli s3cmd rm -r s3://flight-bucket/refined/flights
@@ -350,6 +351,36 @@ We can use `spark.sql()` to now execute an SELECT statement using one of the two
 spark.sql("SELECT * FROM airports").show()
 ```
 
+and you will see part of the data as a table
+
+```
++------+-----+-------------+--------------------+------------------+-------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------------+--------+
+|    id|ident|         type|                name|      latitude_deg|      longitude_deg|elevation_ft|continent|iso_country|iso_region|municipality|scheduled_service|gps_code|iata_code|local_code|           home_link|      wikipedia_link|keywords|
++------+-----+-------------+--------------------+------------------+-------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------------+--------+
+|  6523|  00A|     heliport|   Total RF Heliport|         40.070985|         -74.933689|          11|       NA|         US|     US-PA|    Bensalem|               no|    K00A|     NULL|       00A|https://www.pennd...|                NULL|    NULL|
+|323361| 00AA|small_airport|Aero B Ranch Airport|         38.704022|        -101.473911|        3435|       NA|         US|     US-KS|       Leoti|               no|    00AA|     NULL|      00AA|                NULL|                NULL|    NULL|
+|  6524| 00AK|small_airport|        Lowell Field|         59.947733|        -151.692524|         450|       NA|         US|     US-AK|Anchor Point|               no|    00AK|     NULL|      00AK|                NULL|                NULL|    NULL|
+|  6525| 00AL|small_airport|        Epps Airpark| 34.86479949951172| -86.77030181884766|         820|       NA|         US|     US-AL|     Harvest|               no|    00AL|     NULL|      00AL|                NULL|                NULL|    NULL|
+|506791| 00AN|small_airport|Katmai Lodge Airport|         59.093287|        -156.456699|          80|       NA|         US|     US-AK| King Salmon|               no|    00AN|     NULL|      00AN|                NULL|                NULL|    NULL|
+|  6526| 00AR|       closed|Newport Hospital ...|           35.6087|         -91.254898|         237|       NA|         US|     US-AR|     Newport|               no|    NULL|     NULL|      NULL|                NULL|                NULL|    00AR|
+|322127| 00AS|small_airport|      Fulton Airport|        34.9428028|        -97.8180194|        1100|       NA|         US|     US-OK|        Alex|               no|    00AS|     NULL|      00AS|                NULL|                NULL|    NULL|
+|  6527| 00AZ|small_airport|      Cordes Airport|34.305599212646484|-112.16500091552734|        3810|       NA|         US|     US-AZ|      Cordes|               no|    00AZ|     NULL|      00AZ|                NULL|                NULL|    NULL|
+|  6528| 00CA|small_airport|Goldstone (GTS) A...|          35.35474|        -116.885329|        3038|       NA|         US|     US-CA|     Barstow|               no|    00CA|     NULL|      00CA|                NULL|https://en.wikipe...|    NULL|
+|324424| 00CL|small_airport| Williams Ag Airport|         39.427188|        -121.763427|          87|       NA|         US|     US-CA|       Biggs|               no|    00CL|     NULL|      00CL|                NULL|                NULL|    NULL|
+|322658| 00CN|     heliport|Kitchen Creek Hel...|        32.7273736|       -116.4597417|        3350|       NA|         US|     US-CA| Pine Valley|               no|    00CN|     NULL|      00CN|                NULL|                NULL|    NULL|
+|  6529| 00CO|       closed|          Cass Field|         40.622202|        -104.344002|        4830|       NA|         US|     US-CO|  Briggsdale|               no|    NULL|     NULL|      NULL|                NULL|                NULL|    00CO|
+|  6531| 00FA|small_airport| Grass Patch Airport| 28.64550018310547| -82.21900177001953|          53|       NA|         US|     US-FL|    Bushnell|               no|    00FA|     NULL|      00FA|                NULL|                NULL|    NULL|
+|  6532| 00FD|       closed|  Ringhaver Heliport|           28.8466|         -82.345398|          25|       NA|         US|     US-FL|   Riverview|               no|    NULL|     NULL|      NULL|                NULL|                NULL|    00FD|
+|  6533| 00FL|small_airport|   River Oak Airport|27.230899810791016| -80.96920013427734|          35|       NA|         US|     US-FL|  Okeechobee|               no|    00FL|     NULL|      00FL|                NULL|                NULL|    NULL|
+|  6534| 00GA|small_airport|    Lt World Airport| 33.76750183105469| -84.06829833984375|         700|       NA|         US|     US-GA|    Lithonia|               no|    00GA|     NULL|      00GA|                NULL|                NULL|    NULL|
+|  6535| 00GE|     heliport|    Caffrey Heliport|         33.887982|         -84.736983|         957|       NA|         US|     US-GA|       Hiram|               no|    00GE|     NULL|      00GE|                NULL|                NULL|    NULL|
+|  6536| 00HI|     heliport|  Kaupulehu Heliport|         19.832881|        -155.978347|          43|       OC|         US|     US-HI| Kailua-Kona|               no|    00HI|     NULL|      00HI|                NULL|                NULL|    NULL|
+|  6537| 00ID|small_airport|Delta Shores Airport|48.145301818847656|-116.21399688720703|        2064|       NA|         US|     US-ID|  Clark Fork|               no|    00ID|     NULL|      00ID|                NULL|                NULL|    NULL|
+|322581| 00IG|small_airport|       Goltl Airport|         39.724028|        -101.395994|        3359|       NA|         US|     US-KS|    McDonald|               no|    00IG|     NULL|      00IG|                NULL|                NULL|    NULL|
++------+-----+-------------+--------------------+------------------+-------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------------+--------+
+only showing top 20 rows
+```
+
 But in Zeppelin, testing such a statement is even easier. You can use the `%sql` directive to directly perform an SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit. 
 
 ```sql
@@ -358,7 +389,12 @@ SELECT *
 FROM airports
 ```
 
-Let's see a `GROUP BY` in action
+and you see the result as a nicely formatted table
+
+![Alt Image Text](./images/zeppelin-sql-result.png "Zeppelin Welcome Screen")
+
+
+Let's see some other SQL statement in action, first with a `GROUP BY`
 
 ```sql
 SELECT iso_country, iso_region, count(*)
@@ -375,7 +411,7 @@ WHERE iso_country = 'US'
 GROUP BY iso_country,  iso_region
 ```
 
-Once you are ready, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. Make sure that you again use the `%pyspark` directive
+Once a SQL statement is producing the right result, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. Make sure that you again use the `%pyspark` directive
 
 ```sql
 %pyspark
@@ -388,7 +424,9 @@ usAirportsByStateDF = spark.sql("""
 usAirportsByStateDF.show()
 ```
 
-If you perform a SELECT on the flights table using one or more of the partition columns, the query will prune the non-used partitions and only read the necessary files for the needed partitions
+You can now use the data frame and persist it to S3 if you wish. We will see that in use below.
+
+**Note**: If you perform a SELECT on the flights table using one or more of the partition columns, the query will prune the non-used partitions and only read the necessary files for the needed partitions
 
 ```sql
 %sql
@@ -618,7 +656,7 @@ spark-sql>
 Now check that the data is in fact available by executing
 
 ```sql
-select * from count_delaygroups_t LIMIT 10;
+SELECT * FROM count_delaygroups_t LIMIT 10;
 ```
 
 and you should see a result similar to that shown below
@@ -640,7 +678,7 @@ Time taken: 1.599 seconds, Fetched 10 row(s)
 spark-sql (flight_db)> 
 ```
 
-There are quite a lot of INFO log messages but at the end we see the 10 results we asked for. This is not really usable but it proofs the fact that we have made the results available for querying over SQL. 
+There are is a WARN log messages but we can also see the 10 results we asked for. This is not really usable but it proofs the fact that we have made the results available for querying over SQL. 
 
 ## Use Spark Thriftserver to query the table from outside of Spark
 
@@ -680,7 +718,7 @@ Transaction isolation: TRANSACTION_REPEATABLE_READ
 Now let's again issue a query on the `flight_db.count_delaygroups_t` table
 
 ```sql
-select * from flight_db.count_delaygroups_t limit 10;
+SELECT * FROM flight_db.count_delaygroups_t limit 10;
 ```
 
 and we get the same result, just formatted a bit nicer
@@ -704,9 +742,11 @@ and we get the same result, just formatted a bit nicer
 10 rows selected (7.898 seconds)
 ```
 
-## Use Spark Thriftserver from an SQL Tool (optional)
+## Use Spark Thriftserver from a standalone SQL Tool (optional)
 
-You can also use an SQL Tool, as long as it supports **Hive** or **Spark SQL**. This is the case with [DBeaver](https://dbeaver.io/), which is a Rich-Client and therefore cannot be part of the Docker Compose stack. You need to install it on your local machine, if you want to perform that step. 
+You can also use a standalone SQL Tool or BI tool, as long as it supports **Hive** or **Spark SQL**. 
+
+This is the case with [DBeaver](https://dbeaver.io/), which is a Fat-GUI application and therefore cannot be part of the Docker Compose stack. You need to install it on your local machine, if you want to perform that step. 
 
 To create a connection to the Spark Thriftserver from DBeaver, click on the **+** icon in the top left corner, select the **Apache Spark** database driver
 
@@ -790,3 +830,32 @@ spark.sql("""
    ).show()
 ```
 
+and in the result we can see the output from the custom UDF
+
+```
++--------+------+-----------+----------------+
+|arrDelay|origin|destination|    flight_delay|
++--------+------+-----------+----------------+
+|       8|   ATL|        FLL|Tolerable Delays|
+|      15|   ATL|        FLL|Tolerable Delays|
+|      -6|   ATL|        FLL|           Early|
+|      57|   ATL|        FLL|Tolerable Delays|
+|      -3|   ATL|        FLL|           Early|
+|      -8|   ATL|        FNT|           Early|
+|      10|   ATL|        FNT|Tolerable Delays|
+|      -3|   ATL|        FNT|           Early|
+|       6|   ATL|        FNT|Tolerable Delays|
+|       9|   ATL|        GPT|Tolerable Delays|
+|      34|   ATL|        GPT|Tolerable Delays|
+|      -4|   ATL|        HOU|           Early|
+|       2|   ATL|        HOU|Tolerable Delays|
+|      13|   ATL|        HOU|Tolerable Delays|
+|      51|   ATL|        HOU|Tolerable Delays|
+|       7|   ATL|        HOU|Tolerable Delays|
+|      -8|   ATL|        HOU|           Early|
+|     -13|   ATL|        HPN|           Early|
+|      -5|   ATL|        HPN|           Early|
+|      -2|   ATL|        HPN|           Early|
++--------+------+-----------+----------------+
+only showing top 20 rows
+```

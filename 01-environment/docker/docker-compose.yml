@@ -1032,11 +1032,11 @@ services:
       - bash
       - -c
       - |
-        #conda create -y --name py312 python=3.12.8
-        #source /opt/conda/etc/profile.d/conda.sh
-        #conda activate py312
-        #pip install ipykernel    
-        #python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
+        conda create -y --name py312 python=3.12.8
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate py312
+        pip install ipykernel    
+        python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
         pip install pyspark==3.5.3 jupysql boto3
         start-notebook.sh
     restart: unless-stopped
