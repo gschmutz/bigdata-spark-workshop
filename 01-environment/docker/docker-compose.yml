@@ -55,7 +55,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
       SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
-      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
@@ -75,7 +75,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -145,7 +145,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
       SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
-      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
@@ -160,12 +160,12 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -230,7 +230,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
       SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
-      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
@@ -245,12 +245,12 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -309,7 +309,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
       SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
-      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
@@ -324,12 +324,12 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -382,7 +382,7 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: hive
       SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog_type: hive
       SPARK_DEFAULTS_CONF_spark_hadoop_hive_metastore_uris: thrift://hive-metastore:9083
-      #SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.iceberg.spark.SparkCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,io.delta.sql.DeltaSparkSessionExtension,
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive: org.apache.iceberg.spark.SparkCatalog
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hive_uri: thrift://hive-metastore:9083
@@ -397,12 +397,12 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_path___style___access: true
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_access___key___id: ${PLATYS_AWS_ACCESS_KEY:-admin}
       SPARK_DEFAULTS_CONF_spark_sql_catalog_hiverest_s3_secret___access___key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_sql_catalog_spark__catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+      SPARK_DEFAULTS_CONF_spark_sql_catalog_delta: org.apache.spark.sql.delta.catalog.DeltaCatalog
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_uris: thrift://hive-metastore:9083
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
       SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
@@ -977,6 +977,8 @@ services:
   zeppelin:
     image: apache/zeppelin:0.12.0
     container_name: zeppelin
+    platform: linux/amd64
+    user: 0:0
     hostname: zeppelin
     labels:
       com.platys.name: zeppelin
@@ -1025,10 +1027,15 @@ services:
       - bash
       - -c
       - |
-        conda clean --all -y
-        conda create -y --name py312 python=3.12.8
+        export HOME=/opt/zeppelin
+        export CONDA_PKGS_DIRS=/opt/zeppelin/.conda/pkgs
+        export PIP_CACHE_DIR=/opt/zeppelin/.cache/pip
+        conda config --set solver classic || true
+        conda clean --all -y || true
         source /opt/conda/etc/profile.d/conda.sh
-        conda activate py312
+        if ! conda env list | grep -q '^py312 '; then
+          conda create -y -n py312 python=3.12.8 pip
+        fi
         pip install pyspark==3.5.3 boto3
         ./bin/zeppelin-init.sh
         ./bin/zeppelin.sh
@@ -1215,7 +1222,7 @@ services:
       retries: 5
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: quay.io/minio/aistor/minio:latest
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -1223,7 +1230,7 @@ services:
       com.platys.description: Software-defined Object Storage
       com.platys.webui.title: MinIO UI
       com.platys.webui.url: http://dataplatform:9010
-      com.platys.password.envvars: PLATYS_AWS_SECRET_ACCESS_KEY
+      com.platys.password.envvars: PLATYS_AWS_SECRET_ACCESS_KEY, PLATYS_MINIO_AISTOR_LICENSE
     ports:
       # S3 API Port
       - 9000:9000
@@ -1240,9 +1247,15 @@ services:
       MINIO_COMPRESSION_ENABLE: off
       MINIO_PROMETHEUS_AUTH_TYPE: public
       MINIO_PROMETHEUS_URL: http://prometheus-1:9090
+      MINIO_LICENSE: ${PLATYS_MINIO_AISTOR_LICENSE:-None}
     volumes:
       - ./data-transfer:/data-transfer
-    command: server /data --console-address ":9010"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /root/.minio && echo "$$MINIO_LICENSE" > /root/.minio/minio.license && exec /usr/bin/docker-entrypoint.sh "$$@"
+    command: minio server /data --console-address ":9010" --license /root/.minio/minio.license
     restart: unless-stopped
     healthcheck:
       test: [CMD, curl, -f, http://minio-1:9000/minio/health/live]
