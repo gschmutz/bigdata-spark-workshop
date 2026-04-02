@@ -150,6 +150,6 @@ use the same init script as shown above to attach the demo database.
 
 and run `platys gen` followed by `docker compose up -d`.
 
-Navigate to <https://127.0.0.1:28249/welcome> and you should see the `demo_db` as an attached database.
+Navigate to <https://dataplatform:28249/welcome> and you should see the `demo_db` as an attached database.
 
 

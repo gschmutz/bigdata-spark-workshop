@@ -13,6 +13,6 @@ platys gen
 
 ### How to use it?
 
-Navigate to <http://127.0.0.1:28312> 
+Navigate to <http://dataplatform:28312> 
 
 ### How to configure it?

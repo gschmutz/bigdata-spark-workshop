@@ -13,7 +13,7 @@ platys gen
 
 ## How to use it?
 
-Navigate to <http://127.0.0.1:5115>.
+Navigate to <http://dataplatform:5115>.
 
 ### Using the CLI
 
