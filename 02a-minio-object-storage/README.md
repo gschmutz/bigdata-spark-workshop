@@ -4,9 +4,7 @@ In this workshop we will work with [MinIO](https://min.io/) Object Storage to pe
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible.
 
-In this workshop, we will use the `airports-data` and `flight-data` available in the `data-transfer` folder of the environment. 
-
-These files will be used later by other workshops. 
+In this workshop, we will use the `airports-data` and `flight-data` available in the `data-transfer` folder of the environment and upload it to Minio. These files will also be used later by other workshops. 
 
 ## Using MinIO
 
@@ -18,6 +16,8 @@ If you want the data to persist even after you shutdown the docker-compose stack
     volumes:
       - './container-volume/minio/data/:/data'
 ```
+
+You can enable in Platys by setting `MINIO_volume_map_data` to `true` and regenerate the stack.
 
 ### Accessing MinIO
 
@@ -55,9 +55,11 @@ Running `mc -h` will show the help page of mc.
 docker exec -ti minio-mc mc -h
 ```
 
-**Using MinIO Console**
+**Using MinIO Aistor Console**
 
-In a browser window, navigate to <http://dataplatform:9000>. 
+In a browser window, navigate to <http://dataplatform:9010>. 
+
+![Alt Image Text](./images/minio-login.png "Minio Login")
 
 Enter `admin` into the **Access Key** and  `abc123!abc123!` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker/docker-compose.yml) file. 
 
@@ -65,17 +67,25 @@ The MinIO Console dashboard page should now appear.
  
 ![Alt Image Text](./images/minio-home.png "Minio Homepage")
 
+Before we can upload the files to MinIO, we first have to create a new bucket. We can either do it over the Console or using a Command-Line Interface (CLI).
+
+### Create a Bucket using Minio Aistor Console (Web UI)
+
 Now click on the **Buckets** menu item on the left.
 
 ![Alt Image Text](./images/minio-buckets.png "Minio Homepage")
 
-Click on the **Create Bucket** button at the top right corner to create a new bucket.
+Click on the **+ Add Bucket** button at the top right corner to create a new bucket.
 
 ![Alt Image Text](./images/minio-create-bucket.png "Minio Homepage")
 
-### Create a Bucket using MinIO MC
+Enter `flight-bucket` into the **Bucket Name** field, leave the **Type** set to **Basic**
 
-Before we can upload the files to MinIO, we first have to create a new bucket. 
+![Alt Image Text](./images/minio-create-bucket-2.png "Minio Create Bucket")
+
+and click **Create Bucket**.
+
+### Create a Bucket using MinIO MC
 
 Here are the commands to perform when using the MinIO **mc** utility on the command line
 
@@ -89,14 +99,15 @@ and you should get the confirmation message as shown below
 
 ```bash
 bigdata@bigdata:~$ docker exec -ti minio-mc mc mb minio-1/flight-bucket
+
 Bucket created successfully `minio-1/flight-bucket`.
 ```
 
-Navigate to the MinIO UI (<http://dataplatform:9000/buckets>) and you should see the newly created bucket. 
+Navigate to the MinIO UI (<http://dataplatform:9010/console/buckets>) and you should see the newly created bucket. 
 
 ![Alt Image Text](./images/minio-show-bucket.png "Minio show bucket")
 
-or you can also use `s3cmd ls` to list all buckets.
+or you can also use `mc ls` to list all buckets.
 
 ```bash
 docker exec -ti minio-mc mc ls minio-1
@@ -106,11 +117,11 @@ and you should get
 
 ```
 bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1
-[2025-05-04 14:53:50 UTC]     0B admin-bucket/
-[2025-05-04 15:03:55 UTC]     0B flight-bucket/
+[2026-04-02 12:08:34 UTC]     0B admin-bucket/
+[2026-04-02 15:55:25 UTC]     0B flight-bucket/
 ```
 
-The `admin-bucket` has been created when starting the platform. 
+**Note**: the `admin-bucket` has been created when starting the platform. 
 
 ### Upload the Airport and Plane-Data CSV files to the new bucket
 
@@ -136,7 +147,7 @@ We can see that the bucket contains a directory with the name `raw`, which is th
 
 ```bash
 bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1/flight-bucket/
-[2022-05-17 12:15:01 UTC]     0B raw/
+[2026-04-02 15:59:40 UTC]     0B raw/
 ```
 
 If we use the `-r` argument
@@ -149,8 +160,8 @@ we can see the objects with the hierarchy as well.
 
 ```bash
 bigdata@bigdata:~$ docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
-[2025-05-04 15:06:52 UTC]  11MiB STANDARD raw/airports/airports.csv
-[2025-05-04 15:07:02 UTC] 418KiB STANDARD raw/planes/plane-data.csv
+[2026-04-02 15:59:21 UTC]  11MiB STANDARD raw/airports/airports.csv
+[2026-04-02 15:59:31 UTC] 418KiB STANDARD raw/planes/plane-data.csv
 ```
 
 you can also use the `tree` command to display it as a tree
@@ -187,7 +198,11 @@ minio-1/flight-bucket/
       └─ plane-data.csv
 ```
 
-We can see the same in the MinIO Browser. Navigate to **Object Browser** and click on the **flight-bucket** bucket and then on **raw** and **airports**:  
+We can see the same in the MinIO Aistor Console. In the **Buckets** menu, click on the `flight-bucket` to see the configuration of the bucket
+
+![Alt Image Text](./images/minio-flight-bucket-details.png "MinIO flight-bucket details")
+
+On here click on **Object Browser** and then click on **raw** and **airports**:  
 
 ![Alt Image Text](./images/minio-list-objects.png "MinIO list objects")
 
@@ -201,7 +216,7 @@ First for the `carriers.json`
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
 ```
 
-Check again in the MinIO Browser that the object has been uploaded.
+Check again in the MinIO Aistor Console that the object has been uploaded.
 
 ### Upload the different Flights data CSV files to the new bucket
 
@@ -227,9 +242,15 @@ Now after we have seen how to upload text files, let's also upload a binary file
 docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
 ```
 
-The file has been upload, which you can again check using the MinIO browser.
+The file has been upload, which you can again check using the MinIO Aistor console.
 
-The MinIO browser also allows you to get a sharable link for this object. Click on the **Share** action in the menu to the right of the object:
+Click on `flight-bucket` | `raw` | `pdf` and select the newly uploaded `pilot_handbook.pdf` object
+
+![Alt Image Text](./images/minio-pilot-handbook.png "MinIO list flights")
+
+You can see a preview of the PDF on the right.
+
+The MinIO Aistor Console also allows you to get a sharable link for this object. Click on the second icon in the menu to the right of the object:
 
 ![Alt Image Text](./images/minio-share-link.png "Minio list objects")
 
@@ -237,7 +258,7 @@ A pop-up window will appear from where you can copy the link by clicking on the 
 
 ![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
 
-Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:9000` by `<public-ip-address>:9000` and you should get the PDF rendered as shown in the image below
+Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:9010` by `<public-ip-address>:9000` and the document will be downloaded locally to disk and optionally rendered in the browser  
 
 ![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
 
