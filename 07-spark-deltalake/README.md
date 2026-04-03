@@ -1,6 +1,6 @@
-# Working with Delta Lake Table Format
+# Working with the Delta Lake Table Format
 
-In this workshop we will work with [Delta Lake](https://delta.io/), an open-source storage format that brings ACID transactions to Apache Spark™ and big data workloads.. 
+In this workshop we will work with [Delta Lake](https://delta.io/), an open-source table format that brings ACID transactions to Apache Spark™ and big data workloads.. 
 
 The same data as in the [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
@@ -35,7 +35,7 @@ docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/
 
 ## If you want to use `pyspark` instead of Zeppelin
 
-This workshop is written for Zeppelin, if you want to use `pyspark` instead, you have to add additional configuration settings to the init script
+This workshop can be done with either Zeppelin or Jupyter, but to use Jupyter, you have to extend the Spark context with additional configuration settings in the init script
 
 ```python
 import os
@@ -63,8 +63,7 @@ conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
 conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 conf.set("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
 conf.set("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
-conf.set("spark.jars", "/opt/bitnami/spark/jars/delta-spark_2.12-3.2.1.jar,/opt/bitnami/spark/jars/delta-storage-3.2.1.jar")
-conf.set("spark.jar.packages", "com.google.guava:guava:30.1-jre")
+conf.set("spark.jars.packages", "io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2")
 
 spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
 spark.sparkContext.setLogLevel("INFO")
@@ -72,9 +71,9 @@ spark.sparkContext.setLogLevel("INFO")
 sc = spark.sparkContext
 ```
 
-For Apache Zeppelin, this is not necessary and the configuration in `spark.jars` is used.
+For Apache Zeppelin, this is not necessary and the Spark context is pre-configured.
 
-## Create a new Zeppelin notebook
+## Create a new Zeppelin or Jupyter notebook
 
 For this workshop we will be using Zeppelin discussed above. 
 
@@ -160,13 +159,14 @@ and you should see that the data has been written as parquet files, but that the
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2025-05-22 11:55         5472  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2025-05-22 11:55            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2025-05-22 11:55      3366543  s3://flight-bucket/delta/airports/part-00000-235e5c19-143e-4930-8733-1922fa83f2af-c000.snappy.parquet
-2025-05-22 11:55      1618896  s3://flight-bucket/delta/airports/part-00001-4f29c36d-90a0-45ae-a5a1-cc2b4bcbabcc-c000.snappy.parquet
+2026-04-03 06:08         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
+2026-04-03 06:08         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
+2026-04-03 06:08            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
+2026-04-03 06:08      3366543  s3://flight-bucket/delta/airports/part-00000-ebb58ff2-3a3c-4b9e-954f-381366c9f876-c000.snappy.parquet
+2026-04-03 06:08      1618896  s3://flight-bucket/delta/airports/part-00001-99a8c87f-436a-4704-bbfd-bc2e8ad665eb-c000.snappy.parquet
 ```
 
-We can also alternatively use the MinIO console to see the data
+We can also alternatively use the MinIO Aistor console to view the data
 
 ![Alt Image Text](images/spark-delta-lake-1st-write.png "Spark Delta Lake")
 
@@ -184,7 +184,7 @@ Let's see what is in this file by using the `s3cmd get` command
 docker exec -ti awscli s3cmd get s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json --force /data-transfer/
 ```
 
-Let's view the content downloaded using the `jq` utility, a json pretty-printer
+Let's view the content downloaded using the `jq` utility, a json pretty-printer (**Note:** make sure that DATAPLATFORM_HOME environment variable points to the `docker` folder)
 
 ```
 cd $DATAPLATFORM_HOME
@@ -256,19 +256,20 @@ you should see content similar to the one shown below
 
 You can see besides some metadata, the first transaction applied represented by the `add` fragement.
 
-
 ## Update the Delta Lake Table
 
-First let's create some updates we want to apply to the delta table. We have a new Airport with the code "ADD" (which does not yet exists) and update the name and city of the existing airport with code "00M" to uppercase.
+First let's create some updates we want to apply to the delta table. 
 
-```
+We have a new Airport with the code "ADD" (which does not yet exists) and update the name and city of the existing airport with code "00M" to uppercase. Execute the statement in the Spark environment
+
+```python
 newAirportsData = [(999, "ADD", "small_airport", "This is a new airport", 0.0, 0.0, 0, "US", "US", "CA", "San Francisco", "", "", "ADD", "", "", "", ""),
         (6523, "00A", "heliport", "TOTAL RF HELIPORT", 40.070985, -74.933689, 11, "NA", "US", "US-PA", "Bensalem", "no", "K00A", "", "00A", "https://www.penndot.pa.gov/TravelInPA/airports-pa/Pages/Total-RF-Heliport.aspx", "", "")]
 ```
 
-Let's create a data frame from it. 
+Now let's create a data frame from it. 
 
-```
+```python
 newAirportsRDD = spark.sparkContext.parallelize(newAirportsData)
 
 newAirportsDF = spark.createDataFrame(newAirportsRDD, airportsRawDF.schema)
@@ -277,10 +278,9 @@ newAirportsDF.show()
 
 This `newAirportsDF` dataframe represents the new raw data we would get from a source system.
 
-Now let's update the delta lake table. 
-First let's get a reference to the delta table
+Now let's update the delta lake table. First let's get a reference to the delta table
 
-```
+```python
 from delta.tables import *
 from pyspark.sql.functions import *
 
@@ -289,7 +289,7 @@ deltaTable = DeltaTable.forPath(spark, deltaTableDest)
 
 and now perform the merge
 
-```
+```python
 deltaTable.alias("oldData").merge(
     newAirportsDF.alias("newData"),
     "oldData.ident = newData.ident") \
@@ -308,16 +308,18 @@ and you should see that more data has been written as parquet files, and that in
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2025-05-22 11:55         5472  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2025-05-22 18:12         4597  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
-2025-05-22 11:55            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2025-05-22 11:55      3366543  s3://flight-bucket/delta/airports/part-00000-235e5c19-143e-4930-8733-1922fa83f2af-c000.snappy.parquet
-2025-05-22 18:12      1749796  s3://flight-bucket/delta/airports/part-00000-e4fc9ba1-f182-40b5-bb4f-cc7a4ba55a44-c000.snappy.parquet
-2025-05-22 18:12      1763568  s3://flight-bucket/delta/airports/part-00001-3a745dd6-9d22-4a00-8ca4-253a6fa1232e-c000.snappy.parquet
-2025-05-22 11:55      1618896  s3://flight-bucket/delta/airports/part-00001-4f29c36d-90a0-45ae-a5a1-cc2b4bcbabcc-c000.snappy.parquet
+2026-04-03 06:08         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
+2026-04-03 06:08         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
+2026-04-03 06:18         6784  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.crc
+2026-04-03 06:18         4626  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
+2026-04-03 06:08            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
+2026-04-03 06:18      1749796  s3://flight-bucket/delta/airports/part-00000-82530638-17eb-4eb1-a411-5c0d8c226c9b-c000.snappy.parquet
+2026-04-03 06:08      3366543  s3://flight-bucket/delta/airports/part-00000-ebb58ff2-3a3c-4b9e-954f-381366c9f876-c000.snappy.parquet
+2026-04-03 06:18      1763568  s3://flight-bucket/delta/airports/part-00001-2dbe30b4-d9f5-4cab-85e4-f058e907e83e-c000.snappy.parquet
+2026-04-03 06:08      1618896  s3://flight-bucket/delta/airports/part-00001-99a8c87f-436a-4704-bbfd-bc2e8ad665eb-c000.snappy.parquet
 ```
 
-We can also alternatively use the MinIO console to see the data
+We can also alternatively use the MinIO Aistor console to see the data
 
 ![Alt Image Text](images/spark-delta-lake-1st-merge.png "Spark Delta Lake")
 
@@ -417,7 +419,7 @@ ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ jq < ./dat
 } 
 ``` 
 
-Let's read the delta table and register it as a table, so we can query it using SQL
+Back in Spark, let's read the delta table and register it as a table, so we can query it using SQL
 
 ``` 
 spark.read.format("delta").load(deltaTableDest).createOrReplaceTempView("airports")
@@ -455,14 +457,14 @@ airportsBeforeDF = spark.read.format("delta").option("versionAsOf", 0).load(delt
 airportsBeforeDF.createOrReplaceTempView("airportsTimeTravel")
 ```
 
-if we query for the "00A" and "ADD" code, we can see that we are getting the original data
+if we now query for the "00A" and "ADD" code, we can see that we are getting the original data (`Total RF Heliport` in mixed case and the added airport is not shown)
 
 ```sql
 %sql
 SELECT * FROM airportsTimeTravel WHERE ident IN ("00A","ADD")
 ``` 
 
-now let's swtich to version 1, register the table
+now let's switch to version 1, register the table
 
 ```python
 airportsBeforeDF = spark.read.format("delta").option("versionAsOf", 1).load(deltaTableDest)
@@ -477,7 +479,7 @@ and perform another select and we can see that we again get the data after the m
 SELECT * FROM airportsTimeTravel WHERE ident IN ("00A","ADD")
 ``` 
 
-By default, Delta tables retain the commit history for 30 days. This means that you can specify a version from 30 days ago. 
+By default, Delta tables retain the commit history for 30 days. This means that you can always go back to a version from 30 days ago. 
 
 ## Vacuum old versions
 
@@ -494,11 +496,15 @@ vacuum files not required by versions older than the default retention period
 ```python
 deltaTable.vacuum()        # vacuum files not required by versions older than the default 
 ```
+
 vacuum files not required by versions more than 1 hours old
 
 ```python
+spark.conf.set("spark.databricks.delta.retentionDurationCheck.enabled", "false")
 deltaTable.vacuum(1)
 ``` 
+
+**Note**: To use deltaTable.vacuum(1), you need to enable a specific Spark configuration that allows retaining data for less than the default 7-day retention period. By default, Delta Lake enforces a minimum retention of 168 hours (7 days) as a safety check.
 
 Let's view the resulting objects using the `s3cmd` comnand line tool
 
