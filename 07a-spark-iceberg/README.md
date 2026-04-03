@@ -70,32 +70,45 @@ import os
 accessKey = os.environ['AWS_ACCESS_KEY_ID']
 secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
 
-import pyspark
 from pyspark.sql import SparkSession
+spark = (
+    SparkSession.builder
+        .appName("Jupyter")
+        .master("spark://spark-master:7077")
 
-conf = pyspark.SparkConf()
+        .config("spark.jars.packages",
+                "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,"
+                "org.apache.iceberg:iceberg-aws-bundle:1.10.1")
 
-# point to mesos master or zookeeper entry (e.g., zk://10.10.10.10:2181/mesos)
-conf.setMaster("spark://spark-master:7077")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
+        .config("spark.hadoop.fs.s3a.access.key", accessKey)
+        .config("spark.hadoop.fs.s3a.secret.key", secretKey)
+        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 
-# set other options as desired
-conf.set("spark.executor.memory", "8g")
-conf.set("spark.executor.cores", "1")
-conf.set("spark.core.connection.ack.wait.timeout", "1200")
-conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
-conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
-conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
-conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
-conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-conf.set("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-conf.set("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
-conf.set("spark.jars.packages", "io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2")
+        # ==== Iceberg catalog (Hive Metastore) ===
+        .config("spark.sql.catalog.hive_iceberg", "org.apache.iceberg.spark.SparkCatalog")
+        .config("spark.sql.catalog.hive_iceberg.type", "hive")
+        .config("spark.sql.catalog.hive_iceberg.uri", "thrift://hive-metastore:9083")
+        .config("spark.sql.catalog.hive_iceberg.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
 
-spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
-spark.sparkContext.setLogLevel("INFO")
+        # ==== REQUIRED FOR MINIO WITH ICEBERG AWS SDK ===
+        .config("spark.sql.catalog.hiverest.s3.endpoint", "http://minio-1:9000")
+        .config("spark.sql.catalog.hiverest.s3.path-style-access", "true")
+        .config("spark.sql.catalog.hiverest.s3.access-key-id", accessKey)
+        .config("spark.sql.catalog.hiverest.s3.secret-access-key", secretKey)
+    
+        # use "hive_iceberg" as the default catalog
+        .config("spark.sql.defaultCatalog", "hive_iceberg")
 
-sc = spark.sparkContext
+        .config(
+            "spark.sql.extensions",
+            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+        )
+
+        .getOrCreate()
+)
 ```
 
 Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
@@ -112,8 +125,10 @@ Also enable sql magic in Jupyter (this will enable the `%%sql` directive to exec
 ### Add some Markdown first
 
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
+
 ```
-%md # Spark Iceberg sample with airport data
+%md 
+# Spark Iceberg sample with airport data
 ```
 
 Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
@@ -125,7 +140,8 @@ The markdown code should now be rendered as a Heading-1 title.
 First add another title, this time as a Heading-2.
 
 ```
-%md ## Read the airport data and store it as an Iceberg Table
+%md 
+## Read the airport data and store it as an Iceberg Table
 ```
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`.
@@ -427,9 +443,19 @@ you should see content similar to the one shown below
 
 Iceberg also provides convenient metadata tables that you can query directly with SQL. These are much easier to inspect than raw files:
 
+Select either using `spark.sql()` in pyspark 
+
 ```python
 spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots").show(truncate=False)
 ```
+
+or diretly using the SQL with a `%sql` directive (`%%sql` in Jupyter)
+
+```
+%sql SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots
+```
+
+you should get a result with one row, similar to shown below
 
 ```
 +-----------------------+-------------------+---------+---------+------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
