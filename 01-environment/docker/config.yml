@@ -624,7 +624,7 @@
       JUPYTER_edition: 'all-spark'
       JUPYTER_spark_base_version: 3.5
       JUPYTER_volume_map_data: false
-      JUPYTER_python_packages: 'pyspark==3.5.3 jupysql boto3'
+      JUPYTER_python_packages: 'pyspark==3.5.3 jupysql pandas arrow pyarrow grpcio-status boto3'
       JUPYTER_spark_jars_packages: ''
       JUPYTER_tokenless: false
       JUPYTER_token: 'abc123!'
