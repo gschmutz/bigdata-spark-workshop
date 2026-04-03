@@ -6,11 +6,18 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 
 ## What you will learn
 
-- How to set up a dbt project connected to a Spark backend
-- How to define dbt models (SQL `SELECT` statements) that transform raw data into refined layers
-- How to run and test dbt models using the dbt CLI
-- How dbt manages table/view creation and incremental updates in the Hive Metastore
-- How to use dbt's lineage graph and documentation features
+- How to set up a dbt project connected to a Spark backend via the Thrift Server
+- How to define dbt models (SQL `SELECT` statements) that transform raw data into prepared and refined layers
+- How to configure materialization strategies: `view`, `table`, and `incremental` — per layer
+- How to use `dbt run --select` to target individual models or subgraphs
+- How to write generic tests (`not_null`, `unique`, `accepted_values`, `relationships`) in `schema.yml`
+- How to run `dbt test` to validate data quality across all models
+- How to build an incremental model that only processes new rows on subsequent runs
+- How to generate and serve dbt documentation with the interactive lineage DAG
+- How to query dbt-produced tables from Trino to close the end-to-end pipeline
+- How to define a dbt Semantic Model with entities, dimensions, and measures
+- How to declare reusable business metrics (`simple`, `ratio`) on top of semantic models
+- How to query metrics using the MetricFlow CLI (`mf query`) without writing SQL
 
 ## Prerequisites
 
@@ -175,8 +182,8 @@ nano requirements.txt
 and add the following lines to install `dbt-core` and `dbt-spark`
 
 ```bash
-# dbt Core 1.9
-dbt-core>=1.9.6
+# dbt Core 1.11
+dbt-core>=1.11.7
 
 # spark adapter
 dbt-spark>=1.9.1
@@ -689,7 +696,573 @@ WARNING:thrift.transport.sslcompat:using legacy validation callback
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$
 ```
 
-## Query the results from Trino (t.b.d)
+## Per-layer Materialization
+
+Rather than setting the same materialization for all models at once, a more realistic pattern is to configure it per layer in `dbt_project.yml`. Views are cheap to create and suitable for the prepared layer; tables are better for the refined layer since they are queried frequently by downstream tools.
+
+```bash
+nano dbt_project.yml
+```
+
+Replace the `flight:` block with per-sublayer config:
+
+```yaml
+models:
+  spark_flight:
+    flight:
+      prepared:
+        +materialized: view
+      refined:
+        +materialized: table
+```
+
+Re-run dbt and you will see that the prepared models are created as views while the refined models are created as tables:
+
+```bash
+dbt run
+```
+
+## Targeted Runs with `--select`
+
+As a project grows, running every model on every change becomes slow. The `--select` flag lets you target a single model, a folder, or a subgraph.
+
+Run a single model:
+
+```bash
+dbt run --select flight_ref_t
+```
+
+Run a model and all of its ancestors (everything it depends on):
+
+```bash
+dbt run --select +flight_ref_t
+```
+
+Run all models in a folder:
+
+```bash
+dbt run --select models/flight/refined
+```
+
+Run only models that have changed since the last run:
+
+```bash
+dbt run --select state:modified
+```
+
+The same `--select` syntax works with `dbt test` and `dbt docs generate`.
+
+## dbt Tests
+
+dbt has a built-in testing framework. **Generic tests** are declared in a `schema.yml` file alongside your models — no Python or SQL needed. The four built-in test types are `not_null`, `unique`, `accepted_values`, and `relationships`.
+
+Create a schema file for the prepared layer:
+
+```bash
+nano models/flight/prepared/schema.yml
+```
+
+Add the following:
+
+```yaml
+version: 2
+
+models:
+  - name: airport_prep_t
+    description: "Airports with corrected data types from the raw layer."
+    columns:
+      - name: id
+        description: "Unique numeric airport identifier."
+        tests:
+          - not_null
+          - unique
+      - name: iata_code
+        description: "IATA airport code."
+        tests:
+          - not_null
+      - name: iso_country
+        description: "ISO country code."
+        tests:
+          - not_null
+
+  - name: flight_prep_t
+    description: "Raw flight records with original column names preserved."
+    columns:
+      - name: origin
+        description: "IATA code of the origin airport."
+        tests:
+          - not_null
+      - name: destination
+        description: "IATA code of the destination airport."
+        tests:
+          - not_null
+      - name: year
+        tests:
+          - not_null
+      - name: month
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+```
+
+Also create a schema file for the refined layer:
+
+```bash
+nano models/flight/refined/schema.yml
+```
+
+```yaml
+version: 2
+
+models:
+  - name: flight_ref_t
+    description: "Flights enriched with origin and destination airport details."
+    columns:
+      - name: origin
+        description: "IATA code of the origin airport."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('airport_prep_t')
+              field: iata_code
+
+  - name: flight_delays_ref_t
+    description: "Flights with delay bucket classification."
+    columns:
+      - name: flight_delays
+        description: "Categorical delay bucket."
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - 'Very Long Delays'
+                - 'Long Delays'
+                - 'Short Delays'
+                - 'Tolerable Delays'
+                - 'No Delays'
+                - 'Early'
+```
+
+Now run all tests:
+
+```bash
+dbt test
+```
+
+You should see output similar to:
+
+```bash
+19:45:02  Running with dbt=1.9.6
+19:45:03  Found 4 models, 2 sources, 8 tests, 473 macros
+19:45:03
+19:45:03  Concurrency: 1 threads (target='dev')
+19:45:03
+19:45:03  1 of 8 START test not_null_airport_prep_t_id ............................ [RUN]
+19:45:04  1 of 8 PASS not_null_airport_prep_t_id .................................. [PASS in 1.02s]
+19:45:04  2 of 8 START test unique_airport_prep_t_id .............................. [RUN]
+19:45:05  2 of 8 PASS unique_airport_prep_t_id .................................... [PASS in 0.91s]
+...
+19:45:12  Finished running 8 tests in 0 hours 0 minutes and 9.41 seconds.
+19:45:12  Completed successfully
+19:45:12  Done. PASS=8 WARN=0 ERROR=0 SKIP=0 TOTAL=8
+```
+
+You can also run tests for a specific model only:
+
+```bash
+dbt test --select airport_prep_t
+```
+
+## Incremental Models
+
+The `table` materialization drops and recreates the full table on every `dbt run`. For large datasets this is expensive. The `incremental` materialization only processes rows that are new since the last run.
+
+Let's create an incremental version of the flight prepared model. Create a new model file:
+
+```bash
+nano models/flight/prepared/flight_prep_incremental_t.sql
+```
+
+```sql
+{{ config(
+    materialized='incremental',
+    unique_key='flightNum'
+) }}
+
+WITH flight_prep_incremental_t AS (
+    SELECT year,
+        month,
+        dayOfMonth,
+        dayOfWeek,
+        depTime,
+        crsDepTime,
+        arrTime,
+        crsArrTime,
+        uniqueCarrier,
+        flightNum,
+        tailNum,
+        actualElapsedTime,
+        crsElapsedTime,
+        airTime,
+        arrDelay,
+        depDelay,
+        origin,
+        destination,
+        distance,
+        taxiIn,
+        taxiOut,
+        cancelled,
+        cancellationCode,
+        diverted,
+        carrierDelay,
+        weatherDelay,
+        nasDelay,
+        securityDelay,
+        lateAircraftDelay
+    FROM {{ source('flight_db', 'flight_raw_t') }}
+
+    {% if is_incremental() %}
+    WHERE year > (SELECT MAX(year) FROM {{ this }})
+       OR (year = (SELECT MAX(year) FROM {{ this }})
+           AND month > (SELECT MAX(month) FROM {{ this }}))
+    {% endif %}
+) SELECT *
+FROM flight_prep_incremental_t
+```
+
+The `{% if is_incremental() %}` block is only applied after the first run — on the initial run the full table is created. On subsequent runs only rows newer than what is already in the table are processed.
+
+Run it for the first time (full load):
+
+```bash
+dbt run --select flight_prep_incremental_t
+```
+
+Run it again (incremental — only new rows):
+
+```bash
+dbt run --select flight_prep_incremental_t
+```
+
+To force a full refresh (drop and recreate):
+
+```bash
+dbt run --select flight_prep_incremental_t --full-refresh
+```
+
+## dbt Documentation
+
+dbt can generate a full documentation site from the descriptions you added to `schema.yml`, including an interactive **lineage DAG** that shows how models depend on each other.
+
+Generate the documentation:
+
+```bash
+dbt docs generate
+```
+
+Serve it locally:
+
+```bash
+dbt docs serve --port 8080
+```
+
+Open a browser and navigate to <http://dataplatform:8080>. You will see:
+
+- A searchable catalog of all models and sources with their descriptions
+- Column-level documentation for every column you described in `schema.yml`
+- A **lineage graph** showing the full dependency chain from raw sources through prepared to refined models
+
+The lineage graph should look like:
+
+```
+flight_raw_t (source)   ──►  flight_prep_t  ──►  flight_ref_t
+                                             ──►  flight_delays_ref_t
+airport_raw_t (source)  ──►  airport_prep_t ──►  flight_ref_t
+```
+
+## Query the Results from Trino
+
+Now that dbt has created the refined tables in the Hive Metastore, they are immediately accessible from Trino — no additional configuration is needed.
+
+Connect to Trino using the CLI:
+
+```bash
+docker exec -ti trino trino
+```
+
+List the available tables in the `flight_db` schema:
+
+```sql
+SHOW TABLES IN hive.flight_db;
+```
+
+You should see all the tables and views created by dbt:
+
+```
+       Table
+----------------------
+ airport_prep_t
+ airport_raw_t
+ flight_delays_ref_t
+ flight_prep_t
+ flight_raw_t
+ flight_ref_t
+```
+
+Query the refined flight data with airport names:
+
+```sql
+SELECT origin_airport, destination_airport, distance, depDelay, arrDelay
+FROM hive.flight_db.flight_ref_t
+WHERE arrDelay > 60
+ORDER BY arrDelay DESC
+LIMIT 10;
+```
+
+Query the delay bucket distribution:
+
+```sql
+SELECT flight_delays, COUNT(*) AS num_flights
+FROM hive.flight_db.flight_delays_ref_t
+GROUP BY flight_delays
+ORDER BY num_flights DESC;
+```
+
+Find the top 10 routes by average arrival delay:
+
+```sql
+SELECT origin, destination, 
+       ROUND(AVG(arrDelay), 1) AS avg_arr_delay,
+       COUNT(*) AS num_flights
+FROM hive.flight_db.flight_ref_t
+WHERE arrDelay IS NOT NULL
+GROUP BY origin, destination
+HAVING COUNT(*) > 10
+ORDER BY avg_arr_delay DESC
+LIMIT 10;
+```
+
+This completes the full pipeline: raw data in MinIO → registered in Hive Metastore → transformed by dbt → queried via Trino.
+
+## Semantic Models and Metrics
+
+dbt's [Semantic Layer](https://docs.getdbt.com/docs/use-dbt-semantic-layer/dbt-sl) (introduced in dbt Core 1.6, powered by MetricFlow) lets you define business metrics and dimensions **once in YAML** and query them consistently — no more copy-pasted SQL aggregations across notebooks and dashboards.
+
+The key idea: instead of writing `COUNT(flightNum)` or `AVG(arrDelay)` in every query, you define those measures centrally in a semantic model and refer to them by name everywhere.
+
+### Install MetricFlow
+
+MetricFlow is the engine behind the dbt Semantic Layer. Add it to `requirements.txt`:
+
+```
+metricflow[dbt-spark]>=0.200
+```
+
+Then reinstall:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+### Create the folder structure
+
+Semantic models and metrics live alongside regular dbt models. Create a dedicated folder:
+
+```bash
+mkdir -p models/flight/semantic
+```
+
+### Define a Semantic Model
+
+A semantic model sits on top of an existing dbt model and declares the **entities** (grain), **dimensions**, and **measures** of that model.
+
+```bash
+nano models/flight/semantic/sem_flights.yml
+```
+
+```yaml
+semantic_models:
+  - name: flights
+    description: "Flight-level facts enriched with airport details."
+    model: ref('flight_ref_t')
+
+    # The primary grain of this semantic model
+    entities:
+      - name: flight
+        type: primary
+        expr: flightNum
+
+    # Categorical and time dimensions
+    dimensions:
+      - name: origin
+        type: categorical
+        description: "IATA code of the origin airport."
+      - name: destination
+        type: categorical
+        description: "IATA code of the destination airport."
+      - name: origin_airport
+        type: categorical
+        description: "Full name of the origin airport."
+      - name: destination_airport
+        type: categorical
+        description: "Full name of the destination airport."
+      - name: month
+        type: categorical
+        description: "Month of the flight."
+      - name: year
+        type: categorical
+        description: "Year of the flight."
+      - name: cancelled
+        type: categorical
+        description: "Whether the flight was cancelled (1 = yes, 0 = no)."
+
+    # Reusable measures (aggregations)
+    measures:
+      - name: total_flights
+        description: "Total number of flights."
+        agg: count
+        expr: flightNum
+
+      - name: avg_arr_delay
+        description: "Average arrival delay in minutes."
+        agg: average
+        expr: arrDelay
+
+      - name: avg_dep_delay
+        description: "Average departure delay in minutes."
+        agg: average
+        expr: depDelay
+
+      - name: total_distance
+        description: "Total distance flown in miles."
+        agg: sum
+        expr: distance
+
+      - name: cancelled_flights
+        description: "Number of cancelled flights."
+        agg: sum
+        expr: "CASE WHEN cancelled = '1' THEN 1 ELSE 0 END"
+```
+
+### Define Metrics
+
+Metrics are named, reusable business calculations built from the measures defined above. Create a separate metrics file:
+
+```bash
+nano models/flight/semantic/metrics_flights.yml
+```
+
+```yaml
+metrics:
+  - name: total_flights
+    label: "Total Flights"
+    description: "Total number of flights in the dataset."
+    type: simple
+    type_params:
+      measure: total_flights
+
+  - name: avg_arrival_delay
+    label: "Average Arrival Delay (min)"
+    description: "Average arrival delay across all flights."
+    type: simple
+    type_params:
+      measure: avg_arr_delay
+
+  - name: avg_departure_delay
+    label: "Average Departure Delay (min)"
+    description: "Average departure delay across all flights."
+    type: simple
+    type_params:
+      measure: avg_dep_delay
+
+  - name: cancellation_rate
+    label: "Cancellation Rate"
+    description: "Ratio of cancelled flights to total flights."
+    type: ratio
+    type_params:
+      numerator: cancelled_flights
+      denominator: total_flights
+
+  - name: total_distance_flown
+    label: "Total Distance Flown (miles)"
+    description: "Total miles flown across all flights."
+    type: simple
+    type_params:
+      measure: total_distance
+
+  - name: flights_per_origin
+    label: "Flights per Origin Airport"
+    description: "Total flights grouped by origin airport."
+    type: simple
+    type_params:
+      measure: total_flights
+```
+
+### Query Metrics with the MetricFlow CLI
+
+After defining your metrics, validate the semantic layer parses correctly:
+
+```bash
+dbt parse
+```
+
+Then use the MetricFlow CLI (`mf`) to query metrics without writing any SQL:
+
+Total flights:
+
+```bash
+mf query --metrics total_flights
+```
+
+Average arrival delay by origin airport:
+
+```bash
+mf query --metrics avg_arrival_delay --group-by origin
+```
+
+Cancellation rate by month:
+
+```bash
+mf query --metrics cancellation_rate --group-by month --order month
+```
+
+Total flights and average delay together, by year and month:
+
+```bash
+mf query --metrics total_flights,avg_arrival_delay --group-by year,month --order year,month
+```
+
+MetricFlow translates each `mf query` into optimised SQL against your Spark backend — you can inspect the generated SQL with `--explain`:
+
+```bash
+mf query --metrics avg_arrival_delay --group-by origin --explain
+```
+
+### List available metrics
+
+```bash
+mf list metrics
+```
+
+```
+total_flights
+avg_arrival_delay
+avg_departure_delay
+cancellation_rate
+total_distance_flown
+flights_per_origin
+```
+
+### Why use the Semantic Layer?
+
+| Without Semantic Layer | With Semantic Layer |
+|---|---|
+| Each analyst writes their own `AVG(arrDelay)` | One definition, used everywhere |
+| Inconsistent filters and rounding across queries | Consistent, tested metric logic |
+| Breaking a column rename breaks every query | Only the semantic model needs updating |
+| No central documentation of business metrics | Metrics documented and discoverable in `dbt docs` |
+
+The semantic models and metrics you define here are also visible in the `dbt docs serve` documentation site, giving a complete, navigable catalog of your data pipeline from raw sources through to business metrics.
 
 
 
