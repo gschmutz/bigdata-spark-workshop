@@ -6,6 +6,19 @@ We assume that the **Data platform** described [here](../01-environment) is runn
 
 In this workshop, we will use the `airports-data` and `flight-data` available in the `data-transfer` folder of the environment and upload it to Minio. These files will also be used later by other workshops. 
 
+## What you will learn
+
+- How to create buckets in MinIO using the Web UI, `mc`, and `s3cmd`
+- How to upload files (CSV, JSON, PDF) to object storage using the command line and the browser
+- How to list, browse, and inspect objects using `mc ls`, `mc tree`, and the MinIO Aistor Console
+- How to share objects via a pre-signed URL
+- How an object store serves as an S3-compatible drop-in replacement for HDFS
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- The `airports-data` and `flight-data` files are available in the `data-transfer` folder of the environment
+
 ## Using MinIO
 
 ### Volume Map data for MinIO container

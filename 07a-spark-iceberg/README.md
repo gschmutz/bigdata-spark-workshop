@@ -6,6 +6,21 @@ The same data as in the [Object Storage Workshop](../02a-minio-object-storage/RE
 
 We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from Apache Zeppelin or Jupyter Notebook.
 
+## What you will learn
+
+- How to write DataFrames as Apache Iceberg tables stored in MinIO
+- How to configure the Iceberg catalog in Spark (Hive Metastore-backed)
+- How to perform `INSERT`, `UPDATE`, `DELETE`, and `MERGE INTO` operations on Iceberg tables
+- How to use Iceberg's time-travel and snapshot inspection features
+- How to inspect Iceberg metadata files (snapshots, manifests, table metadata) in MinIO
+- How Iceberg enables multiple engines (Spark, Trino) to safely access the same tables
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
+- Airport data uploaded to MinIO (instructions provided if needed)
+
 ## Prepare the data, if no longer available
 
 The data needed here has been uploaded in workshop 2a - [Working with MinIO Object Storage](../02a-minio-object-storage). You can skip this section, if you still have the data available in MinIO.

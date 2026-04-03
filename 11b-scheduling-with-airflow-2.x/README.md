@@ -4,6 +4,19 @@ This workshop **will not work** with the dataplatform which is part of this cour
 
 In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) 2.x to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
 
+## What you will learn
+
+- How to author an Apache Airflow 2.x DAG to orchestrate a multi-step pipeline
+- How to use the `SparkSubmitOperator` to trigger a Spark job from Airflow
+- How to schedule a DAG and monitor its execution in the Airflow 2.x UI
+- How Airflow integrates with Spark and S3-compatible object storage
+
+## Prerequisites
+
+- An environment running **Airflow 2.x** (note: the current data platform uses Airflow 3.x — see [11a](../11a-scheduling-with-airflow-3.x) for the compatible version)
+- Workshop 5 ([Creating and running a self-contained Spark Application](../05-spark-application)) completed — the `prep_refined.py` Spark script is reused here
+- Airport and flight data available in MinIO (instructions provided if needed)
+
 ## Create the S3 bucket, if not available
 
 Create the flight bucket using the `mc mb` command from a terminal window

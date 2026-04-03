@@ -2,6 +2,20 @@
 
 In this workshop we will see how we can use [Apache NiFi](http://nifi.apache.org) to ingest the flight data automatically into S3 object storage. It shows the usage of Apache NiFi for Batch-Data (delta) ingestion, refer to the Streaming Workshop for a workshop where Apache NiFi is used in a Stream-Data Ingestion.
 
+## What you will learn
+
+- How to navigate the Apache NiFi web interface and build a data flow on the canvas
+- How to use the `GetFile` processor to pick up files from a local landing zone
+- How to use the `PutS3Object` processor to write files automatically to MinIO
+- How to connect processors, configure relationships, and start/stop a NiFi flow
+- How NiFi handles batch (delta) ingestion — only picking up new files since the last run
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- The `flight-nifi-bucket` bucket will be created as part of this workshop
+- Write access to the `data-transfer/landing-zone` folder on the host machine
+
 ## Create the Bucket in S3
 
 For this workshop we will use a new bucket, separate from the other workshops. Use the following command to create the `flight-nifi-bucket`.

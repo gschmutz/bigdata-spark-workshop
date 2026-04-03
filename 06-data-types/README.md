@@ -6,6 +6,19 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 
 We only show the pure PySpark statement, if you want to execute the in Zepplin, then you have to add the `%pyspark` directive. 
 
+## What you will learn
+
+- How to read and write data in different file formats: CSV, JSON, Parquet, Avro, and ORC
+- How schema inference works and when to define schemas explicitly
+- How to control read/write options (delimiter, header, compression, partitioning) for each format
+- The trade-offs between row-based formats (CSV, JSON) and columnar formats (Parquet, ORC, Avro)
+- How Spark handles nested and complex data types
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
+- Airport data uploaded to MinIO (instructions provided if needed)
 
 # Prepare the data, if no longer available
 

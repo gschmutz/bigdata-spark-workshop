@@ -6,6 +6,21 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 
 The workshop is written in a way that it has to be executed on the same machine where the dataplatform is running. 
 
+## What you will learn
+
+- How to structure a PySpark application as a self-contained Python script
+- How to accept command-line arguments in a Spark application using `argparse`
+- How to submit an application to the Spark cluster using `spark-submit`
+- How to package the application so it runs on workers with access to MinIO (S3A)
+- How Spark applications differ from interactive notebook usage
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed
+- Airport and flight data uploaded to MinIO (instructions provided if needed)
+- Access to a terminal on the machine running the data platform
+
 ## Prepare the data, if no longer available
 
 The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:

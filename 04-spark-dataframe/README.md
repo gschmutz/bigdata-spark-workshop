@@ -7,7 +7,22 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 The same flight and airport data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
 We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
- 
+
+## What you will learn
+
+- How to read structured data (CSV, JSON) from MinIO into Spark DataFrames with schema inference
+- How to define explicit schemas using `StructType` and `StructField`
+- How to transform and join multiple DataFrames using the DataFrame API and Spark SQL
+- How to write DataFrames to object storage in different formats (JSON, Parquet) with partitioning
+- How to use Spark SQL to run analytical queries against in-memory tables
+- The difference between the raw and refined data layers in a data lake
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
+- Airport, plane, carrier, and flight data uploaded to MinIO (instructions provided if needed)
+
 ## Prepare the data, if no longer available
 
 The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:

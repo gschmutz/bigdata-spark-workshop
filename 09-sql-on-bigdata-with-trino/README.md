@@ -12,6 +12,20 @@ We assume that the **Data platform** described [here](../01-environment) is runn
 
 The docker image we use for the Trino container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Trino. 
 
+## What you will learn
+
+- How to use Trino to query data stored in MinIO object storage using standard SQL
+- How to register data in the Hive Metastore so Trino can discover and query it
+- How to create external tables over JSON and Parquet files in S3
+- How to run analytical SQL queries (aggregations, joins, filtering) in Trino
+- How Trino enables query federation across heterogeneous data sources
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed — the refined data layer is required
+- Refined airport and flight data available in MinIO under `flight-bucket/refined/` (instructions provided if needed)
+
 ## Prepare the data, if no longer available
 
 The data needed here has been uploaded in [Workshop 4 - Data Reading and Writing using DataFrames](../04-spark-dataframe). You can skip this section, if you still have the data available in MinIO.

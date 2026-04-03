@@ -5,7 +5,22 @@ In this workshop we will work with [Delta Lake](https://delta.io/), an open-sour
 The same data as in the [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
 We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either Apache Zeppelin or Jupyter Notebook. 
- 
+
+## What you will learn
+
+- How to write DataFrames as Delta Lake tables stored in MinIO
+- How Delta Lake provides ACID transactions on top of Parquet files
+- How to perform `INSERT`, `UPDATE`, and `DELETE` operations on Delta tables
+- How to use Delta's time-travel capability to query earlier versions of a table
+- How to inspect the Delta transaction log and understand how changes are tracked
+- How to use `MERGE INTO` for upsert operations
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
+- Airport data uploaded to MinIO (instructions provided if needed)
+
 ## Prepare the data, if no longer available
 
 The data needed here has been uploaded in workshop 3 - [Working with MinIO Object Storage](03-object-storage). You can skip this section, if you still have the data available in MinIO. 

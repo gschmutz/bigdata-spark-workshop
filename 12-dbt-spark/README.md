@@ -3,7 +3,22 @@
 In this workshop we will work with [dbt](https://www.getdbt.com/).
 
 The same raw data as in the [Object Storage Workshop](../02a-minio-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
- 
+
+## What you will learn
+
+- How to set up a dbt project connected to a Spark backend
+- How to define dbt models (SQL `SELECT` statements) that transform raw data into refined layers
+- How to run and test dbt models using the dbt CLI
+- How dbt manages table/view creation and incremental updates in the Hive Metastore
+- How to use dbt's lineage graph and documentation features
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 2a ([Working with MinIO Object Storage](../02a-minio-object-storage)) completed — airport and flight data must be in MinIO
+- The Hive Metastore is running and accessible (included in the data platform)
+- dbt with the `dbt-spark` adapter installed (instructions provided in the workshop)
+
 ## Prepare the raw data, if no longer available
 
 The data needed here has been uploaded in [Workshop 2 - Working with MinIO Object Storage](../02a-minio-object-storage). You can skip this section, if you still have the raw data available in MinIO. We are using the `mc` command to load the raw airport and flight data:

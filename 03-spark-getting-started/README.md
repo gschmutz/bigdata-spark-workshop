@@ -4,6 +4,20 @@ In this workshop we will work with [Apache Spark](https://spark.apache.org/) and
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
 
+## What you will learn
+
+- How to access Apache Spark through PySpark (CLI), Apache Zeppelin, and Jupyter Notebook
+- How Spark's Resilient Distributed Datasets (RDDs) work and when to use them
+- How to implement a word count using the RDD API (`flatMap`, `map`, `reduceByKey`)
+- How to read and write data from/to MinIO object storage using the `s3a://` scheme
+- How to use the Spark DataFrame API to read text, split, explode, clean, and aggregate words
+- The difference between lazy transformations and actions in Spark
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 2a ([Working with MinIO Object Storage](../02a-minio-object-storage)) completed, or at minimum the `minio-mc` container available to upload data
+
 ## Accessing Spark
 
 [Apache Spark](https://spark.apache.org/) is a fast, in-memory data processing engine with elegant and expressive development APIs in Scala, Java, and Python that allow data workers to efficiently execute machine learning algorithms that require fast iterative access to datasets. Spark on Apache Hadoop YARN enables deep integration with Hadoop and other YARN enabled workloads in the enterprise.

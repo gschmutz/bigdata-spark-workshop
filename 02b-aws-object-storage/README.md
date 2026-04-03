@@ -4,6 +4,21 @@ In this workshop we will work with [AWS S3](https://aws.amazon.com/pm/serv-s3/?g
 
 To do this workshop you need an AWS subscription.  
 
+## What you will learn
+
+- How to create S3 buckets and configure access policies in the AWS Console
+- How to upload files and folders to S3 using the browser-based console
+- How to delete objects and navigate the S3 object hierarchy
+- How to query structured data directly in S3 using S3 Select (CSV, JSON, Parquet)
+- How to create IAM users and programmatic access credentials
+- How to use the AWS CLI (`aws s3`) to list and manage objects from the command line
+
+## Prerequisites
+
+- An active AWS subscription with permissions to create S3 buckets and IAM users
+- The flight data ZIP file downloaded locally (linked in the workshop instructions)
+- The AWS CLI installed (instructions provided in the workshop)
+
 ## Using Amazon S3
 
 Navigate to the S3 console <https://s3.console.aws.amazon.com/s3>.

@@ -7,7 +7,21 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 The same data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
 We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
- 
+
+## What you will learn
+
+- How to build a graph from tabular data using vertices and edges in Spark GraphFrames
+- How to run basic graph queries (degrees, filtering, subgraphs)
+- How to use motif finding to detect structural patterns in a graph
+- How to run graph algorithms such as PageRank, connected components, and shortest paths
+- How to use airport and flight data to model a real-world flight network as a graph
+
+## Prerequisites
+
+- The **Data Platform** described [here](../01-environment) is running and accessible
+- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
+- Airport, plane, carrier, and flight data uploaded to MinIO (instructions provided if needed)
+
 ## Prepare the data, if no longer available
 
 The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:

@@ -22,4 +22,5 @@ All the workshops can be done on a container-based infrastructure using Docker C
   * [Job Scheduling with Airflow 3.x](./11a-scheduling-with-airflow-3.x)
   * [Job Scheduling with Airflow 2.x](./11b-scheduling-with-airflow-2.x)
   * [Working with dbt and Spark](./12-dbt-spark)
+  * [Working with lakeFS Data Versioning and Apache Iceberg](./13-lakefs)
 
