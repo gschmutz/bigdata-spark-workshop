@@ -4,7 +4,7 @@ In this workshop we will work with [Delta Lake](https://delta.io/), an open-sour
 
 The same data as in the [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
-We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
+We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either Apache Zeppelin or Jupyter Notebook. 
  
 ## Prepare the data, if no longer available
 
@@ -33,9 +33,20 @@ or with `mc`
 docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
-## If you want to use `pyspark` instead of Zeppelin
+## Working with Spark and Delta table
 
-This workshop can be done with either Zeppelin or Jupyter, but to use Jupyter, you have to extend the Spark context with additional configuration settings in the init script
+In a browser window, navigate to 
+
+  * for Zeppelin:  <http://dataplatform:28080>
+  * for Jupyter: <http://dataplatform:28888>
+
+Now let's create a new notebook and name it `SparkDeltaLake`. 
+
+For **Jupyter**, perform the next paragraph, for **Apache Zeppelin**, this is not necessary and the Spark context is pre-configured.
+
+### If you are using Jupyter
+
+This workshop can be done with either Zeppelin or Jupyter, but to use Jupyter, you have to extend the Spark context with additional configuration settings in the init script:
 
 ```python
 import os
@@ -71,19 +82,16 @@ spark.sparkContext.setLogLevel("INFO")
 sc = spark.sparkContext
 ```
 
-For Apache Zeppelin, this is not necessary and the Spark context is pre-configured.
+Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
 
-## Create a new Zeppelin or Jupyter notebook
+```python
+%load_ext sql
+%config SqlMagic.autopandas = True
+%config SqlMagic.displaycon = False
 
-For this workshop we will be using Zeppelin discussed above. 
-
-But you can easily adapt it to use either **PySpark** or **Apache Jupyter**.
-
-In a browser window, navigate to <http://dataplatform:28080>.
-
-Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDeltaLake` and set the **Default Interpreter** to `spark`. 
-
-Click on **Create Note** and a new Notebook is created with one cell which is empty. 
+# Connect using the active SparkSession
+%sql spark
+```
 
 ### Add some Markdown first
 
@@ -424,6 +432,8 @@ Back in Spark, let's read the delta table and register it as a table, so we can 
 ``` 
 spark.read.format("delta").load(deltaTableDest).createOrReplaceTempView("airports")
 ``` 
+
+now you can query it by etiher using the `%sql` in Zeppelin or the `%%sql` directive in Jupyter (the statement in this workshop are shown for Zeppelin, replace the `%sql` by `%%sql` for Jupyter.
 
 ```sql
 %sql
