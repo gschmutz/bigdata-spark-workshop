@@ -8,13 +8,18 @@ All the workshops can be done on a container-based infrastructure using Docker C
 
 ## Workshops
 
-  * [Working with Minio Object Storage](./02a-minio-object-storage)
-  * [Working with AWS S3 Object Storage (optional)](./02b-aws-object-storage)
+  * [Working with MinIO Object Storage](./02a-minio-object-storage)
+  * [Working with Amazon S3 Object Storage (optional)](./02b-aws-object-storage)
   * [Getting Started using Spark RDD and DataFrames](./03-spark-getting-started)
   * [Data Reading and Writing using DataFrames](./04-spark-dataframe)
-  * [Graph Analysis using Spark GraphFrames](./05-spark-graphframe)
+  * [Creating and running a self-contained Spark Application](./05-spark-application)
   * [Working with different data types](./06-data-types)
-  * [Working with Delta Lake Table Format](./07-spark-deltalake)
-  * [Working with Trino](./08-sql-on-bigdata)
-  * [Data Ingestion with Apache NiFi](./09-data-ingestion-with-nifi)
+  * [Working with the Delta Lake Table Format](./07-spark-deltalake)
+  * [Working with the Apache Iceberg Table Format](./07a-spark-iceberg)
+  * [Graph Analysis using Spark GraphFrames](./08-spark-graphframe)
+  * [Working with Trino](./09-sql-on-bigdata-with-trino)
+  * [Data Ingestion with Apache NiFi](./10-data-ingestion-with-nifi)
+  * [Job Scheduling with Airflow 3.x](./11a-scheduling-with-airflow-3.x)
+  * [Job Scheduling with Airflow 2.x](./11b-scheduling-with-airflow-2.x)
+  * [Working with dbt and Spark](./12-dbt-spark)
 
