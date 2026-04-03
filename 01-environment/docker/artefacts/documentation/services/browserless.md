@@ -26,13 +26,13 @@ To restrict access with a token:
 
 ## How to use it?
 
-Navigate to <http://dataplatform:28423> for the built-in UI (API playground and debugger).
+Navigate to <http://127.0.0.1:28423> for the built-in UI (API playground and debugger).
 
 ### REST API examples
 
 **Take a screenshot:**
 ```bash
-curl -X POST http://dataplatform:28423/screenshot \
+curl -X POST http://127.0.0.1:28423/screenshot \
   -H 'Content-Type: application/json' \
   -d '{"url": "https://example.com"}' \
   --output screenshot.png
@@ -40,7 +40,7 @@ curl -X POST http://dataplatform:28423/screenshot \
 
 **Generate a PDF:**
 ```bash
-curl -X POST http://dataplatform:28423/pdf \
+curl -X POST http://127.0.0.1:28423/pdf \
   -H 'Content-Type: application/json' \
   -d '{"url": "https://example.com"}' \
   --output page.pdf
@@ -49,11 +49,11 @@ curl -X POST http://dataplatform:28423/pdf \
 **Puppeteer / Playwright connection:**
 ```javascript
 const browser = await puppeteer.connect({
-  browserWSEndpoint: 'ws://dataplatform:28423'
+  browserWSEndpoint: 'ws://127.0.0.1:28423'
 });
 ```
 
 When a token is set, append it as a query parameter:
 ```
-ws://dataplatform:28423?token=my-secret-token
+ws://127.0.0.1:28423?token=my-secret-token
 ```
