@@ -16,6 +16,7 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 - How to generate and serve dbt documentation with the interactive lineage DAG
 - How to query dbt-produced tables from Trino to close the end-to-end pipeline
 - How to define a dbt Semantic Model with entities, dimensions, and measures
+- How to create a time spine model and register it so MetricFlow can power time-series queries
 - How to declare reusable business metrics (`simple`, `ratio`) on top of semantic models
 - How to query metrics using the MetricFlow CLI (`mf query`) without writing SQL
 
@@ -155,11 +156,11 @@ These two tables provide the base infrastructure to run dbt on top.
 Let's install `dbt` in virtual environment. You can perfom the steps in this workshop either on the cloud Linux VM (e.g. AWS Lightsail) or on your local workstation (you need to have Python 3.x available and you might need to adapt the Linux shell commands to Windows). In a terminal window.
 
 ```bash
-mkdir -p workspace/dbt
-cd workspace/dbt
+mkdir -p workspace/dbt-spark-flight
+cd workspace/dbt-spark-flight
 ```
 
-Install `venv` support if not available
+Install `venv` support if not available (adapt if not Linux)
 
 ```bash
 sudo apt install python3.12-venv
@@ -186,7 +187,7 @@ and add the following lines to install `dbt-core` and `dbt-spark`
 dbt-core>=1.11.7
 
 # spark adapter
-dbt-spark>=1.9.1
+dbt-spark>=1.10.1
 
 dbt-spark[PyHive]
 ```
@@ -211,11 +212,11 @@ which should return
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt-spark$ dbt --version
 WARNING:thrift.transport.sslcompat:using legacy validation callback
 Core:
-  - installed: 1.9.6
-  - latest:    1.9.6 - Up to date!
+  - installed: 1.11.7
+  - latest:    1.11.7 - Up to date!
 
 Plugins:
-  - spark: 1.9.2 - Up to date!
+  - spark: 1.10.1 - Up to date!
 ```
 
 You now have successfully installed `dbt-core` with `dbt-spark` on your machine.	
@@ -231,8 +232,11 @@ Enter the following values:
 
   * **Name of project**: `spark_flight`
   * **Which database**: `1` (i.e. spark)
-  * **Thrift Server Host**: `18.158.72.138`
+  * **Thrift Server Host**: `192.168.1.112`
   * **Desired authentication method**: `3` (i.e. thriftserver)
+  * **poll_interval**: `5` (default)
+  * **query_timeout**: `60`
+  * **query_retries**: `1` (default)
   * **Thrift Server Port**: `28118`
   * **Schema**: `flight_db`
   * **Threads**: `1`
@@ -241,9 +245,9 @@ The question/answer flow should look similar to that
 
 ```bash
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt$ dbt init
-18:19:21  Running with dbt=1.9.6
+19:42:20  Running with dbt=1.11.7
 Enter a name for your project (letters, digits, underscore): spark_flight
-18:19:54
+19:42:25
 Your new dbt project "spark_flight" was created!
 
 For more information on how to configure the profiles.yml file,
@@ -259,7 +263,7 @@ Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
 
 Happy modeling!
 
-18:19:54  Setting up your profile.
+19:42:25  Setting up your profile.
 Which database would you like to use?
 [1] spark
 
@@ -267,15 +271,18 @@ Which database would you like to use?
 
 Enter a number: 1
 WARNING:thrift.transport.sslcompat:using legacy validation callback
-host (yourorg.sparkhost.com): 18.158.72.138
+host (yourorg.sparkhost.com): 192.168.1.112
 [1] odbc
 [2] http
 [3] thrift
 Desired authentication method option (enter a number): 3
+poll_interval (seconds between polling attempts for query status) [5]:
+query_timeout (maximum seconds to wait for query completion (optional)): 60
+query_retries (number of times to retry on connection loss during query execution) [1]: 1
 port [443]: 28118
 schema (default schema that dbt will build objects in): flight_db
 threads (1 or more) [1]: 1
-18:22:11  Profile spark_flight written to /home/ubuntu/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+19:44:29  Profile spark_flight written to /Users/guido.schmutz/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
 ```
 
 Navigate into the newly created folder called `spark_flight` (same as the name of the project entered above)
@@ -289,22 +296,20 @@ We can see the directory structure created by the `init` easily by using the `tr
 ```bash
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ tree
 .
-├── README.md
 ├── analyses
 ├── dbt_project.yml
-├── logs
-│   └── dbt.log
 ├── macros
 ├── models
 │   └── example
 │       ├── my_first_dbt_model.sql
 │       ├── my_second_dbt_model.sql
 │       └── schema.yml
+├── README.md
 ├── seeds
 ├── snapshots
 └── tests
 
-9 directories, 6 files
+8 directories, 5 files
 ```
 
 We won`t use the example in models, so let's remove it for now. 
@@ -313,7 +318,7 @@ We won`t use the example in models, so let's remove it for now.
 rm -R models/example
 ```
 
-Now let's see if the dbt project is ready by using the `dbt debug` command
+Now let's see if the dbt project is valid by using the `dbt debug` command
 
 ```bash
 dbt debug
@@ -357,12 +362,35 @@ If it shows `All checks passed!` then we are ready to work with dbt.
 
 ## Create models
 
-Let's create the folder structure underneath the `models` folder to organize the models.
+Let's create the folder structure underneath the `models` folder to organize the models. The `flight/` subfolder is the domain grouping — if you added customer data you'd create a customer/ folder with the same three sub-layers alongside it.
 
 ```bash
 mkdir -p models/flight/raw
 mkdir -p models/flight/prepared
 mkdir -p models/flight/refined
+```
+
+The folder structure follows the medallion architecture (also called the multi-hop pattern) — a standard data engineering pattern for organizing data by quality/refinement level.
+
+```
+models/
+└── flight/                     ← domain (could have others: e.g. customer/, finance/)
+    ├── raw/                    ← Layer 1: source registration only
+    │   └── raw-sources.yml     ← no SQL transforms, just points to Hive Metastore tables
+    │
+    ├── prepared/               ← Layer 2: clean & typed
+    │   ├── airport_prep_t.sql  ← casts strings to correct types, renames columns
+    │   ├── flight_prep_t.sql   ← same for flights
+    │   └── schema.yml          ← column docs + data quality tests
+    │
+    ├── refined/                ← Layer 3: business-ready
+    │   ├── flight_ref_t.sql        ← joins flights + airports (origin + destination)
+    │   ├── flight_delays_ref_t.sql ← adds delay bucket classification
+    │   └── schema.yml
+    │
+    └── semantic/               ← Layer 4: business metrics (optional)
+        ├── sem_flights.yml     ← entities, dimensions, measures
+        └── metrics_flights.yml ← named metrics (avg delay, cancellation rate, ...)
 ```
 
 ### Raw Layer
@@ -414,11 +442,19 @@ WITH airport_prep_t AS (
         CAST (latitude_deg AS DOUBLE) as latitude_degree,
         CAST (longitude_deg AS DOUBLE) as longitude_degree,
         CAST (elevation_ft AS INT) as elevation_feet,
-        continent,
+        CASE WHEN continent IS NULL
+                THEN NULL
+            ELSE continent
+        END AS continent,
         iso_country,
         iso_region,
         municipality,
-        scheduled_service,
+        CASE WHEN scheduled_service IS NULL
+                THEN NULL
+            WHEN scheduled_service = 'no'
+                THEN 0
+            ELSE 1
+        END AS scheduled_service,
         gps_code,
         iata_code,
         local_code,
@@ -446,33 +482,68 @@ with the following SELECT clause
 WITH flight_prep_t AS (
    SELECT year, 
         month,
-        dayOfMonth,
-        dayOfWeek,
-        depTime, 
-        crsDepTime, 
-        arrTime,
-        crsArrTime, 
+        CAST(dayOfMonth AS INT) AS dayOfMonth,
+        CAST(dayOfWeek AS INT) AS dayOfWeek,
+        CAST(depTime AS INT) AS depTime,
+        CAST(crsDepTime AS INT) AS crsDepTime,
+        CAST(arrTime AS INT) AS arrTime,
+        CAST(crsArrTime AS INT) AS crsArrTime,
         uniqueCarrier, 
         flightNum, 
         tailNum, 
-        actualElapsedTime,
-        crsElapsedTime, 
-        airTime, 
-        arrDelay,
-        depDelay,
+        CAST(actualElapsedTime AS INT) AS actualElapsedTime,
+        CAST(crsElapsedTime AS INT) AS crsElapsedTime, 
+        CAST(airTime AS INT) AS airTime, 
+        CAST(arrDelay AS INT) AS arrDelay,
+        CAST(depDelay AS INT) AS depDelay,
         origin, 
         destination, 
-        distance, 
-        taxiIn, 
-        taxiOut, 
-        cancelled, 
+        CAST(distance AS INT) AS distance, 
+        CAST(taxiIn AS INT) AS taxiIn, 
+        CAST(taxiOut AS INT) AS taxiOut, 
+        CASE WHEN cancelled IS NULL 
+                THEN 0 
+            WHEN cancelled = 'N' 
+                THEN 0
+            ELSE 1 
+        END AS cancelled,         
         cancellationCode, 
-        diverted,
-        carrierDelay, 
-        weatherDelay, 
-        nasDelay, 
-        securityDelay, 
-        lateAircraftDelay 
+        CASE WHEN diverted IS NULL 
+                THEN 0 
+            WHEN diverted = 'N' 
+                THEN 0
+            ELSE 1 
+        END AS diverted,         
+        CASE WHEN carrierDelay IS NULL
+                THEN NULL 
+            WHEN diverted = 'NA' 
+                THEN NULL
+            ELSE CAST(carrierDelay AS INT)
+        END AS carrierDelay,
+        CASE WHEN weatherDelay IS NULL
+                THEN NULL 
+            WHEN weatherDelay = 'NA' 
+                THEN NULL
+            ELSE CAST(weatherDelay AS INT)
+        END AS weatherDelay,
+        CASE WHEN nasDelay IS NULL
+                THEN NULL 
+            WHEN nasDelay = 'NA' 
+                THEN NULL
+            ELSE CAST(nasDelay AS INT)
+        END AS nasDelay,
+        CASE WHEN securityDelay IS NULL
+                THEN NULL 
+            WHEN securityDelay = 'NA' 
+                THEN NULL
+            ELSE CAST(securityDelay AS INT)
+        END AS securityDelay,
+        CASE WHEN lateAircraftDelay IS NULL
+                THEN NULL 
+            WHEN lateAircraftDelay = 'NA' 
+                THEN NULL
+            ELSE CAST(lateAircraftDelay AS INT)
+        END AS lateAircraftDelay
     from {{ source('flight_db', 'flight_raw_t') }} 
 )select * 
 from flight_prep_t
@@ -518,7 +589,7 @@ Using Hive Metastore CLI
 docker exec -ti hive-metastore hive
 
 use flight_db;
-show vies;
+show views;
 ```
 
 and you should see an output similar to the one below
@@ -709,7 +780,7 @@ Replace the `flight:` block with per-sublayer config:
 ```yaml
 models:
   spark_flight:
-    flight:
+    flight_db:
       prepared:
         +materialized: view
       refined:
@@ -747,8 +818,10 @@ dbt run --select models/flight/refined
 Run only models that have changed since the last run:
 
 ```bash
-dbt run --select state:modified
+dbt run --select state:modified --state ./target
 ```
+
+**Note:** When you use `state:modified`, dbt needs a previous `manifest.json` to compare your current project against. You have to explicitly tell it where that manifest lives using the `--state` flag.
 
 The same `--select` syntax works with `dbt test` and `dbt docs generate`.
 
@@ -966,7 +1039,11 @@ Serve it locally:
 dbt docs serve --port 8080
 ```
 
-Open a browser and navigate to <http://dataplatform:8080>. You will see:
+A browser window should open automatically on this ULR <http://dataplatform:8080>. 
+
+![](./images/dbt-docs-home.png)
+
+You will see:
 
 - A searchable catalog of all models and sources with their descriptions
 - Column-level documentation for every column you described in `schema.yml`
@@ -974,11 +1051,7 @@ Open a browser and navigate to <http://dataplatform:8080>. You will see:
 
 The lineage graph should look like:
 
-```
-flight_raw_t (source)   ──►  flight_prep_t  ──►  flight_ref_t
-                                             ──►  flight_delays_ref_t
-airport_raw_t (source)  ──►  airport_prep_t ──►  flight_ref_t
-```
+![](./images/dbt-lineage-graph.png)
 
 ## Query the Results from Trino
 
@@ -987,33 +1060,36 @@ Now that dbt has created the refined tables in the Hive Metastore, they are imme
 Connect to Trino using the CLI:
 
 ```bash
-docker exec -ti trino trino
+docker exec -ti trino-1 trino
 ```
 
 List the available tables in the `flight_db` schema:
 
 ```sql
-SHOW TABLES IN hive.flight_db;
+SHOW TABLES IN minio.flight_db;
 ```
 
 You should see all the tables and views created by dbt:
 
 ```
-       Table
-----------------------
+trino> SHOW TABLES IN minio.flight_db;
+           Table
+---------------------------
  airport_prep_t
  airport_raw_t
  flight_delays_ref_t
+ flight_prep_incremental_t
  flight_prep_t
  flight_raw_t
  flight_ref_t
+(7 rows)
 ```
 
 Query the refined flight data with airport names:
 
 ```sql
 SELECT origin_airport, destination_airport, distance, depDelay, arrDelay
-FROM hive.flight_db.flight_ref_t
+FROM minio.flight_db.flight_ref_t
 WHERE arrDelay > 60
 ORDER BY arrDelay DESC
 LIMIT 10;
@@ -1023,7 +1099,7 @@ Query the delay bucket distribution:
 
 ```sql
 SELECT flight_delays, COUNT(*) AS num_flights
-FROM hive.flight_db.flight_delays_ref_t
+FROM minio.flight_db.flight_delays_ref_t
 GROUP BY flight_delays
 ORDER BY num_flights DESC;
 ```
@@ -1034,7 +1110,7 @@ Find the top 10 routes by average arrival delay:
 SELECT origin, destination, 
        ROUND(AVG(arrDelay), 1) AS avg_arr_delay,
        COUNT(*) AS num_flights
-FROM hive.flight_db.flight_ref_t
+FROM minio.flight_db.flight_ref_t
 WHERE arrDelay IS NOT NULL
 GROUP BY origin, destination
 HAVING COUNT(*) > 10
@@ -1044,7 +1120,9 @@ LIMIT 10;
 
 This completes the full pipeline: raw data in MinIO → registered in Hive Metastore → transformed by dbt → queried via Trino.
 
-## Semantic Models and Metrics
+----
+
+## Semantic Models and Metrics (Does not work yet -> Spark is not supported)
 
 dbt's [Semantic Layer](https://docs.getdbt.com/docs/use-dbt-semantic-layer/dbt-sl) (introduced in dbt Core 1.6, powered by MetricFlow) lets you define business metrics and dimensions **once in YAML** and query them consistently — no more copy-pasted SQL aggregations across notebooks and dashboards.
 
@@ -1106,12 +1184,18 @@ semantic_models:
       - name: destination_airport
         type: categorical
         description: "Full name of the destination airport."
-      - name: month
-        type: categorical
+      - name: flight_month
+        type: time
+        type_params:
+          time_granularity: month
         description: "Month of the flight."
-      - name: year
-        type: categorical
+        expr: make_date(year, month, 1)
+      - name: flight_year
+        type: time
+        type_params:
+          time_granularity: year
         description: "Year of the flight."
+        expr: make_date(year, 1, 1)
       - name: cancelled
         type: categorical
         description: "Whether the flight was cancelled (1 = yes, 0 = no)."
@@ -1141,7 +1225,7 @@ semantic_models:
       - name: cancelled_flights
         description: "Number of cancelled flights."
         agg: sum
-        expr: "CASE WHEN cancelled = '1' THEN 1 ELSE 0 END"
+        expr: "CASE WHEN cancelled = 1 THEN 1 ELSE 0 END"
 ```
 
 ### Define Metrics
@@ -1175,6 +1259,13 @@ metrics:
     type_params:
       measure: avg_dep_delay
 
+  - name: cancelled_flights
+    label: "Cancelled Flights"
+    description: "Total number of cancelled flights."
+    type: simple
+    type_params:
+      measure: cancelled_flights
+
   - name: cancellation_rate
     label: "Cancellation Rate"
     description: "Ratio of cancelled flights to total flights."
@@ -1198,6 +1289,109 @@ metrics:
       measure: total_flights
 ```
 
+### Create a Time Spine Model
+
+MetricFlow requires a **time spine** — a table containing one row per date — to power time-series metric queries such as cumulative metrics, period-over-period comparisons, and gap-filling. Without it, `mf query` will fail for any metric that involves a time dimension.
+
+Create the time spine SQL model:
+
+```bash
+nano models/flight/semantic/metricflow_time_spine.sql
+```
+
+```sql
+{{
+    config(
+        materialized = 'table',
+    )
+}}
+
+with days as (
+
+    {{
+        dbt.date_spine(
+            'day',
+            "to_date('01/01/2000','mm/dd/yyyy')",
+            "to_date('01/01/2025','mm/dd/yyyy')"
+        )
+    }}
+
+),
+
+final as (
+    select cast(date_day as date) as date_day
+    from days
+)
+
+select * from final
+where date_day > dateadd(year, -4, current_timestamp()) 
+and date_day < dateadd(day, 30, current_timestamp())
+```
+
+Now register the time spine in the project configuration so MetricFlow knows which model and column to use.
+
+Create the time spine meta info:
+
+```bash
+nano models/flight/semantic/metricflow_time_spine.yml
+```
+
+Add the following block at the end of the file (at the top level, not nested under `models:`):
+
+```yaml
+models:
+  - name: metricflow_time_spine
+    time_spine:
+      standard_granularity_column: date_day # column for the standard grain of your table
+
+    columns:
+      - name: date_day
+        granularity: day # set granularity at column-level for standard_granularity_column
+```
+
+Run dbt to create the time spine table:
+
+```bash
+dbt run --select metricflow_time_spine
+```
+
+You should see:
+
+s```
+1 of 1 START sql table model flight_db.metricflow_time_spine ............... [RUN]
+1 of 1 OK created sql table model flight_db.metricflow_time_spine .......... [OK in 3.21s]
+```
+
+Now update the `flights` semantic model to link the `month` and `year` dimensions to the time spine. Reopen `models/flight/semantic/sem_flights.yml` and change the `month` and `year` dimensions from `categorical` to `time`:
+
+```yaml
+    dimensions:
+      - name: origin
+        type: categorical
+      - name: destination
+        type: categorical
+      - name: origin_airport
+        type: categorical
+      - name: destination_airport
+        type: categorical
+      - name: month
+        type: time
+        type_params:
+          time_granularity: month
+      - name: year
+        type: time
+        type_params:
+          time_granularity: year
+      - name: cancelled
+        type: categorical
+```
+
+Re-parse to validate the full semantic layer including the time spine:
+
+```bash
+dbt parse
+```
+
 ### Query Metrics with the MetricFlow CLI
 
 After defining your metrics, validate the semantic layer parses correctly:
@@ -1206,7 +1400,11 @@ After defining your metrics, validate the semantic layer parses correctly:
 dbt parse
 ```
 
-Then use the MetricFlow CLI (`mf`) to query metrics without writing any SQL:
+Now we can use the MetricFlow CLI (`mf`) to query metrics without writing any SQL. First let's install it into the Pyhton environment
+
+```bash
+pip install dbt-metricflow
+```
 
 Total flights:
 
