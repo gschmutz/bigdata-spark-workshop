@@ -296,14 +296,14 @@
       SPARK_worker_memory:
       SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
       SPARK_jars_repositories: ''
-      # spark graphframes dependency taken from here: https://spark-packages.org/package/graphframes/graphframes
-      SPARK_jars_packages: 'org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2'
+      # spark graphframes dependency taken from here: https://mvnrepository.com/artifact/io.graphframes/graphframes-spark3
+      SPARK_jars_packages: 'org.apache.spark:spark-avro_2.12:3.5.3,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1'
       SPARK_jars_excludes: ''
       SPARK_jars: ''
       SPARK_jars_ivySettings: ''
-      SPARK_install_java_packages: 'org.postgresql:postgresql:42.3.4'
+      SPARK_install_java_packages: 'org.postgresql:postgresql:42.3.4,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1'
       # a space separated list of python packages
-      SPARK_install_python_packages: ''
+      SPARK_install_python_packages: 'numpy graphframes-py typing_extensions'
       SPARK_executor_extraJavaOptions: ''
       SPARK_sql_warehouse_dir: 's3a://admin-bucket/hive/warehouse'
       SPARK_sql_default_catalog: 
@@ -616,6 +616,9 @@
       ZEPPELIN_notebook_dir: 'notebook'
       ZEPPELIN_notebook_cron_enable: true
       ZEPPELIN_spark_submit_options: ""
+      ZEPPELIN_use_local_spark: false
+      ZEPPELIN_python_packages: 'pyspark==3.5.3 numpy graphframes-py typing_extensions boto3'
+      ZEPPELIN_pyspark_driver_python_path: "/opt/conda/envs/py312/bin/python3"
       #
       # ===== Jupyter ========
       #
@@ -624,7 +627,7 @@
       JUPYTER_edition: 'all-spark'
       JUPYTER_spark_base_version: 3.5
       JUPYTER_volume_map_data: false
-      JUPYTER_python_packages: 'pyspark==3.5.3 jupysql pandas arrow pyarrow grpcio-status boto3'
+      JUPYTER_python_packages: 'pyspark==3.5.3 numpy graphframes-py typing_extensions jupysql pandas arrow pyarrow grpcio-status boto3'
       JUPYTER_spark_jars_packages: ''
       JUPYTER_tokenless: false
       JUPYTER_token: 'abc123!'

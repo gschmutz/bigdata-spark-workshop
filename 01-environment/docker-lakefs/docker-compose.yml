@@ -1282,7 +1282,7 @@ services:
     restart: unless-stopped
   #  ================================== LakeFS ========================================== #
   lakefs:
-    image: treeverse/lakefs:1.75
+    image: treeverse/lakefs:1.80
     container_name: lakefs
     hostname: lakefs
     labels:
@@ -1329,7 +1329,7 @@ services:
         wait
     restart: unless-stopped
   lakectl:
-    image: treeverse/lakectl:1.75
+    image: treeverse/lakectl:1.80
     container_name: lakectl
     hostname: lakectl
     labels:

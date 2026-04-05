@@ -65,11 +65,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==3.3.2
       SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -145,11 +145,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==3.3.2
       SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -220,11 +220,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==3.3.2
       SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -289,11 +289,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==3.3.2
       SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -352,11 +352,11 @@ services:
       SPARK_DEFAULTS_CONF_spark_sql_hive_metastore_warehouse_dir: s3a://admin-bucket/warehouse
       SPARK_DEFAULTS_CONF_spark_sql_legacy_allowNonEmptyLocationInCTAS: 'true'
       SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,graphframes:graphframes:0.8.4-spark3.5-s_2.12,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
+      SPARK_DEFAULTS_CONF_spark_jars_packages: org.apache.spark:spark-avro_2.12:3.5.3,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2
       SPARK_DEFAULTS_CONF_spark_jars_excludes:
       # specifies the JARs to be downloaded to the jars folder by maven-download-sh script
-      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
-      SPARK_INSTALL_PYTHON_PACKAGES: ' delta-spark==3.3.2'
+      SPARK_INSTALL_JAVA_PACKAGES: org.postgresql:postgresql:42.3.4,io.graphframes:graphframes-spark3_2.12:0.10.1,io.graphframes:graphframes-graphx-spark3_2.12:0.10.1,io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,org.apache.iceberg:iceberg-aws-bundle:1.10.1,org.apache.hudi:hudi-spark3.4-bundle_2.12:0.15.0
+      SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==3.3.2
       SPARK_DEFAULTS_CONF_spark_jars: /opt/bitnami/spark/jars/iceberg-spark-runtime-3.5_2.12-1.10.1.jar,/opt/bitnami/spark/jars/delta-spark_2.12-3.3.2.jar,/opt/bitnami/spark/jars/delta-storage-3.3.2.jar
       SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
     volumes:
@@ -983,7 +983,7 @@ services:
         if ! conda env list | grep -q '^py312 '; then
           conda create -y -n py312 python=3.12.8 pip
         fi
-        pip install pyspark==3.5.3 boto3
+        conda run -n py312 pip install pyspark==3.5.3 numpy graphframes-py typing_extensions boto3
         ./bin/zeppelin-init.sh
         ./bin/zeppelin.sh
     restart: unless-stopped
@@ -1037,7 +1037,7 @@ services:
         conda activate py312
         pip install ipykernel    
         python -m ipykernel install --user --name py312 --display-name "Python 3.12.8 (ipykernel)"
-        pip install pyspark==3.5.3 jupysql pandas arrow pyarrow grpcio-status boto3
+        conda run -n py312 pip install pyspark==3.5.3 numpy graphframes-py typing_extensions jupysql pandas arrow pyarrow grpcio-status boto3
         start-notebook.sh
     restart: unless-stopped
   #  ================================== Lightdash ========================================== #
@@ -1114,7 +1114,7 @@ services:
       retries: 5
   #  ================================== Trino ========================================== #
   trino-1:
-    image: trinodb/trino:479
+    image: trinodb/trino:480
     hostname: trino-1
     container_name: trino-1
     labels:
