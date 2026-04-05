@@ -115,45 +115,29 @@ import os
 accessKey = os.environ['AWS_ACCESS_KEY_ID']
 secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
 
+import pyspark
 from pyspark.sql import SparkSession
-spark = (
-    SparkSession.builder
-        .appName("Jupyter")
-        .master("spark://spark-master:7077")
 
-        .config("spark.jars.packages",
-                "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,"
-                "org.apache.iceberg:iceberg-aws-bundle:1.10.1")
+conf = pyspark.SparkConf()
 
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
-        .config("spark.hadoop.fs.s3a.path.style.access", "true")
-        .config("spark.hadoop.fs.s3a.access.key", accessKey)
-        .config("spark.hadoop.fs.s3a.secret.key", secretKey)
-        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+# point to mesos master or zookeeper entry (e.g., zk://10.10.10.10:2181/mesos)
+conf.setMaster("spark://spark-master:7077")
 
-        # ==== Iceberg catalog (Hive Metastore) ===
-        .config("spark.sql.catalog.hive_iceberg", "org.apache.iceberg.spark.SparkCatalog")
-        .config("spark.sql.catalog.hive_iceberg.type", "hive")
-        .config("spark.sql.catalog.hive_iceberg.uri", "thrift://hive-metastore:9083")
-        .config("spark.sql.catalog.hive_iceberg.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
+# set other options as desired
+conf.set("spark.executor.memory", "8g")
+conf.set("spark.executor.cores", "1")
+conf.set("spark.core.connection.ack.wait.timeout", "1200")
+conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
+conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
+conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
+conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 
-        # ==== REQUIRED FOR MINIO WITH ICEBERG AWS SDK ===
-        .config("spark.sql.catalog.hiverest.s3.endpoint", "http://minio-1:9000")
-        .config("spark.sql.catalog.hiverest.s3.path-style-access", "true")
-        .config("spark.sql.catalog.hiverest.s3.access-key-id", accessKey)
-        .config("spark.sql.catalog.hiverest.s3.secret-access-key", secretKey)
-    
-        # use "hive_iceberg" as the default catalog
-        .config("spark.sql.defaultCatalog", "hive_iceberg")
+spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
+spark.sparkContext.setLogLevel("INFO")
 
-        .config(
-            "spark.sql.extensions",
-            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
-        )
-
-        .getOrCreate()
-)
+sc = spark.sparkContext
 ```
 
 Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
