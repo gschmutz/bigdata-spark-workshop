@@ -7,11 +7,19 @@ WITH airport_prep_t AS (
         CAST (latitude_deg AS DOUBLE) as latitude_degree,
         CAST (longitude_deg AS DOUBLE) as longitude_degree,
         CAST (elevation_ft AS INT) as elevation_feet,
-        continent,
+        CASE WHEN continent IS NULL
+                THEN NULL
+            ELSE continent
+        END AS continent,
         iso_country,
         iso_region,
         municipality,
-        scheduled_service,
+        CASE WHEN scheduled_service IS NULL
+                THEN NULL
+            WHEN scheduled_service = 'no'
+                THEN 0
+            ELSE 1
+        END AS scheduled_service,
         gps_code,
         iata_code,
         local_code,

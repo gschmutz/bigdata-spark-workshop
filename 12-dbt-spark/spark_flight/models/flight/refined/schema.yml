@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: flight_ref_t
+    description: "Flights enriched with origin and destination airport details."
+    columns:
+      - name: origin
+        description: "IATA code of the origin airport."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('airport_prep_t')
+              field: iata_code
+
+  - name: flight_delays_ref_t
+    description: "Flights with delay bucket classification."
+    columns:
+      - name: flight_delays
+        description: "Categorical delay bucket."
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - 'Very Long Delays'
+                - 'Long Delays'
+                - 'Short Delays'
+                - 'Tolerable Delays'
+                - 'No Delays'
+                - 'Early'

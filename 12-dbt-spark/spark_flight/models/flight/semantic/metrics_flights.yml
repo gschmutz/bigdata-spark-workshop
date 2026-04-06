@@ -1,0 +1,51 @@
+metrics:
+  - name: total_flights
+    label: "Total Flights"
+    description: "Total number of flights in the dataset."
+    type: simple
+    type_params:
+      measure: total_flights
+
+  - name: avg_arrival_delay
+    label: "Average Arrival Delay (min)"
+    description: "Average arrival delay across all flights."
+    type: simple
+    type_params:
+      measure: avg_arr_delay
+
+  - name: avg_departure_delay
+    label: "Average Departure Delay (min)"
+    description: "Average departure delay across all flights."
+    type: simple
+    type_params:
+      measure: avg_dep_delay
+
+  - name: cancelled_flights
+    label: "Cancelled Flights"
+    description: "Total number of cancelled flights."
+    type: simple
+    type_params:
+      measure: cancelled_flights
+
+  - name: cancellation_rate
+    label: "Cancellation Rate"
+    description: "Ratio of cancelled flights to total flights."
+    type: ratio
+    type_params:
+      numerator: cancelled_flights
+      denominator: total_flights
+
+  - name: total_distance_flown
+    label: "Total Distance Flown (miles)"
+    description: "Total miles flown across all flights."
+    type: simple
+    type_params:
+      measure: total_distance
+
+  - name: flights_per_origin
+    label: "Flights per Origin Airport"
+    description: "Total flights grouped by origin airport."
+    type: simple
+    type_params:
+      measure: total_flights
+

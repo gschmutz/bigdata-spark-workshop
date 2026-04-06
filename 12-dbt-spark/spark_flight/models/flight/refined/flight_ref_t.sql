@@ -13,3 +13,4 @@ WITH flight_ref_t as (
     ON (f.destination = ad.iata_code)
 ) SELECT * 
 FROM flight_ref_t
+

@@ -31,6 +31,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   spark_flight:
-    # Config indicated by + and applies to all files under models/example/
+    # Config indicated by + and applies to all files under models/flight/
     flight:
-      +materialized: table
+      prepared:
+        +materialized: view
+      refined:
+        +materialized: table
+      semantic:
+        +materialized: table

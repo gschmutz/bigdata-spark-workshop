@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: airport_prep_t
+    description: "Airports with corrected data types from the raw layer."
+    columns:
+      - name: id
+        description: "Unique numeric airport identifier."
+        tests:
+          - not_null
+          - unique
+      - name: iata_code
+        description: "IATA airport code."
+        tests:
+          - not_null
+      - name: iso_country
+        description: "ISO country code."
+        tests:
+          - not_null
+
+  - name: flight_prep_t
+    description: "Raw flight records with original column names preserved."
+    columns:
+      - name: origin
+        description: "IATA code of the origin airport."
+        tests:
+          - not_null
+      - name: destination
+        description: "IATA code of the destination airport."
+        tests:
+          - not_null
+      - name: year
+        tests:
+          - not_null
+      - name: month
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

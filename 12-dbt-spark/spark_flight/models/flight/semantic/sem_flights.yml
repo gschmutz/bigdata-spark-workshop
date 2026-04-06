@@ -1,0 +1,79 @@
+semantic_models:
+  - name: flights
+    description: "Flight-level facts enriched with airport details."
+    model: ref('flight_ref_t')
+
+    # The primary grain of this semantic model
+    entities:
+      - name: flight
+        type: primary
+        expr: flightNum
+
+    # Categorical and time dimensions
+    dimensions:
+      - name: flight_date
+        type: time
+        description: "Date of the flight derived from year, month, and day."
+        type_params:
+          time_granularity: day
+        expr: "make_date(year, month, dayOfMonth)"
+
+      - name: origin
+        type: categorical
+        description: "IATA code of the origin airport."
+      - name: destination
+        type: categorical
+        description: "IATA code of the destination airport."
+      - name: origin_airport
+        type: categorical
+        description: "Full name of the origin airport."
+      - name: destination_airport
+        type: categorical
+        description: "Full name of the destination airport."
+      - name: flight_month
+        type: time
+        type_params:
+          time_granularity: month
+        description: "Month of the flight."
+        expr: make_date(year, month, 1)
+      - name: flight_year
+        type: time
+        type_params:
+          time_granularity: year
+        description: "Year of the flight."
+        expr: make_date(year, 1, 1)
+      - name: cancelled
+        type: categorical
+        description: "Whether the flight was cancelled (1 = yes, 0 = no)."
+
+    # Reusable measures (aggregations)
+    measures:
+      - name: total_flights
+        description: "Total number of flights."
+        agg: count
+        expr: flightNum
+        agg_time_dimension: flight_date
+
+      - name: avg_arr_delay
+        description: "Average arrival delay in minutes."
+        agg: average
+        expr: arrDelay
+        agg_time_dimension: flight_date
+
+      - name: avg_dep_delay
+        description: "Average departure delay in minutes."
+        agg: average
+        expr: depDelay
+        agg_time_dimension: flight_date
+
+      - name: total_distance
+        description: "Total distance flown in miles."
+        agg: sum
+        expr: distance
+        agg_time_dimension: flight_date
+
+      - name: cancelled_flights
+        description: "Number of cancelled flights."
+        agg: sum
+        expr: "CASE WHEN cancelled = 1 THEN 1 ELSE 0 END"
+        agg_time_dimension: flight_date
