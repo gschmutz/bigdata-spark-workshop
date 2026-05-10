@@ -1040,47 +1040,6 @@ services:
         conda run -n py312 pip install pyspark==3.5.3 numpy graphframes-py typing_extensions jupysql pandas arrow pyarrow grpcio-status boto3
         start-notebook.sh
     restart: unless-stopped
-  #  ================================== Lightdash ========================================== #
-  lightdash:
-    image: lightdash/lightdash:latest
-    platform: linux/amd64
-    hostname: lightdash
-    container_name: lightdash
-    labels:
-      com.platys.name: lightdash
-      com.platys.description: Open-source BI tool for dbt and SQL
-      com.platys.webui.title: Lightdash UI
-      com.platys.webui.url: http://dataplatform:28422
-    depends_on:
-      - postgresql
-    ports:
-      - 28422:8080
-    environment:
-      LIGHTDASH_SECRET: changeme-use-a-long-random-secret-here
-      PORT: 8080
-      SECURE_COOKIES: 'false'
-      TRUST_PROXY: 'false'
-      LIGHTDASH_LOG_LEVEL: info
-      PGHOST: postgresql
-      PGPORT: 5432
-      PGUSER: lightdash
-      PGPASSWORD: abc123!
-      PGDATABASE: lightdash
-      S3_ENDPOINT: http://minio-1:9000
-      S3_REGION: us-east-1
-      S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      S3_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      S3_BUCKET:
-      S3_FORCE_PATH_STYLE: 'true'
-      #S3_EXPIRATION_TIME:
-      RESULTS_S3_REGION: us-east-1
-      RESULTS_S3_BUCKET:
-      RESULTS_S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      RESULTS_S3_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}§
-    volumes:
-      - ./data-transfer:/data-transfer
-      - ./scripts/docker/:/platys-scripts/
-    restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
   postgresql:
     image: postgres:18
