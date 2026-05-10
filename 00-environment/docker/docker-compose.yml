@@ -1135,13 +1135,13 @@ services:
       com.platys.name: minio
       com.platys.description: Software-defined Object Storage
       com.platys.webui.title: MinIO UI
-      com.platys.webui.url: http://dataplatform:9001
+      com.platys.webui.url: http://dataplatform:9010
       com.platys.password.envvars: PLATYS_AWS_SECRET_ACCESS_KEY, PLATYS_MINIO_AISTOR_LICENSE
     ports:
       # S3 API Port
       - 9000:9000
       # UI Port
-      - 9001:9001
+      - 9010:9010
     environment:
       MINIO_ROOT_USER: ${PLATYS_AWS_ACCESS_KEY:-admin}
       MINIO_ROOT_PASSWORD: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
@@ -1161,7 +1161,7 @@ services:
       - -c
       - |
         mkdir -p /root/.minio && echo "$$MINIO_LICENSE" > /root/.minio/minio.license && exec /usr/bin/docker-entrypoint.sh "$$@"
-    command: minio server /data --console-address ":9001" --license /root/.minio/minio.license
+    command: minio server /data --console-address ":9010" --license /root/.minio/minio.license
     restart: unless-stopped
     healthcheck:
       test: [CMD, curl, -f, http://minio-1:9000/minio/health/live]
