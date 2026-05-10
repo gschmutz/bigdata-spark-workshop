@@ -30,7 +30,7 @@ Navigate to your local folder, where you want to keep the workshop and execute t
 
 ```
 git clone https://github.com/gschmutz/hadoop-spark-workshop.git
-cd hadoop-spark-workshop/01-environment/docker
+cd hadoop-spark-workshop/00-environment/docker
 ```
 
 ## Start Environment

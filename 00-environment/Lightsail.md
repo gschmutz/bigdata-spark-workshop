@@ -79,7 +79,7 @@ cd /home/${USERNAME}
 git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
 chown -R ${USERNAME}:${USERNAME} ${GITHUB_PROJECT}
 
-cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker
+cd /home/${USERNAME}/${GITHUB_PROJECT}/00-environment/docker
 
 # Make Environment Variables persistent
 sudo echo "export PUBLIC_IP=$PUBLIC_IP" | sudo tee -a /etc/profile.d/platys-platform-env.sh

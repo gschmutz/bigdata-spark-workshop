@@ -2,9 +2,15 @@
 
 In this workshop we will work with [MinIO](https://min.io/) Object Storage to persist data. It will also be used in the other workshops and is configured as the default filesystem for Spark and ecosystem.
 
-We assume that the **Data platform** described [here](../01-environment) is running and accessible.
+We assume that the **Data platform** described [here](../00-environment) is running and accessible.
 
 In this workshop, we will use the `airports-data` and `flight-data` available in the `data-transfer` folder of the environment and upload it to Minio. These files will also be used later by other workshops. 
+
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Using MinIO](#using-minio)
 
 ## What you will learn
 
@@ -16,7 +22,7 @@ In this workshop, we will use the `airports-data` and `flight-data` available in
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - The `airports-data` and `flight-data` files are available in the `data-transfer` folder of the environment
 
 ## Using MinIO
@@ -74,7 +80,7 @@ In a browser window, navigate to <http://dataplatform:9010>.
 
 ![Alt Image Text](./images/minio-login.png "Minio Login")
 
-Enter `admin` into the **Access Key** and  `abc123!abc123!` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/01-environment/docker/docker-compose.yml) file. 
+Enter `admin` into the **Access Key** and  `abc123!abc123!` into the **Secret Key** field and click on the **Connect** button. The keys are defined in the `minio-1` service definition in the [docker-compose.yml](https://github.com/gschmutz/hadoop-spark-workshop/blob/master/00-environment/docker/docker-compose.yml) file. 
 
 The MinIO Console dashboard page should now appear.
  

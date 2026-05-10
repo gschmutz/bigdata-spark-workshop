@@ -2,7 +2,7 @@
 
 In this workshop we will work with [Apache Spark](https://spark.apache.org/) and implement some basic operations using the Spark DataFrame API for Python. 
 
-We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
+We assume that the **Data platform** described [here](../00-environment) is running and accessible. 
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ We assume that the **Data platform** described [here](../01-environment) is runn
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 2a ([Working with MinIO Object Storage](../02a-minio-object-storage)) completed, or at minimum the `minio-mc` container available to upload data
 
 ## Accessing Spark

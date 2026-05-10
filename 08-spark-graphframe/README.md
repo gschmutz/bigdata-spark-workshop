@@ -34,7 +34,7 @@ The same data as in the [Object Storage Workshop](../02-object-storage/README.md
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport, plane, carrier, and flight data uploaded to MinIO (instructions provided if needed)
 

@@ -23,7 +23,7 @@ In this workshop we will see how we can use [Apache Airflow](http://airflow.apac
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 5 ([Creating and running a self-contained Spark Application](../05-spark-application)) completed — the `prep_refined.py` Spark script is reused here
 - Airport and flight data available in MinIO (instructions provided if needed)
 

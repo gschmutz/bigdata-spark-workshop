@@ -18,7 +18,7 @@ Follow again [these instructions](Lightsail.md).
 Connect to the Lightsail instance through **Connect Using SSH** on the Ligthsail console or using the `ssh`command (Mac) / Putty (Windows). 
 
 ```
-cd hadoop-workshop/01-environment/docker
+cd hadoop-workshop/00-environment/docker
 ```
 
 ```

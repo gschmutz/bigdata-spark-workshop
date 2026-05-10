@@ -39,7 +39,7 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 2a ([Working with MinIO Object Storage](../02a-minio-object-storage)) completed — airport and flight data must be in MinIO
 - The Hive Metastore is running and accessible (included in the data platform)
 - dbt with the `dbt-spark` adapter installed (instructions provided in the workshop)

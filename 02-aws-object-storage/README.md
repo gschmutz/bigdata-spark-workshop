@@ -4,6 +4,12 @@ In this workshop we will work with [AWS S3](https://aws.amazon.com/pm/serv-s3/?g
 
 To do this workshop you need an AWS subscription.  
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Using Amazon S3](#using-amazon-s3)
+
 ## What you will learn
 
 - How to create S3 buckets and configure access policies in the AWS Console
@@ -47,7 +53,7 @@ Click on **Create bucket** at the bottom of the page.
 
 ### Upload objects to the S3 bucket
 
-In order to upload files via the browser-based S3 console, the files need to be available locally (from where you run the browser). Therefore first download this [flight-data.zip](https://github.com/gschmutz/hadoop-spark-workshop/raw/master/01-environment/data/flight-data.zip) zip file and unzip it to a local folder. 
+In order to upload files via the browser-based S3 console, the files need to be available locally (from where you run the browser). Therefore first download this [flight-data.zip](https://github.com/gschmutz/hadoop-spark-workshop/raw/master/00-environment/data/flight-data.zip) zip file and unzip it to a local folder. 
 
 To upload a file we can use the browser-based UI. On the s3 console, click on the bucket created before and you will see the object details page as shown below. 
 

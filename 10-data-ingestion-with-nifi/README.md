@@ -20,7 +20,7 @@ In this workshop we will see how we can use [Apache NiFi](http://nifi.apache.org
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - The `flight-nifi-bucket` bucket will be created as part of this workshop
 - Write access to the `data-transfer/landing-zone` folder on the host machine
 
@@ -263,7 +263,7 @@ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
 if should show an output similar to the one below
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer$ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer$ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
 minio-1/flight-nifi-bucket/
 └─ raw
    └─ airport

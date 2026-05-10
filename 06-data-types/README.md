@@ -2,7 +2,7 @@
 
 In this workshop we will working with various data types. 
 
-We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
+We assume that the **Data Platform** described [here](../00-environment) is running and accessible. 
 
 We only show the pure PySpark statement, if you want to execute the in Zepplin, then you have to add the `%pyspark` directive. 
 
@@ -26,7 +26,7 @@ We only show the pure PySpark statement, if you want to execute the in Zepplin, 
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport data uploaded to MinIO (instructions provided if needed)
 
@@ -124,7 +124,7 @@ docker exec -ti awscli s3cmd ls s3://datatype-bucket/json/
 and you should see a result similar to the one shown below
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/json/
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/json/
 2025-05-19 20:22            0  s3://datatype-bucket/json/_SUCCESS
 2025-05-19 20:22     16767132  s3://datatype-bucket/json/part-00000-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
 2025-05-19 20:22      8106536  s3://datatype-bucket/json/part-00001-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
@@ -153,7 +153,7 @@ docker exec -ti awscli s3cmd ls s3://datatype-bucket/avro/
 and you should see a result similar to the one shown below
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/avro/
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/avro/
 2025-05-19 20:31            0  s3://datatype-bucket/avro/_SUCCESS
 2025-05-19 20:31      3539632  s3://datatype-bucket/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 2025-05-19 20:31      1731266  s3://datatype-bucket/avro/part-00001-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
@@ -175,7 +175,7 @@ tree avro
 ```
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ cd data-transfer/result
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ cd data-transfer/result
 tree avro
 avro
 ├── _SUCCESS
@@ -192,7 +192,7 @@ head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 We can see in the result that the data first holds the Avro schema followed by the binary serialized data
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 {"type":"record","name":"topLevelRecord","fields":[{"name":"id","type":["int","null"]},{"name":"ident","type":["string","null"]},{"name":"type","type":["string","null"]},{"name":"name","type":["string","null"]},{"name":"latitude_deg","type":["double","null"]},{"name":"longitude_deg","type":["double","null"]},{"name":"elevation_ft","type":["int","null"]},{"name":"continent","type":["string","null"]},{"name":"iso_country","type":["string","null"]},{"name":"iso_region","type":["string","null"]},{"name":"municipality","type":["string","null"]},{"name":"scheduled_service","type":["string","null"]},{"name":"gps_code","type":["string","null"]},{"name":"iata_code","type":["string","null"]},{"name":"local_code","type":["string","null"]},{"name":"home_link","type":["string","null"]},{"name":"wikipedia_link","type":["string","null"]},{"name":"keywords","type":["string","null"]}]}0org.apache.spark.version
 3.5.3avro.codec
                snappyA�Y�$<�D��})1����t�e00Aheliport"Total RF H���V             D@�聏��R�NAUS
@@ -254,7 +254,7 @@ docker compose run --rm  avro-tools count /data-transfer/result/avro/part-00000-
 and you should get a count of `54024`
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm  avro-tools count /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker compose run --rm  avro-tools count /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 25/05/20 05:26:11 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 54024
@@ -267,7 +267,7 @@ docker compose run --rm avro-tools tojson --head /data-transfer/result/avro/part
 ```
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm avro-tools tojson --head /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker compose run --rm avro-tools tojson --head /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 25/05/20 05:27:17 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 {"id":{"int":6523},"ident":{"string":"00A"},"type":{"string":"heliport"},"name":{"string":"Total RF Heliport"},"latitude_deg":{"double":40.070985},"longitude_deg":{"double":-74.933689},"elevation_ft":{"int":11},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-PA"},"municipality":{"string":"Bensalem"},"scheduled_service":{"string":"no"},"gps_code":{"string":"K00A"},"iata_code":null,"local_code":{"string":"00A"},"home_link":{"string":"https://www.penndot.pa.gov/TravelInPA/airports-pa/Pages/Total-RF-Heliport.aspx"},"wikipedia_link":null,"keywords":null}
@@ -291,7 +291,7 @@ docker compose run --rm avro-tools getmeta /data-transfer/result/avro/part-00000
 and you should get
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm avro-tools getmeta /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker compose run --rm avro-tools getmeta /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 25/05/20 05:28:52 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 avro.schema     {"type":"record","name":"topLevelRecord","fields":[{"name":"id","type":["int","null"]},{"name":"ident","type":["string","null"]},{"name":"type","type":["string","null"]},{"name":"name","type":["string","null"]},{"name":"latitude_deg","type":["double","null"]},{"name":"longitude_deg","type":["double","null"]},{"name":"elevation_ft","type":["int","null"]},{"name":"continent","type":["string","null"]},{"name":"iso_country","type":["string","null"]},{"name":"iso_region","type":["string","null"]},{"name":"municipality","type":["string","null"]},{"name":"scheduled_service","type":["string","null"]},{"name":"gps_code","type":["string","null"]},{"name":"iata_code","type":["string","null"]},{"name":"local_code","type":["string","null"]},{"name":"home_link","type":["string","null"]},{"name":"wikipedia_link","type":["string","null"]},{"name":"keywords","type":["string","null"]}]}
@@ -308,7 +308,7 @@ docker compose run --rm avro-tools getschema /data-transfer/result/avro/part-000
 and you should get
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker compose run --rm avro-tools getschema /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker compose run --rm avro-tools getschema /data-transfer/result/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 25/05/20 05:30:01 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 {
@@ -389,7 +389,7 @@ docker exec -ti awscli s3cmd ls s3://datatype-bucket/parquet/
 and you should see a result similar to the one shown below
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/parquet/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/parquet/
 2025-05-22 11:37            0  s3://datatype-bucket/parquet/_SUCCESS
 2025-05-22 11:37      3366543  s3://datatype-bucket/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
 2025-05-22 11:37      1618896  s3://datatype-bucket/parquet/part-00001-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
@@ -413,7 +413,7 @@ tree parquet
 and you should see a result similar to 
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ cd data-transfer/result
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ cd data-transfer/result
 tree parquet
 parquet
 ├── _SUCCESS
@@ -426,7 +426,7 @@ parquet
 Let's use the Parquet tools to inspect the Parquet files.
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 No command specified
 
@@ -550,7 +550,7 @@ docker compose run --rm parquet-tools rowcount /data-transfer/result/parquet/par
 and you should see a count of `54024`
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools rowcount /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools rowcount /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 Total RowCount: 54024
 ```
@@ -562,7 +562,7 @@ docker compose run --rm parquet-tools meta  /data-transfer/result/parquet/part-0
 ``
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools meta /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools meta /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 file:              file:/data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet 
 creator:           parquet-mr version 1.13.1 (build db4183109d5b734ec5930d870cdae161e408ddba) 
@@ -615,7 +615,7 @@ keywords:           BINARY SNAPPY DO:0 FPO:3176686 SZ:183387/264205/1.44 VC:5402
 and to see the schema, use the `schema` tool
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools schema /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools schema /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 message spark_schema {
   optional int32 id;
@@ -642,7 +642,7 @@ message spark_schema {
 and finally to see the first 10 records, use the `head` tool with the `-n` option
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools head -n 10 /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools head -n 10 /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 id = 6523
 ident = 00A

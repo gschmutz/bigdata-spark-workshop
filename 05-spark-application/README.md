@@ -2,7 +2,7 @@
 
 In this workshop we will create a Spark Application to submit to a Spark cluster. The application will perform the logic to create the `refined` layer as seen in [Workshop 4 - Data Reading and Writing using DataFrames](../04-spark-dataframe).
 
-We assume that the **Data Platform** described [here](../01-environment) is running and accessible.
+We assume that the **Data Platform** described [here](../00-environment) is running and accessible.
 
 The workshop is written in a way that it has to be executed on the same machine where the dataplatform is running. 
 
@@ -24,7 +24,7 @@ The workshop is written in a way that it has to be executed on the same machine 
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed
 - Airport and flight data uploaded to MinIO (instructions provided if needed)
 - Access to a terminal on the machine running the data platform
@@ -146,7 +146,7 @@ docker exec -it spark-master spark-submit /data-transfer/app/prep_refined.py --s
 and you should see the following successful execution
 
 ```
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ docker exec -it spark-master spark-submit /data-transfer/app/prep_refined.py --s3-bucket flight-bucket --s3-raw-path raw --s3-refined-path refined
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -it spark-master spark-submit /data-transfer/app/prep_refined.py --s3-bucket flight-bucket --s3-raw-path raw --s3-refined-path refined
 :: loading settings :: url = jar:file:/opt/bitnami/spark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
 Ivy Default Cache set to: /opt/bitnami/spark/.ivy2/cache
 The jars for the packages stored in: /opt/bitnami/spark/.ivy2/jars

@@ -80,7 +80,7 @@ Now let's checkout the Workshop project from GitHub:
 cd /home/${USERNAME} 
 git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
 
-cd /home/${USERNAME}/${GITHUB_PROJECT}/01-environment/docker-${PLATFORM_FLAVOUR}
+cd /home/${USERNAME}/${GITHUB_PROJECT}/00-environment/docker-${PLATFORM_FLAVOUR}
 ```
 
 Make environment variables persistent

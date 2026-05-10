@@ -2,7 +2,7 @@
 
 In this workshop you learn the basics of the Python programming language.
 
-We assume that the **Analytics platform** decribed [here](../01-environment) is running and accessible. 
+We assume that the **Analytics platform** decribed [here](../00-environment) is running and accessible. 
 
 ## Accessing Python Environment
 

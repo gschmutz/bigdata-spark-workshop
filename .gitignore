@@ -1,4 +1,4 @@
 
 .DS_Store
 12-dbt-spark/venv/**/**
-/01-environment/docker/container-volume/spark/logs
+/00-environment/docker/container-volume/spark/logs

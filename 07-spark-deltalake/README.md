@@ -29,7 +29,7 @@ We assume that you have done Workshop 5 **Getting Started using Spark RDD and Da
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport data uploaded to MinIO (instructions provided if needed)
 
@@ -193,7 +193,7 @@ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
 and you should see that the data has been written as parquet files, but that there is also a `_delta_log` folder holding the transactional metadata for the delta table
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker/data-transfer/result$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
 2026-04-03 06:08         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
 2026-04-03 06:08         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
 2026-04-03 06:08            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
@@ -342,7 +342,7 @@ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
 and you should see that more data has been written as parquet files, and that in the `_delta_log` folder an addional json file has been created
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
 2026-04-03 06:08         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
 2026-04-03 06:08         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
 2026-04-03 06:18         6784  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.crc
@@ -380,7 +380,7 @@ jq < ./data-transfer/00000000000000000001.json
 you should see content similar to the one shown below
  
 ```
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ jq < ./data-transfer/00000000000000000001.json 
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ jq < ./data-transfer/00000000000000000001.json 
 {
   "commitInfo": {
     "timestamp": 1747937543885,
@@ -552,7 +552,7 @@ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
 and you should see that more data has been written as parquet files, and that in the `_delta_log` folder an addional json file has been created
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
 2025-05-22 11:55         5472  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
 2025-05-22 18:12         4597  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
 2025-05-22 18:18         2893  s3://flight-bucket/delta/airports/_delta_log/00000000000000000002.json

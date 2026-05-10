@@ -7,7 +7,7 @@ In this document some tips and tricks for troubleshooting while developing a new
 When running `platys gen` I get the following error: "The container name "/platys" is already in use by container":
 
 ```
-docker@ubuntu:/mnt/hgfs/git/gschmutz/kafka-workshop/01-environment/docker$ platys gen
+docker@ubuntu:/mnt/hgfs/git/gschmutz/kafka-workshop/00-environment/docker$ platys gen
 2020/11/15 07:11:09 using configuration file [config.yml] with values:  platform-name: [kafka-workshop], platform-stack: [trivadis/platys-modern-data-platform] platform-stack-version: [1.9.0-preview], structure [flat]
 {"status":"Pulling from trivadis/platys-modern-data-platform","id":"1.9.0-preview"}
 {"status":"Digest: sha256:a4f096f9d776c123999e7145d2c431baf40ba99959c26405f36bece47fb4598a"}

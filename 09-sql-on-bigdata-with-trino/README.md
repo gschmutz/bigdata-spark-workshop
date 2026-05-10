@@ -20,7 +20,7 @@ For this workshop you have to start a platform using the `minio` flavour in the 
 
 In this workshop we are using Trino to access the data we have available in the Object Storage. 
 
-We assume that the **Data platform** described [here](../01-environment) is running using the `minio` flavour. 
+We assume that the **Data platform** described [here](../00-environment) is running using the `minio` flavour. 
 
 The docker image we use for the Trino container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Trino. 
 
@@ -34,7 +34,7 @@ The docker image we use for the Trino container is from [Starburst Data](https:/
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed — the refined data layer is required
 - Refined airport and flight data available in MinIO under `flight-bucket/refined/` (instructions provided if needed)
 
@@ -90,11 +90,17 @@ CREATE EXTERNAL TABLE airport_t (id int
                                 , name string
                                 , latitude_deg double
                                 , longitude_deg double
-                                , elevation_ft int                                , continent string                                , iso_country string
-                                , iso_region string                                , municipality string                                , scheduled_service string                                , gps_code string
+                                , elevation_ft int
+                                , continent string
+                                , iso_country string
+                                , iso_region string
+                                , municipality string
+                                , scheduled_service string
+                                , gps_code string
                                 , iata_code string
                                 , local_code string
-                                , home_link string                                , wikipedia_link string
+                                , home_link string
+                                , wikipedia_link string
                                 , keywords string
                                 )
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'

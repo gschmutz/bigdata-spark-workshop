@@ -2,7 +2,7 @@
 
 In this workshop we will use [Apache Spark](https://spark.apache.org/) DataFrames and Spark SQL to work with (semi-)structured data.
 
-We assume that the **Data Platform** described [here](../01-environment) is running and accessible. 
+We assume that the **Data Platform** described [here](../00-environment) is running and accessible. 
 
 The same flight and airport data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
@@ -35,7 +35,7 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport, plane, carrier, and flight data uploaded to MinIO (instructions provided if needed)
 
@@ -238,7 +238,7 @@ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
 You should see the five files inside the `flights` folder
 
 ```
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
 2025-05-18 16:12       980792  s3://flight-bucket/raw/flights/flights_2008_4_1.csv
 2025-05-18 16:12       981534  s3://flight-bucket/raw/flights/flights_2008_4_2.csv
 2025-05-18 16:12       998020  s3://flight-bucket/raw/flights/flights_2008_5_1.csv
@@ -337,7 +337,7 @@ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
 and you should see an output similar to
 
 ```bash
-ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/01-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
+ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
 2026-04-02 18:56            0  s3://flight-bucket/refined/flights/_SUCCESS
 2026-04-02 18:56       377251  s3://flight-bucket/refined/flights/year=2008/month=4/part-00001-78e4939e-cf76-476c-a699-222d75714fcc.c000.snappy.parquet
 2026-04-02 18:56       461116  s3://flight-bucket/refined/flights/year=2008/month=5/part-00000-78e4939e-cf76-476c-a699-222d75714fcc.c000.snappy.parquet

@@ -29,7 +29,7 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 ## Prerequisites
 
-- The **Data Platform** described [here](../01-environment) is running and accessible
+- The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport data uploaded to MinIO (instructions provided if needed)
 

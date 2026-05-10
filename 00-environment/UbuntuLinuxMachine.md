@@ -11,7 +11,7 @@ First let's create some environment variables.
 ```bash
 export GITHUB_PROJECT=kafka-workshop
 export GITHUB_OWNER=gschmutz
-export DATAPLATFORM_HOME=01-environment/docker
+export DATAPLATFORM_HOME=00-environment/docker
 export PLATYS_VERSION=2.4.3
 export NETWORK_NAME=<network-name>
 ```
