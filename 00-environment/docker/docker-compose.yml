@@ -464,7 +464,7 @@ services:
 #    restart: unless-stopped
   #  ================================== NiFi 2 ========================================== #
   nifi2-1:
-    image: apache/nifi:2.7.2
+    image: apache/nifi:2.9.0
     container_name: nifi2-1
     hostname: nifi2-1
     labels:
@@ -1150,13 +1150,10 @@ services:
       #MINIO_REGION: us-east-1
       MINIO_DOMAIN: minio
       MINIO_SERVER_URL: http://${PUBLIC_IP:-127.0.0.1}:9000
-      MINIO_BROWSER_REDIRECT_URL: http://${PUBLIC_IP:-127.0.0.1}:9010
       MINIO_COMPRESSION_ENABLE: off
       MINIO_PROMETHEUS_AUTH_TYPE: public
       MINIO_PROMETHEUS_URL: http://prometheus-1:9090
       MINIO_LICENSE: ${PLATYS_MINIO_AISTOR_LICENSE:-None}
-      MINIO_ADDRESS: ":9000"
-      MINIO_CONSOLE_ADDRESS: ":9010"
     volumes:
       - ./data-transfer:/data-transfer
     entrypoint:
