@@ -1150,6 +1150,8 @@ services:
       #MINIO_REGION: us-east-1
       MINIO_DOMAIN: minio
       MINIO_SERVER_URL: http://${PUBLIC_IP:-127.0.0.1}:9000
+      MINIO_CONSOLE_ADDRESS: ":9010"
+      MINIO_BROWSER_REDIRECT_URL: "http://18.159.52.12:9010"
       MINIO_COMPRESSION_ENABLE: off
       MINIO_PROMETHEUS_AUTH_TYPE: public
       MINIO_PROMETHEUS_URL: http://prometheus-1:9090
