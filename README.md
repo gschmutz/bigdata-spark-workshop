@@ -4,23 +4,25 @@ Big Data Workshops with hands-on tutorials for working with S3, Spark, Delta Lak
 
 This workshop is used in the [Big Data and Spark Ecosystem Module of the Data Engineering CAS](https://www.bfh.ch/ti/de/weiterbildung/cas/big-data/) at the Berner Fachhochschule.
 
-All the workshops can be done on a container-based infrastructure using Docker Compose for the container orchestration. It can be run on a local machine or in a cloud environment. Check [01-environment](https://github.com/gschmutz/hadoop-workshop/tree/master/01-environment) for instructions on how to setup the infrastructure.
+All the workshops can be done on a container-based infrastructure using Docker Compose for the container orchestration. It can be run on a local machine or in a cloud environment. Check [00-environment](./00-environment) for instructions on how to setup the infrastructure.
 
 ## Workshops
 
-  * [Working with MinIO Object Storage](./02a-minio-object-storage)
-  * [Working with Amazon S3 Object Storage (optional)](./02b-aws-object-storage)
-  * [Getting Started using Spark RDD and DataFrames](./03-spark-getting-started)
-  * [Data Reading and Writing using DataFrames](./04-spark-dataframe)
-  * [Creating and running a self-contained Spark Application](./05-spark-application)
-  * [Working with different data types](./06-data-types)
-  * [Working with the Delta Lake Table Format](./07-spark-deltalake)
-  * [Working with the Apache Iceberg Table Format](./07a-spark-iceberg)
-  * [Graph Analysis using Spark GraphFrames](./08-spark-graphframe)
-  * [Working with Trino](./09-sql-on-bigdata-with-trino)
-  * [Data Ingestion with Apache NiFi](./10-data-ingestion-with-nifi)
-  * [Job Scheduling with Airflow 3.x](./11a-scheduling-with-airflow-3.x)
-  * [Job Scheduling with Airflow 2.x](./11b-scheduling-with-airflow-2.x)
-  * [Working with dbt and Spark](./12-dbt-spark)
-  * [Working with lakeFS Data Versioning and Apache Iceberg](./13-lakefs)
+| # | Workshop | Description |
+|---|----------|-------------|
+| 1 | [Working with MinIO Object Storage](./01-minio-object-storage) | Create buckets, upload files (CSV, JSON, PDF), and browse objects using the MinIO Console, `mc`, and `s3cmd`. Establish the shared S3-compatible storage used by all other workshops. |
+| 2 | [Working with Amazon S3 Object Storage (optional)](./02-aws-object-storage) | Create S3 buckets, upload data, query structured files in-place with S3 Select, and create IAM programmatic credentials for external access. Requires an AWS subscription. |
+| 3 | [Getting Started using Spark RDD and DataFrames](./03-spark-getting-started) | Access Spark via PySpark CLI, Zeppelin, and Jupyter. Implement a word count using the RDD API, then rewrite it using the DataFrame API to understand the difference between transformations and actions. |
+| 4 | [Data Reading and Writing using DataFrames](./04-spark-dataframe) | Read CSV and JSON files from MinIO into DataFrames, apply joins and aggregations using the DataFrame API and Spark SQL, write partitioned output, and expose results via the Spark Thrift Server. |
+| 5 | [Creating and running a self-contained Spark Application](./05-spark-application) | Package a PySpark transformation pipeline as a standalone Python script with `argparse`, then submit it to the Spark cluster using `spark-submit`. |
+| 6 | [Working with different data types](./06-data-types) | Read and write data in CSV, JSON, Avro, Parquet, and ORC formats, comparing schema inference, compression, and read performance across row-based and columnar formats. |
+| 7 | [Working with the Delta Lake Table Format](./07-spark-deltalake) | Write airport data as a Delta Lake table, perform INSERT/UPDATE/DELETE with ACID guarantees, query earlier versions with time travel, compact small files, and vacuum old snapshots. |
+| 7a | [Working with the Apache Iceberg Table Format](./07a-spark-iceberg) | Write airport data as an Apache Iceberg table, perform DML operations, inspect snapshot metadata in MinIO, query historical versions with time travel, and compact data files. |
+| 8 | [Graph Analysis using Spark GraphFrames](./08-spark-graphframe) | Model airports as vertices and flights as edges, then run graph queries including degree analysis, subgraph filtering, motif finding, PageRank, connected components, shortest paths, and BFS. |
+| 9 | [Working with Trino](./09-sql-on-bigdata-with-trino) | Register refined flight data in the Hive Metastore and query it from Trino using standard SQL, including built-in functions, UDFs, relational database federation, and cross-source query federation. |
+| 10 | [Data Ingestion with Apache NiFi](./10-data-ingestion-with-nifi) | Build a NiFi data flow using GetFile and PutS3Object processors to automatically ingest flight data files from a local landing zone into MinIO as they arrive. |
+| 11a | [Job Scheduling with Airflow 3.x](./11a-scheduling-with-airflow-3.x) | Author an Airflow 3.x DAG that uploads raw data to MinIO and submits a Spark job using the SparkSubmitOperator, then monitor and trigger the pipeline from the Airflow UI. |
+| 11b | [Job Scheduling with Airflow 2.x](./11b-scheduling-with-airflow-2.x) | Same pipeline as 11a adapted for Airflow 2.x syntax and operators. Note: the current data platform runs Airflow 3.x — use this workshop only with a dedicated Airflow 2.x environment. |
+| 12 | [Working with dbt and Spark](./12-dbt-spark) | Build a layered dbt project (raw → prepared → refined) on top of Spark, covering models, materialization strategies, generic tests, incremental models, documentation, and the MetricFlow semantic layer. |
+| 13 | [Working with lakeFS Data Versioning and Apache Iceberg](./13-lakefs) | Apply Git-like branching, commits, diffs, and merges to Apache Iceberg tables using lakeFS and Spark — including accidental-delete recovery, cross-branch data diff, and merge-to-production workflows. |
 
