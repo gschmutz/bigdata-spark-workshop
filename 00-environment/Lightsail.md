@@ -27,7 +27,7 @@ export PLATYS_VERSION=2.4.0
 export NETWORK_NAME=ens5
 export USERNAME=ubuntu
 export PASSWORD=abc123!
-export PLATYS_MINIO_AISTOR_LICENSE=<replaced by AIStor license key>
+export PLATYS_MINIO_AISTOR_LICENSE=<replace by AIStor license key>
 
 # Prepare Environment Variables 
 export PUBLIC_IP=$(curl ipinfo.io/ip)
