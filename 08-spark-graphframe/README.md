@@ -4,6 +4,22 @@ In this workshop we will work with [Apache Spark GraphFrames](https://graphframe
 
 The same data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Create Vertices and Edges](#create-vertices-and-edges)
+- [Building the graph](#building-the-graph)
+- [Flight analysis](#flight-analysis)
+- [Degree Analysis](#degree-analysis)
+- [Subgraph Filtering](#subgraph-filtering)
+- [Motif Finding](#motif-finding)
+- [PageRank](#pagerank)
+- [Connected Components](#connected-components)
+- [Shortest Paths](#shortest-paths)
+- [Breadth-First Search (BFS)](#breadth-first-search-bfs)
+
 ## What you will learn
 
 - How to build a GraphFrame from tabular data (airports as vertices, flights as edges)

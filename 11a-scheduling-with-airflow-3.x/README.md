@@ -2,6 +2,17 @@
 
 In this workshop we will see how we can use [Apache Airflow](http://airflow.apache.org) 3.x to schedule a Spark Job. We will also use the same Airflow job to upload the data from a local folder to S3. 
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Create the S3 bucket, if not available](#create-the-s3-bucket-if-not-available)
+- [Create the Spark Python program](#create-the-spark-python-program)
+- [Create the Airflow DAG](#create-the-airflow-dag)
+- [Create the Airflow Connection objects](#create-the-airflow-connection-objects)
+- [Activating and starting the Airflow DAG](#activating-and-starting-the-airflow-dag)
+- [Forcing an error to see it in the Airflow UI](#forcing-and-error-to-see-it-in-the-airflow-ui)
+
 ## What you will learn
 
 - How to author an Apache Airflow 3.x DAG to orchestrate a multi-step pipeline

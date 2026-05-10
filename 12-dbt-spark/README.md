@@ -4,6 +4,23 @@ In this workshop we will work with [dbt](https://www.getdbt.com/).
 
 The same raw data as in the [Object Storage Workshop](../02a-minio-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Prepare the raw data, if no longer available](#prepare-the-raw-data-if-no-longer-available)
+- [Register tables for Raw data](#register-tables-for-raw-data)
+- [Install dbt](#install-dbt)
+- [Create the dbt project](#create-the-dbt-project)
+- [Create models](#create-models)
+- [Per-layer Materialization](#per-layer-materialization)
+- [Targeted Runs with --select](#targeted-runs-with---select)
+- [dbt Tests](#dbt-tests)
+- [Incremental Models](#incremental-models)
+- [dbt Documentation](#dbt-documentation)
+- [Query the Results from Trino](#query-the-results-from-trino)
+- [Semantic Models and Metrics](#semantic-models-and-metrics-does-not-work-yet---spark-is-not-supported)
+
 ## What you will learn
 
 - How to set up a dbt project connected to a Spark backend via the Thrift Server

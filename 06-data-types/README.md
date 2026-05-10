@@ -6,6 +6,16 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 
 We only show the pure PySpark statement, if you want to execute the in Zepplin, then you have to add the `%pyspark` directive. 
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Read CSV File](#read-csv-file)
+- [Write as JSON](#write-as-json)
+- [Write as Avro](#write-as-avro)
+- [Write as Parquet](#write-as-parquet)
+- [Reading from PostgreSQL](#reading-from-postgresql)
+
 ## What you will learn
 
 - How to read and write data in different file formats: CSV, JSON, Parquet, Avro, and ORC

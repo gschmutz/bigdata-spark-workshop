@@ -6,6 +6,14 @@ We assume that the **Data Platform** described [here](../01-environment) is runn
 
 The workshop is written in a way that it has to be executed on the same machine where the dataplatform is running. 
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Create the self-contained Spark Application](#create-the-self-contained-spark-application)
+- [Execute the application on the Spark Cluster using the `spark-submit` command](#execute-the-application-on-the-spark-cluster-using-the-spark-submit-command)
+
 ## What you will learn
 
 - How to structure a PySpark application as a self-contained Python script

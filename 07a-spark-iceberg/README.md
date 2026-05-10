@@ -6,6 +6,18 @@ The same data as in the [Object Storage Workshop](../02a-minio-object-storage/RE
 
 We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from Apache Zeppelin or Jupyter Notebook.
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Working with Spark and Iceberg table](#working-with-spark-and-iceberg-table)
+- [Read the airport data and store it as an Iceberg Table](#read-the-airport-data-and-store-it-as-an-iceberg-table)
+- [Update the Iceberg Table](#update-the-iceberg-table)
+- [Compaction of small files](#compaction-of-small-files)
+- [Read older versions of data using time travel](#read-older-versions-of-data-using-time-travel)
+- [Expire old snapshots](#expire-old-snapshots)
+
 ## What you will learn
 
 - How to write DataFrames as Apache Iceberg tables stored in MinIO

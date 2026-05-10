@@ -6,6 +6,18 @@ The same data as in the [Object Storage Workshop](../03-object-storage/README.md
 
 We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either Apache Zeppelin or Jupyter Notebook. 
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Working with Spark and Delta table](#working-with-spark-and-delta-table)
+- [Read the airport data and store it as a Delta Lake Table](#read-the-airport-data-and-store-it-as-a-delta-lake-table)
+- [Update the Delta Lake Table](#update-the-delta-lake-table)
+- [Compaction of small files](#compaction-of-small-files)
+- [Read older versions of data using time travel](#read-older-versions-of-data-using-time-travel)
+- [Vacuum old versions](#vacuum-old-versions)
+
 ## What you will learn
 
 - How to write DataFrames as Delta Lake tables stored in MinIO

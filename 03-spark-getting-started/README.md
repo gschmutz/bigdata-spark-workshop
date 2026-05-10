@@ -4,6 +4,14 @@ In this workshop we will work with [Apache Spark](https://spark.apache.org/) and
 
 We assume that the **Data platform** described [here](../01-environment) is running and accessible. 
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Accessing Spark](#accessing-spark)
+- [Working with Spark Resilient Distributed Datasets (RDDs)](#working-with-spark-resilient-distributed-datasets-rdds)
+- [Working with Spark DataFrames](#working-with-spark-dataframes)
+
 ## What you will learn
 
 - How to access Apache Spark through PySpark (CLI), Apache Zeppelin, and Jupyter Notebook

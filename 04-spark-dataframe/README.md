@@ -8,6 +8,22 @@ The same flight and airport data as in the [Object Storage Workshop](../02-objec
 
 We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Create a new Zeppelin notebook](#create-a-new-zeppelin-notebook)
+- [Working with the Airport Data](#working-with-the-airport-data)
+- [Working with Flights Data](#working-with-flights-data)
+- [Use SparkSQL to work with the data](#use-sparksql-to-work-with-the-data)
+- [Use Spark SQL to join flights with airports](#use-spark-sql-to-join-flights-with-airports)
+- [Use Spark SQL to perform analytics on the data](#use-spark-sql-to-perform-analytics-on-the-data)
+- [Provide delay classification as permanent table](#provide-delay-classification-as-permanent-table)
+- [Use Spark Thriftserver to query the table from outside of Spark](#use-spark-thriftserver-to-query-the-table-from-outside-of-spark)
+- [Use Spark Thriftserver from a standalone SQL Tool (optional)](#use-spark-thriftserver-from-a-standalone-sql-tool-optional)
+- [Using Python User-Defined Functions (UDF) in Spark SQL](#using-python-user-defined-functions-udf-in-spark-sql)
+
 ## What you will learn
 
 - How to read structured data (CSV, JSON) from MinIO into Spark DataFrames with schema inference

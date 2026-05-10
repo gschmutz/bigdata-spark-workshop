@@ -2,6 +2,14 @@
 
 In this workshop we will see how we can use [Apache NiFi](http://nifi.apache.org) to ingest the flight data automatically into S3 object storage. It shows the usage of Apache NiFi for Batch-Data (delta) ingestion, refer to the Streaming Workshop for a workshop where Apache NiFi is used in a Stream-Data Ingestion.
 
+## Table of Contents
+
+- [What you will learn](#what-you-will-learn)
+- [Prerequisites](#prerequisites)
+- [Create the Bucket in S3](#create-the-bucket-in-s3)
+- [Make sure that sub-folders below `data-transfer` belong to your local user (`$USER`)](#make-sure-that-sub-folders-below-data-transfer-belong-to-your-local-user-user)
+- [Create the NiFi data flow](#create-the-nifi-data-flow)
+
 ## What you will learn
 
 - How to navigate the Apache NiFi web interface and build a data flow on the canvas
