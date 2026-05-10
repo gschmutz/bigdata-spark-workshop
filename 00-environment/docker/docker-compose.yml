@@ -1155,7 +1155,8 @@ services:
       - ./conf/trino/single/config.properties:/etc/trino/config.properties
       - ./conf/trino/single/node.properties:/etc/trino/node.properties
       - ./conf/trino/single/log-debug.properties:/etc/trino/log.properties
-      - ./conf/trino/catalog/minio.properties:/catalog/minio.properties
+      - ./conf/trino/catalog/hive.properties:/catalog/minio.properties
+      - ./conf/trino/catalog/hive.properties:/catalog/hive.properties
       - ./conf/trino/catalog/iceberg-hive.properties:/catalog/iceberg_hive.properties
       - ./conf/trino/catalog/delta.properties:/catalog/delta.properties
       - ./conf/trino/catalog/postgresql.properties:/catalog/postgresql.properties
