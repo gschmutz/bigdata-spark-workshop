@@ -412,7 +412,7 @@ and you will see part of the data as a table
 only showing top 20 rows
 ```
 
-But in Zeppelin, testing such a statement is even easier. You can use the `%sql` directive to directly perform an SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit. 
+But in Zeppelin and Jupyter testing such a statement is even easier. You can use the `%sql` directive (`%%sql` in Jupyter) to directly perform an SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit. 
 
 ```sql
 %sql
@@ -420,10 +420,9 @@ SELECT *
 FROM airports
 ```
 
-and you see the result as a nicely formatted table
+and you see the result as a nicely formatted table (replace `%sql` by `%%sql` if using Jupyter)
 
 ![Alt Image Text](./images/zeppelin-sql-result.png "Zeppelin Welcome Screen")
-
 
 Let's see some other SQL statement in action, first with a `GROUP BY`
 

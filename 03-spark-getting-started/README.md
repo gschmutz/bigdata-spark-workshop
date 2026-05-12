@@ -215,6 +215,17 @@ Also execute a python command `print ("hello")` just to see that you are executi
 
 ![Alt Image Text](./images/jupyter-execute-cell.png "Jupyter Execute cell")
 
+Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
+
+```python
+%load_ext sql
+%config SqlMagic.autopandas = True
+%config SqlMagic.displaycon = False
+
+# Connect using the active SparkSession
+%sql spark
+```
+
 You are now setup to use **Jupyter** for performing the workshop. 
 
 ## Working with Spark Resilient Distributed Datasets (RDDs)
