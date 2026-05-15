@@ -10,7 +10,9 @@ In this workshop, we will use the `airports-data` and `flight-data` available in
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
-- [Using MinIO](#using-minio)
+- [Accessing MinIO](#accessing-minio)
+- [Create a Bucket](#create-a-bucket)
+- [Uploading data](#uploading-data)
 
 ## What you will learn
 
@@ -24,8 +26,6 @@ In this workshop, we will use the `airports-data` and `flight-data` available in
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - The `airports-data` and `flight-data` files are available in the `data-transfer` folder of the environment
-
-## Using MinIO
 
 ### Volume Map data for MinIO container
 
@@ -64,7 +64,7 @@ docker exec -ti awscli s3cmd -h
 
 This can also be found on the [S3cmd usage page](https://s3tools.org/usage).
 
-**Using MinIO MC**
+**Using MinIO mc**
 
 In our environment, `mc` is accessible inside the `minio-mc`.  
 
