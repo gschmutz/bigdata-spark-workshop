@@ -19,7 +19,7 @@
       data_center_to_use: 0
 
       # either 'minio' or 'rustfs'
-      s3_service_to_use: minio
+      s3_service_to_use: rustfs
       table_formats_to_use: delta,iceberg
 
       copy_cookbook_data_folder: true
@@ -1155,7 +1155,7 @@
       #
       #=====  MinIO Object Storage ========
       #
-      MINIO_enable: true
+      MINIO_enable: false
       # either "community" or "aistor"      
       MINIO_edition: 'aistor'
       # the Minio AIStor license if not specified in PLATYS_MINIO_LICENSE env variable
@@ -1175,9 +1175,45 @@
       #
       MINIO_CONSOLE_enable: false
       ADMINIO_UI_enable: false
+
+      #
+      #=====  RustFS ========
+      #
+      RUSTFS_enable: true
+      RUSTFS_volume_map_data: false
+      RUSTFS_volume_map_logs: false
+      RUSTFS_access_key: admin
+      RUSTFS_secret_key: abc123abc123!
+      RUSTFS_admin_bucket_name: admin-bucket
+      # add additional buckets, comma separated, admin-bucket will be created by default
+      RUSTFS_buckets: ''
+      RUSTFS_upload_data_transfer_to_bucket_enabled: false
+      RUSTFS_upload_data_transfer_bucket_name: 'data-transfer-bucket'
+      RUSTFS_upload_data_transfer_subfolders: ''
+
+      #
+      #=====  Garage ========
+      #
+      GARAGE_enable: false
+      GARAGE_volume_map_data: false
+      GARAGE_rpc_secret: 52db4fe3e3c702accffc23f1806cde978627984e05cbae1195688828554fcb47
+      GARAGE_metrics_token_enabled: true
+      GARAGE_metrics_token: 6/qasXj1RVpf/XuWx7Q2HV2YUVvi/oQb7QhYo9iQ98Q=
+      GARAGE_amdin_token_enabled: true
+      GARAGE_admin_token: 6/qasXj1RVpf/XuWx7Q2HV2YUVvi/oQb7QhYo9iQ98Q=
+
+      GARAGE_WEBUI_enable: false
+      GARAGE_WEBUI_admin_username: admin
+      # htpasswd -nbBC 10 "admin" "YOUR_PASSWORD"
+      GARAGE_WEBUI_admin_password: $2y$10$37WREr2MRsiJnit1Bu..ie8Buo8YXXoR/oW2ZARmSI2SXNzawu62u
+
+      #
+      #=====  AWS CLI ========
+      #
+      AWSCLI_enable: false
+
       FILESTASH_enable: false
       S3MANAGER_enable: false
-      AWSCLI_enable: true
       #
       #===== LakeFS ========
       #
