@@ -17,14 +17,14 @@ We assume that the **Data platform** described [here](../00-environment) is runn
 - How to access Apache Spark through PySpark (CLI), Apache Zeppelin, and Jupyter Notebook
 - How Spark's Resilient Distributed Datasets (RDDs) work and when to use them
 - How to implement a word count using the RDD API (`flatMap`, `map`, `reduceByKey`)
-- How to read and write data from/to MinIO object storage using the `s3a://` scheme
+- How to read and write data from/to object storage using the `s3a://` scheme
 - How to use the Spark DataFrame API to read text, split, explode, clean, and aggregate words
 - The difference between lazy transformations and actions in Spark
 
 ## Prerequisites
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
-- Workshop 2a ([Working with MinIO Object Storage](../02a-minio-object-storage)) completed, or at minimum the `minio-mc` container available to upload data
+- Workshop 1b ([Working with RustFS Object Storage](../01b-rustfs-object-storage)) completed, or at minimum the `rustfs-mc` container available to upload data
 
 ## Accessing Spark
 
@@ -114,6 +114,8 @@ SparkSession available as 'spark'.
 >>> 
 ```
 
+> **What you should see:** The Spark ASCII logo, the version number (`3.5.3`), and the `>>>` prompt — confirming PySpark started successfully with both a `SparkSession` (`spark`) and a `SparkContext` (`sc`) already initialised.
+
 You have an active `SparkSession` available as the `spark` variable. Enter any valid command, just to test we can ask Spark for the version which is installed. 
 
 ```bash
@@ -126,6 +128,8 @@ and we should get the version back
 >>> spark.version
 '3.5.3'
 ```
+
+> **What you should see:** The string `'3.5.3'` (or whichever Spark version is installed), confirming the session is live and responding.
 
 You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
 
@@ -142,6 +146,8 @@ Enter `admin` into the **User Name** field and `abc123!` into the **Password** a
 
 ![Alt Image Text](./images/zeppelin-welcome.png "Zeppelin Execute Shell")
 
+> **What you should see:** The Zeppelin home page showing the list of existing notes and the **Create new Note** link.
+
 Let's create a new Notebook to perform some Spark actions by clicking on the **Create new Note** link. 
 
 Enter `HelloSpark` into the **Create** field and leave the **Default Interpreter** set to **spark** and click **Create**. 
@@ -149,6 +155,8 @@ Enter `HelloSpark` into the **Create** field and leave the **Default Interpreter
 An empty notebook with an empty paragraph should be shown. Again let's use the `spark.version` command by adding it to the empty cell and hit **Shift** + **Enter** to execute the statement. It will take some time to execute it, while waiting it is shown in the **PENDING** and **RUNNING** status.
 
 ![Alt Image Text](./images/zeppelin-spark-execute-cell.png "Zeppelin Execute Shell")
+
+> **What you should see:** The cell transitions from **PENDING** → **RUNNING** → **FINISHED** and displays the Spark version string below the cell. The first execution takes longer as Spark initialises its executors.
 
 By default the Spark Zeppelin interpreter will be using the Scala API. To switch to the Python API, specify the directive `%pyspark` in the first line of each cell. This will be the new default for the interpreter
 
@@ -163,6 +171,8 @@ You can **use Apache Zeppelin** to perform the workshop below. An other option i
 In a browser window, navigate to <http://dataplatform:28888>. 
 
 Enter `abc123!` into the **Password or token** field and click **Log in**. 
+
+> **What you should see:** The Jupyter file browser showing the workspace directory contents.
 
 You should be forwarded to the **Jupyter** homepage. Click on the **Python 3.12.8** icon in the **Notebook** section to create a new notebook using the **Python 3.12.8** kernel (it's important to use exactly the same python version as on the Spark cluster).
 
@@ -193,7 +203,7 @@ conf.set("spark.executor.memory", "8g")
 conf.set("spark.executor.cores", "1")
 conf.set("spark.core.connection.ack.wait.timeout", "1200")
 conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
 conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
 conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
 conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
@@ -206,6 +216,8 @@ sc = spark.sparkContext
 ```
 
 Execute it by entering **Shift** + **Enter**. 
+
+> **What you should see:** The cell executes without error and a `SparkSession` object reference is printed below it. Some INFO log lines may appear. The `spark` and `sc` variables are now available for use in subsequent cells.
 
 If you check the code you can see that we connect to the Spark Master and get a session on the "spark cluster", available through the `spark` variable. The Spark Context is available as variable `sc`.
 
@@ -226,11 +238,13 @@ Also enable sql magic in Jupyter (this will enable the `%%sql` directive to exec
 %sql spark
 ```
 
+> **What you should see:** No visible output — the SQL magic extension loads silently. After this cell, you can use `%%sql` at the top of any cell to run SQL directly against Spark.
+
 You are now setup to use **Jupyter** for performing the workshop. 
 
 ## Working with Spark Resilient Distributed Datasets (RDDs)
 
-Spark’s primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. 
+Spark's primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. 
 
 It is a distributed collection of elements that is parallelised across the cluster. In other words, a RDD is an immutable collection of objects that is partitioned and distributed across multiple physical nodes of a YARN cluster and that can be operated in parallel.
 
@@ -242,25 +256,29 @@ There are three methods for creating a RDD:
 
 We will be using the 2nd method in this workshop.
 
-### Uploading Raw Data to MinIO
+### Uploading Raw Data to Object Storage
 
-First let's upload the data needed for this workshop, using the techniques we have learned in the [Working with MinIO Object Storage](../02-object-storage/README.md) when working with MinIO Object Storage.
+First let's upload the data needed for this workshop, using the techniques we have learned in the [Working with RustFS Object Storage](../01b-rustfs-object-storage/README.md) when working with Object Storage.
 
 First create a new bucket `wordcount-bucket` for the data
 
 ```bash
-docker exec -ti minio-mc mc mb minio-1/wordcount-bucket
+docker exec -ti rustfs-mc mc mb rustfs-1/wordcount-bucket
 ```
+
+> **What you should see:** Bucket created successfully \`rustfs-1/wordcount-bucket\`.
 
 And then upload the `big.txt` into the new bucket 
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/wordcount/big.txt minio-1/wordcount-bucket/raw-data/
+docker exec -ti rustfs-mc mc cp /data-transfer/wordcount/big.txt rustfs-1/wordcount-bucket/raw-data/
 ```
 
-Now with the data either available in MinIO, let's use the data using Spark RDDs.
+> **What you should see:** A progress bar and a confirmation line showing `big.txt` was uploaded to `rustfs-1/wordcount-bucket/raw-data/`.
 
-### Implement Wordcount using Spark Python API
+Now with the data either available in Object Storage, let's use the data using Spark RDDs.
+
+### Implementing Wordcount using Spark Python API
 
 In this section we will see how Word Count can be implemented using the Spark Python API.
 
@@ -287,6 +305,8 @@ lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
 
 ![](./images/zeppelin-rdd-1.png)
 
+> **What you should see:** No output — `textFile` is a transformation that records where to find the data but does not read it yet. Spark is lazy: no work happens until an action is called.
+
 Click on **Shift-Enter** to execute the cell.
 
 Next let's split the line into words and flat map it
@@ -295,18 +315,28 @@ Next let's split the line into words and flat map it
 words = lines.flatMap(lambda line: line.split(" "))
 ```
 
+> **What you should see:** No output — `flatMap` is also a transformation. The operation is recorded in Spark's execution plan but no data is processed yet.
+
 Reduce by key to get the counts by word and number. 
 ```python
 counts = words.map(lambda word: (word,1)).reduceByKey(lambda a, b : a + b)
 ```
 
+> **What you should see:** No output — `map` and `reduceByKey` are transformations. At this point Spark has built a DAG (Directed Acyclic Graph) of all three steps but executed nothing.
+
+> **What just happened?** This is Spark's **lazy evaluation** model. Transformations like `textFile`, `flatMap`, `map`, and `reduceByKey` only define *what* to compute — they don't trigger any actual work. This allows Spark to optimise the full pipeline before executing it.
+
 So far all of the operations are **transform** operations and executed in a lazy fashion. 
 
-Now let's save the counts to a file on MinIO object storage. This is an **action** and will start execution on Spark. Make sure to remove the output folder in case it already exists
+Now let's save the counts to object storage. This is an **action** and will start execution on Spark. Make sure to remove the output folder in case it already exists
 
 ```python
 counts.saveAsTextFile("s3a://wordcount-bucket/result-data")
 ```
+
+> **What you should see:** Spark now executes the entire pipeline. You will see progress output (stage counters, task counts) as Spark reads `big.txt`, splits lines, maps words, shuffles for `reduceByKey`, and writes the result to Object Storage. This is the first point where actual computation occurs.
+
+> **What just happened?** `saveAsTextFile` is an **action** — it forces Spark to materialise the full RDD by executing all upstream transformations at once. Spark reads the file from object storage, applies the word count pipeline, and writes the result back as two `part-*` files (one per partition).
 
 To view the number of distinct values in counts.
 
@@ -314,20 +344,26 @@ To view the number of distinct values in counts.
 counts.count()
 ```
 
-To check the results in MinIO, do an `ls` to see the different objects in the S3 folder
+> **What you should see:** A single integer — the total number of distinct words found in `big.txt`. Note that running this re-executes the pipeline from scratch unless the RDD has been cached (`.cache()`).
+
+To check the results in Object Storage, do an `ls` to see the different objects in the S3 folder
 
 ```bash
-docker exec -it minio-mc mc ls minio-1/wordcount-bucket/result-data
+docker exec -it rustfs-mc mc ls rustfs-1/wordcount-bucket/result-data
 ```
 
 and you should see a result similar to the one below. We can see that two result files were created, as we run the spark job in parallel:
 
 ```bash
-ubuntu@ip-172-26-1-38:~$ docker exec -it minio-mc mc ls minio-1/wordcount-bucket/result-data
+ubuntu@ip-172-26-1-38:~$ docker exec -it rustfs-mc mc ls rustfs-1/wordcount-bucket/result-data
 [2026-04-02 18:25:00 UTC]     0B STANDARD _SUCCESS
 [2026-04-02 18:25:00 UTC] 657KiB STANDARD part-00000
 [2026-04-02 18:25:00 UTC] 656KiB STANDARD part-00001
 ```
+
+> **What you should see:** Three objects — a zero-byte `_SUCCESS` marker (confirming the job completed without errors) and two `part-*` files containing the word count results, one per Spark partition.
+
+> **What just happened?** Spark writes output in parallel — each partition produces its own `part-*` file. The `_SUCCESS` file is written last as a job-completion signal, commonly used by downstream tools to check whether the output is complete and safe to read.
 
 This finishes this simple Python implementation of a word count in Spark using Spark's Resilient Distributed Datasets (RDD). 
 
@@ -335,7 +371,7 @@ Next let's do a wordcount using Spark DataFrames.
  
 ## Working with Spark DataFrames
 
-The data needed here has been uploaded to MinIO in the **Working with RDD** section. 
+The data needed here has been uploaded to Object Storage in the **Working with RDD** section. 
 
 You can use one of the three different options described above (**PySpark**, **Apache Zeppelin** or **Jupyter**) to access the Spark environment. Don't forget to add the `%pyspark` directive when using **Apache Zeppelin**.
 
@@ -355,18 +391,22 @@ We can easily display the methods it eposes, such as `text()`, `json()` and many
 dir (spark.read)
 ```
 
+> **What you should see:** A list of method names available on the `DataFrameReader`, including `csv`, `json`, `parquet`, `text`, `orc`, and many others.
+
 and you see the method shown below the cell
 
 ![Alt Image Text](./images/zeppelin-dataframe-1.png "Jupyter Execute cell")
 
 In this workshop we will be using the `text()` operation. 
 
-Let's start by reading the data from object storage into a `bookDF` DataFrame, using the `read.text` with the address of the object in minio
+Let's start by reading the data from object storage into a `bookDF` DataFrame, using the `read.text` with the address of the object in Object Storage
 
 ```python
 bookDF = spark.read.text("s3a://wordcount-bucket/raw-data/big.txt")
 bookDF
 ```
+
+> **What you should see:** A `DataFrame` object reference printed (e.g. `DataFrame[value: string]`) — no data is loaded yet. Like RDD transformations, `read.text` is lazy.
 
 A DataFrame with a single value of type string is returned.
 
@@ -381,7 +421,9 @@ and you will see a simple schema with just one value (representing the line of t
 ```
 root
  |-- value: string (nullable = true)
-````
+```
+
+> **What you should see:** A single-field schema — each line of the text file maps to one `value` string column.
 
 To display the data behind the DataFrame, we can use the `show()` method. 
 
@@ -393,11 +435,15 @@ If used without any parameters, by default a maximum of 20 rows is shown.
 
 ![Alt Image Text](./images/zeppelin-dataframe-2.png "Jupyter Execute cell")
 
+> **What you should see:** The first 20 lines of `big.txt` displayed as a table with a single `value` column. This is the first action that triggers Spark to actually read the file from Object Storage.
+
 We can also change it to `10` records and truncate each record at `200` characters:
 
 ```python
 bookDF.show(10, truncate=200)
 ```
+
+> **What you should see:** The first 10 lines of the file, each truncated at 200 characters if longer.
 
 Next we tokenize each word, by splitting on a single space character, return a list of words:
 
@@ -423,6 +469,8 @@ the result will look similar to the one below
 only showing top 5 rows
 ```
 
+> **What you should see:** Each line of text has been converted into an array of words (split on space). The `line` column contains an array type — notice the square brackets and comma-separated words.
+
 Using the `bookDF.value` we are able to select a specific column out from the DataFrame. There are alternative approaches, as shown next. They all get the same result:
 
 ```python
@@ -444,6 +492,8 @@ root
  |-- line: array (nullable = true)
  |    |-- element: string (containsNull = false)
 ```
+
+> **What you should see:** The `line` column is now of type `array<string>` — each element of the array is one word from the original line.
 
 Not let's reshape the result by exploding the array of words into rows of words. We again show the result using the `show()` method
 
@@ -478,6 +528,10 @@ and you should see the following result:
 +----------+
 only showing top 15 rows
 ```
+
+> **What you should see:** Each word is now on its own row — the arrays have been "exploded" into individual records. The DataFrame has gone from one row per line to one row per word.
+
+> **What just happened?** `explode` is the DataFrame equivalent of `flatMap` in the RDD API — it takes each element of an array column and turns it into a separate row, expanding the number of rows from ~lines to ~words.
 
 With the table of words, we next use the `lower` function to change the case to all lowercase
 
@@ -518,6 +572,8 @@ and you should see the following result:
 only showing top 20 rows
 ```
 
+> **What you should see:** All words in lowercase. Notice `(#15` is still present — punctuation and special characters are not yet removed.
+
 Now using `regexp_extract()` function we make sure that only words are kept (only letters a - z)
 
 ```python
@@ -557,6 +613,8 @@ and you should see the following result:
 only showing top 20 rows
 ```
 
+> **What you should see:** Punctuation and numbers have been stripped — `(#15` became an empty string `""`. Empty strings will be filtered out in the next step.
+
 Next let's remove empty words, by just applying a `where` operation:
 
 ```python
@@ -565,12 +623,16 @@ wordsNonNullDF = wordsCleanDF.where(col("word") != "")
 wordsNonNullDF.show()
 ```
 
+> **What you should see:** The same word list as before but with the empty string rows removed — all remaining rows contain at least one letter.
+
 With that we are finally ready to group by word and return the count by word
 
 ```python
 resultsDF = wordsNonNullDF.groupby(col("word")).count()
 resultsDF
 ```
+
+> **What you should see:** A `DataFrame` object reference — no computation happens yet. `groupBy` and `count` are a transformation and an aggregation, both lazy until an action triggers execution.
 
 Finally we order the counts in descending order and only show the top 10 word counts 
 
@@ -597,3 +659,7 @@ and you should see the following result:
 +----+-----+
 only showing top 10 rows
 ```
+
+> **What you should see:** The top 10 most frequent words in the text, dominated by common English stop words (`the`, `of`, `and`, ...). The `show(10)` call is the action that triggers Spark to execute the entire DataFrame pipeline from reading the file through to the final aggregation and sort.
+
+> **What just happened?** The full DataFrame pipeline — read → split → explode → lowercase → regex clean → filter → groupBy → count → orderBy — was executed in a single optimised job. Spark's Catalyst query optimiser rearranges and combines these steps into an efficient physical plan before running them, which is the key advantage of the DataFrame API over raw RDDs.
