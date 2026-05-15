@@ -1152,12 +1152,15 @@ services:
       - RUSTFS_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
       - RUSTFS_SECRET_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       - RUSTFS_OBS_LOGGER_LEVEL=info
+      # Keep strict disk topology checks enabled by default.
+      # For local testing only, set `RUSTFS_UNSAFE_BYPASS_DISK_CHECK=true` explicitly.      
+      - RUSTFS_UNSAFE_BYPASS_DISK_CHECK=true
 #      - RUSTFS_TLS_PATH=/opt/tls
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
     healthcheck:
-      test: [CMD, sh, -c, curl -f http://127.0.0.1:9000/health && curl -f http://127.0.0.1:9001/rustfs/console/health]
+      test: [CMD, sh, -c, curl -f http://127.0.0.1:9000/health && curl -f http://127.0.0.1:9010/rustfs/console/health]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1190,6 +1193,24 @@ services:
         done
         #
         while [ 1 -eq 1 ];do sleep 60;done
+    restart: unless-stopped
+  #  ================================== Awscli ========================================== #
+  awscli:
+    image: trivadis/awscli-s3cmd:latest
+    container_name: awscli
+    hostname: awscli
+    labels:
+      com.platys.name: awscli
+      com.platys.description: AWS CLI
+    environment:
+      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}}
+      AWS_ENDPOINT: rustfs-1:9000
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
+    command: tail -f /dev/null
     restart: unless-stopped
   #  ================================== File Browser ================= #
   filebrowser:
