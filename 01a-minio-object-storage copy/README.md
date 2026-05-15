@@ -38,7 +38,7 @@ If you want the data to persist even after you shutdown the docker-compose stack
 
 You can enable in Platys by setting `MINIO_volume_map_data` to `true` and regenerate the stack.
 
-### Accessing MinIO
+## Accessing MinIO
 
 [MinIO](https://min.io/) is an object storage server released under Apache License v2.0. It is compatible with Amazon S3 cloud storage service. It is best suited for storing unstructured data such as photos, videos, log files, backups and container / VM images. Size of an object can range from a few KBs to a maximum of 5TB.
 
@@ -88,7 +88,9 @@ The MinIO Console dashboard page should now appear.
 
 Before we can upload the files to MinIO, we first have to create a new bucket. We can either do it over the Console or using a Command-Line Interface (CLI).
 
-### Create a Bucket using Minio Aistor Console (Web UI)
+## Create a Bucket 
+
+### Using Minio Aistor Console (Web UI)
 
 Now click on the **Buckets** menu item on the left.
 
@@ -104,7 +106,7 @@ Enter `flight-bucket` into the **Bucket Name** field, leave the **Type** set to 
 
 and click **Create Bucket**.
 
-### Create a Bucket using MinIO MC
+### Using MinIO mc
 
 Here are the commands to perform when using the MinIO **mc** utility on the command line
 
@@ -141,6 +143,8 @@ bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1
 ```
 
 **Note**: the `admin-bucket` has been created when starting the platform. 
+
+## Uploading data
 
 ### Upload the Airport and Plane-Data CSV files to the new bucket
 
@@ -277,7 +281,7 @@ A pop-up window will appear from where you can copy the link by clicking on the 
 
 ![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
 
-Copy the link into a Web-browser window (make sure to replace the `127.0.0.1:9010` by `<public-ip-address>:9000` and the document will be downloaded locally to disk and optionally rendered in the browser  
+Copy the link into a Web-browser window (make sure to replace `127.0.0.1:9014` by `<public-ip-address>:9005`) and the document will be downloaded locally to disk or depending on the browser directly rendered in the browser. 
 
 ![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
 
