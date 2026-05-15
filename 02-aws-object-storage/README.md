@@ -9,6 +9,11 @@ To do this workshop you need an AWS subscription.
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
 - [Using Amazon S3](#using-amazon-s3)
+  - [Create a Bucket](#create-a-bucket)
+  - [Upload objects to the S3 bucket](#upload-objects-to-the-s3-bucket)
+  - [Using S3 Select](#using-s3-select)
+  - [Create Access Credentials](#create-access-credentials)
+  - [Using the AWS CLI to work with S3](#using-the-aws-cli-to-work-with-s3)
 
 ## What you will learn
 
@@ -31,6 +36,8 @@ Navigate to the S3 console <https://s3.console.aws.amazon.com/s3>.
 
 ![Alt Image Text](./images/s3-home.png "S3 Homepage")
 
+> **What you should see:** The S3 console showing a list of your existing buckets (empty if this is a fresh account) and the **Create bucket** button in the top-right area.
+
 We will first use the browser based UI to create buckets and upload objects.
 
 ### Create a Bucket
@@ -50,6 +57,10 @@ If you want versioning on your objects, enable **Bucket Versioning**.
 Click on **Create bucket** at the bottom of the page.
 
 ![Alt Image Text](./images/s3-create-bucket-2.png "S3 Homepage")
+
+> **What you should see:** The new bucket (e.g. `<useralias>-bfh-flight-bucket`) now appears in the bucket list on the S3 console home page.
+
+> **What just happened?** S3 bucket names are globally unique across all AWS accounts — if someone else already owns the name you chose you will get an error. The region you selected determines where the data physically resides and affects latency and data-sovereignty compliance.
 
 ### Upload objects to the S3 bucket
 
@@ -77,9 +88,13 @@ Scroll all the way down and click on **Upload**. The Upload status page will app
 
 ![Alt Image Text](./images/s3-upload-folder-2.png "S3 Homepage")
 
+> **What you should see:** A green **Upload succeeded** banner and a summary showing the total number of files and bytes uploaded (approximately 60.3 MB for the full flight-data folder).
+
 Click on **Close** to return to the bucket overview page. 
 
 ![Alt Image Text](./images/s3-upload-folder-3.png "S3 Homepage")
+
+> **What you should see:** The `flight-data` folder listed as an object prefix inside the bucket.
 
 You can see the folder `flight-data` which we have successfully uploaded. To view the objects, click onto the folder link. Inside the `flight-data` folder, there is a `.DS_Store` file (a mac artefact) which was part of the ZIP file, but is not needed at all. We can delete it by selecting it (click on the check box left to the name)
 
@@ -92,6 +107,10 @@ and click on **Delete**. When deleting an object or folder through the S3 consol
 Click on it and the object will get deleted. You will see a confirmation page like the one bellow.
 
 ![Alt Image Text](./images/s3-delete-object-3.png "S3 Homepage")
+
+> **What you should see:** A green **Delete succeeded** confirmation page showing the `.DS_Store` object was successfully removed.
+
+> **What just happened?** S3 requires you to type `permanently delete` as a safety guard — there is no recycle bin or undo for object deletion (unless bucket versioning is enabled).
 
 ### Using S3 Select
 
@@ -108,6 +127,10 @@ Scroll down to the **SQL Query** area and extend the SQL statement shown with a 
 Click on **Run SQL query** and the result will be shown in the **Query results** section.
 
 ![Alt Image Text](./images/s3-select-2.png "S3 Homepage")
+
+> **What you should see:** A single row returned in the **Query results** section — the United Airlines entry from `carriers.csv` — without downloading the entire file.
+
+> **What just happened?** S3 Select pushes the filter predicate down to the S3 service itself, so only the matching rows are transferred over the network. For large files this dramatically reduces both data transfer costs and latency compared to downloading the full object.
 
 You can click on **Download results** to download it using the format specified in the **Output settings**.
 
@@ -149,7 +172,11 @@ Back on the **Add user** page, click **Next: Tags** and **Next: Review** and **C
 
 ![Alt Image Text](./images/security-credentials-7.png "S3 Homepage")
 
+> **What you should see:** A green **Success** banner with the new user `s3user` listed, along with the **Access key ID** and a masked **Secret access key**.
+
 Click on the **show** link to show view the **Secret access key**. It is important to save that value in a safe place, as it can never be displayed after the page is closed. You will need **Access key ID** and **Secret access key** for accessing S3 from external.
+
+> **What just happened?** You created an IAM user with programmatic access only (no AWS Console login). Attaching the `AmazonS3FullAccess` policy via a group gives the user full read/write access to all S3 buckets in the account. The secret access key is shown only once — if lost, you must generate a new key pair.
 
 Click on **Close** and you see the newly created user `s3user` in the list of users.
 
@@ -172,6 +199,8 @@ ubuntu@ip-172-26-3-90:~$ aws --version
 aws-cli/1.18.69 Python/3.8.5 Linux/5.4.0-1018-aws botocore/1.16.19
 ```
 
+> **What you should see:** The installed AWS CLI version, Python version, and platform. Any `1.x` or `2.x` version works for these exercises.
+
 To use the AWS CLI, make sure that you have the necessary access credentials available. You can create them as shown in the previous section. Configure the CLI using the `configure` command. 
 
 ```
@@ -179,6 +208,8 @@ aws configure
 ```
 
 Enter the values for **AWS Access Key ID** and **AWS Secret Access Key** saved above and enter `eu-central-1` for the **Default region name** and accept the default for **Default output format**.  
+
+> **What you should see:** Four prompts — `AWS Access Key ID`, `AWS Secret Access Key`, `Default region name`, and `Default output format`. After entering the values the prompt returns with no further output, indicating the credentials were saved to `~/.aws/credentials`.
 
 Now you can use the `s3` command to work with S3. Enter `aws s3 help` to see the documentation.
 
@@ -188,6 +219,8 @@ To see all the buckets enter `aws s3 ls`
 ubuntu@ip-172-26-3-90:~$ aws s3 ls
 2021-05-15 16:09:26 gus-bhf-flight-bucket
 ```
+
+> **What you should see:** A list of all S3 buckets accessible with your credentials, including the `<useralias>-bfh-flight-bucket` created earlier.
 
 You can use the `aws s3 ls help` command to get the documentation for just the `ls` subcommand. 
 
@@ -209,3 +242,7 @@ ubuntu@ip-172-26-3-90:~$ aws s3 ls --recursive gus-bhf-flight-bucket
 2021-05-15 17:50:46     428558 flight-data/plane-data.csv
 2021-05-15 17:50:47     968807 flight-data/plane-data.json
 ```
+
+> **What you should see:** All uploaded objects listed with their last-modified timestamp, size in bytes, and full key path — confirming everything from the `flight-data` folder was uploaded successfully.
+
+> **What just happened?** Without `--recursive`, `aws s3 ls` shows only the top-level prefixes (folders). With `--recursive` it flattens the entire key namespace and lists every individual object, which is useful for auditing bucket contents or scripting bulk operations.

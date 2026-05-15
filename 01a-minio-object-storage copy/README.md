@@ -68,6 +68,8 @@ Running `s3cmd -h` will show the help page of s3cmd.
 docker exec -ti awscli s3cmd -h
 ```
 
+> **What you should see:** The s3cmd help page listing all available commands and options such as `put`, `get`, `del`, `ls`, and `mb`.
+
 This can also be found on the [S3cmd usage page](https://s3tools.org/usage).
 
 **Using MinIO mc**
@@ -80,6 +82,8 @@ Running `mc -h` will show the help page of mc.
 docker exec -ti minio-mc mc -h
 ```
 
+> **What you should see:** The mc help page listing all available sub-commands such as `cp`, `ls`, `mb`, `rm`, and `tree`.
+
 **Using MinIO Aistor Console**
 
 In a browser window, navigate to <http://dataplatform:9010>. 
@@ -91,6 +95,8 @@ Enter `admin` into the **Access Key** and  `abc123!abc123!` into the **Secret Ke
 The MinIO Console dashboard page should now appear.
  
 ![Alt Image Text](./images/minio-home.png "Minio Homepage")
+
+> **What you should see:** The MinIO Aistor Console dashboard showing an overview of the storage, with the **Buckets** menu item visible on the left.
 
 Before we can upload the files to MinIO, we first have to create a new bucket. We can either do it over the Console or using a Command-Line Interface (CLI).
 
@@ -112,6 +118,8 @@ Enter `flight-bucket` into the **Bucket Name** field, leave the **Type** set to 
 
 and click **Create Bucket**.
 
+> **What you should see:** The new `flight-bucket` appears in the bucket list.
+
 ### Using MinIO mc
 
 Here are the commands to perform when using the MinIO **mc** utility on the command line
@@ -129,6 +137,8 @@ bigdata@bigdata:~$ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 
 Bucket created successfully `minio-1/flight-bucket`.
 ```
+
+> **What you should see:** The line `Bucket created successfully \`minio-1/flight-bucket\`` confirming the bucket was created.
 
 Navigate to the MinIO UI (<http://dataplatform:9010/console/buckets>) and you should see the newly created bucket. 
 
@@ -148,6 +158,8 @@ bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1
 [2026-04-02 15:55:25 UTC]     0B flight-bucket/
 ```
 
+> **What you should see:** Two buckets listed — `admin-bucket` (created automatically at startup) and `flight-bucket` (just created).
+
 **Note**: the `admin-bucket` has been created when starting the platform. 
 
 ## Uploading data
@@ -160,11 +172,15 @@ To upload a file we are going to use the `cp` command of the `minio-mc`. First f
 docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
+> **What you should see:** A progress bar followed by a confirmation line showing the file size and destination path, e.g. `...airports.csv: 11 MiB / 11 MiB`.
+
 and then also for the `plane-data.csv` file. 
 
 ```bash
 docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
 ```
+
+> **What you should see:** A similar progress bar and confirmation for `plane-data.csv`.
 
 Let's use the `mc ls` command once more but now to display the content of the `flight-bucket`
 
@@ -179,6 +195,10 @@ bigdata@bigdata:~$ docker exec -ti minio-mc mc ls minio-1/flight-bucket/
 [2026-04-02 15:59:40 UTC]     0B raw/
 ```
 
+> **What you should see:** A single `raw/` prefix entry — object storage has no real directories, but the shared key prefix is displayed as a folder.
+
+> **What just happened?** MinIO, like S3, has no native directory concept. The `raw/airports/airports.csv` key simply contains a `/` separator, and `mc ls` groups objects by their common prefix to give a familiar folder-like view.
+
 If we use the `-r` argument
 
 ```bash
@@ -192,6 +212,8 @@ bigdata@bigdata:~$ docker exec -ti minio-mc mc ls -r minio-1/flight-bucket/
 [2026-04-02 15:59:21 UTC]  11MiB STANDARD raw/airports/airports.csv
 [2026-04-02 15:59:31 UTC] 418KiB STANDARD raw/planes/plane-data.csv
 ```
+
+> **What you should see:** Both uploaded files listed with their sizes and full key paths.
 
 you can also use the `tree` command to display it as a tree
 
@@ -208,6 +230,8 @@ minio-1/flight-bucket/
    ├─ airports
    └─ planes
 ```
+
+> **What you should see:** A tree showing the `raw` folder with `airports` and `planes` sub-folders.
 
 if we use the `--files` option we can see the files as well
 
@@ -227,6 +251,8 @@ minio-1/flight-bucket/
       └─ plane-data.csv
 ```
 
+> **What you should see:** The same tree but now with the actual filenames listed under each folder.
+
 We can see the same in the MinIO Aistor Console. In the **Buckets** menu, click on the `flight-bucket` to see the configuration of the bucket
 
 ![Alt Image Text](./images/minio-flight-bucket-details.png "MinIO flight-bucket details")
@@ -245,6 +271,8 @@ First for the `carriers.json`
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
 ```
 
+> **What you should see:** A progress line ending with `upload: '/data-transfer/flight-data/carriers.json' -> 's3://flight-bucket/raw/carriers/carriers.json'`.
+
 Check again in the MinIO Aistor Console that the object has been uploaded.
 
 ### Upload the different Flights data CSV files to the new bucket
@@ -259,6 +287,8 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
+> **What you should see:** Five upload confirmation lines, one per file, each ending with `-> 's3://flight-bucket/raw/flights/<filename>'`.
+
 All these objects are now available in the flight-bucket under the `raw/flights` path.
 
 ![Alt Image Text](./images/minio-flights.png "MinIO list flights")
@@ -270,6 +300,10 @@ Now after we have seen how to upload text files, let's also upload a binary file
 ```bash
 docker exec -ti minio-mc mc cp /data-transfer/flight-data/pilot_handbook.pdf minio-1/flight-bucket/raw/pdf/
 ```
+
+> **What you should see:** A progress bar and confirmation that the PDF was uploaded to `minio-1/flight-bucket/raw/pdf/pilot_handbook.pdf`.
+
+> **What just happened?** Object storage treats every file — text, CSV, PDF, image — identically as a sequence of bytes. The file extension is stored as metadata but has no special meaning to the storage engine itself.
 
 The file has been upload, which you can again check using the MinIO Aistor console.
 
@@ -287,6 +321,8 @@ A pop-up window will appear from where you can copy the link by clicking on the 
 
 ![Alt Image Text](./images/minio-share-link-2.png "Minio list objects")
 
+> **What you should see:** A pre-signed URL containing a time-limited access token that allows anyone with the link to download the object without needing credentials.
+
 Copy the link into a Web-browser window (make sure to replace `127.0.0.1:9014` by `<public-ip-address>:9005`) and the document will be downloaded locally to disk or depending on the browser directly rendered in the browser. 
 
 ![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
@@ -303,11 +339,15 @@ To download an object from MinIO to the local filesystem, use the `mc cp` comman
 docker exec -ti minio-mc mc cp minio-1/flight-bucket/raw/airports/airports.csv /data-transfer/airports-download.csv
 ```
 
+> **What you should see:** A progress bar and a confirmation line showing the file was downloaded to `/data-transfer/airports-download.csv`.
+
 You can also download an entire prefix recursively with the `--recursive` flag:
 
 ```bash
 docker exec -ti minio-mc mc cp --recursive minio-1/flight-bucket/raw/flights/ /data-transfer/flights-download/
 ```
+
+> **What you should see:** Five progress bars (one per file) as all objects under `raw/flights/` are downloaded into the local `flights-download/` directory.
 
 ### Using s3cmd
 
@@ -317,6 +357,8 @@ To download an object using `s3cmd get`:
 docker exec -ti awscli s3cmd get s3://flight-bucket/raw/carriers/carriers.json /data-transfer/carriers-download.json
 ```
 
+> **What you should see:** A line ending with `download: 's3://flight-bucket/raw/carriers/carriers.json' -> '/data-transfer/carriers-download.json'`.
+
 ## Copying objects within MinIO
 
 You can copy objects between paths or buckets entirely within MinIO without downloading them locally, using `mc cp`:
@@ -325,17 +367,27 @@ You can copy objects between paths or buckets entirely within MinIO without down
 docker exec -ti minio-mc mc cp minio-1/flight-bucket/raw/airports/airports.csv minio-1/flight-bucket/backup/airports/airports.csv
 ```
 
+> **What you should see:** A confirmation that `airports.csv` was copied to the `backup/airports/` path within the same bucket.
+
+> **What just happened?** The copy happens server-side inside MinIO — no data is transferred to your machine and back. This is equivalent to S3's server-side copy operation.
+
 To copy a whole prefix to another bucket:
 
 ```bash
 docker exec -ti minio-mc mc cp --recursive minio-1/flight-bucket/raw/ minio-1/flight-bucket/backup/
 ```
 
+> **What you should see:** A confirmation line for each object copied, mirroring the full `raw/` hierarchy under `backup/`.
+
 To move (copy then delete the source), use `mc mv`:
 
 ```bash
 docker exec -ti minio-mc mc mv minio-1/flight-bucket/raw/airports/airports.csv minio-1/flight-bucket/archive/airports/airports.csv
 ```
+
+> **What you should see:** A confirmation that the object was moved to `archive/airports/airports.csv`.
+
+> **What just happened?** `mc mv` is a shorthand for `mc cp` followed by `mc rm` on the source — there is no native move/rename operation in S3-compatible object stores.
 
 ## Deleting objects and buckets
 
@@ -347,17 +399,25 @@ To delete a single object, use `mc rm`:
 docker exec -ti minio-mc mc rm minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
+> **What you should see:** A confirmation line `Removed \`minio-1/flight-bucket/raw/airports/airports.csv\``.
+
 To delete all objects under a prefix recursively:
 
 ```bash
 docker exec -ti minio-mc mc rm --recursive --force minio-1/flight-bucket/raw/flights/
 ```
 
+> **What you should see:** Multiple `Removed` lines, one per deleted object under `raw/flights/`.
+
+> **What just happened?** The `--recursive` flag makes `mc rm` walk all keys sharing the given prefix and delete them one by one. The `--force` flag suppresses the confirmation prompt — without it the command would ask you to confirm each deletion.
+
 You can also use `s3cmd del` to remove an object:
 
 ```bash
 docker exec -ti awscli s3cmd del s3://flight-bucket/raw/carriers/carriers.json
 ```
+
+> **What you should see:** A line `delete: 's3://flight-bucket/raw/carriers/carriers.json'` confirming the object was removed.
 
 ### Deleting a bucket
 
@@ -367,11 +427,16 @@ To remove an empty bucket, use `mc rb`:
 docker exec -ti minio-mc mc rb minio-1/flight-bucket
 ```
 
+> **What you should see:** `Removed \`minio-1/flight-bucket\``. If the bucket still contains objects the command will fail with an error — empty the bucket first or use `--force`.
+
 To remove a bucket and all its contents in one step, add the `--force` flag:
 
 ```bash
 docker exec -ti minio-mc mc rb --force minio-1/flight-bucket
 ```
 
-**Note**: use `--force` with care — this is irreversible.
+> **What you should see:** `Removed \`minio-1/flight-bucket\`` after all contained objects have been deleted.
 
+> **What just happened?** `--force` first empties all objects from the bucket and then removes the bucket itself in a single command. Use with care — this operation is irreversible.
+
+**Note**: use `--force` with care — this is irreversible.
