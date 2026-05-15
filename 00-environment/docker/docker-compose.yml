@@ -37,13 +37,13 @@ services:
       # env vars for config files
 #     INIT_DAEMON_STEP: setup_spark
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://rustfs-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
@@ -117,13 +117,13 @@ services:
       SPARK_PUBLIC_DNS: ${PUBLIC_IP:-127.0.0.1}
       # env vars for config files
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://rustfs-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
@@ -192,13 +192,13 @@ services:
       SPARK_PUBLIC_DNS: ${PUBLIC_IP:-127.0.0.1}
       # env vars for config files
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://rustfs-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
@@ -261,13 +261,13 @@ services:
       - 28117:18080
     environment:
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://rustfs-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
@@ -324,13 +324,13 @@ services:
     environment:
       SPARK_MASTER_URL: spark://spark-master:7077
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://minio-1:9000
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_endpoint: http://rustfs-1:9000
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_s3a_path_style_access: 'true'
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       SPARK_DEFAULTS_CONF_spark_hadoop_fs_defaultFS: s3a://admin-bucket
       SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
       SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
@@ -389,9 +389,9 @@ services:
       HIVE_VER: 3.1.2
       CORE_CONF_fs_defaultFS: file:///tmp
       HIVE_SITE_CONF_fs_defaultFS: file:///tmp
-      HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
+      HIVE_SITE_CONF_fs_s3a_endpoint: http://rustfs-1:9000
       HIVE_SITE_CONF_fs_s3a_access_key: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      HIVE_SITE_CONF_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      HIVE_SITE_CONF_fs_s3a_secret_key: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       HIVE_SITE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_impl: org.apache.hadoop.fs.s3a.S3AFileSystem
       HIVE_SITE_CONF_hive_metastore_uris: thrift://hive-metastore:9083
@@ -488,12 +488,12 @@ services:
       NIFI_WEB_PROXY_HOST: ${PUBLIC_IP:-127.0.0.1}:18083,${DOCKER_HOST_IP:-localhost}:18083
       NIFI_SECURITY_USER_AUTHORIZER: single-user-authorizer
       NIFI_SECURITY_USER_LOGIN_IDENTITY_PROVIDER: single-user-provider
-      S3_ENDPOINT: http://minio-1:9000
+      S3_ENDPOINT: http://rustfs-1:9000
       S3_PATH_STYLE_ACCESS: 'true'
       S3_REGION: us-east-1
       # these two env variables are also needed for the s3-credentials.properties file gen to work! 
       AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       NIFI_REMOTE_INPUT_SOCKET_PORT: '10015'
       NIFI_REMOTE_INPUT_HOST: nifi-1
       NIFI_SENSITIVE_PROPS_KEY: 12345678901234567890A
@@ -562,9 +562,9 @@ services:
       AIRFLOW__API__EXPOSE_CONFIG: true
       SPARK_HOME: /opt/bitnami/spark
       JAVA_HOME: /opt/bitnami/java
-      AIRFLOW_VAR_S3_ENDPOINT: http://minio-1:9000
+      AIRFLOW_VAR_S3_ENDPOINT: http://rustfs-1:9000
       AIRFLOW_VAR_S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW_VAR_S3_PATH_STYLE_ACCESS: 'true'
       AIRFLOW__LOGGING__REMOTE_LOGGING: true
       AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: log_s3_conn
@@ -573,13 +573,13 @@ services:
         { "conn_type": "aws", 
           "host": "minio-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
-          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}", 
+          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
           "port": 9000, 
-          "extra": {"endpoint_url": "http://minio-1:9000", "region_name": "us-east-1"}
+          "extra": {"endpoint_url": "http://rustfs-1:9000", "region_name": "us-east-1"}
         }
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW__OPENLINEAGE__DISABLED: true
     volumes:
       - ./data-transfer:/data-transfer
@@ -637,9 +637,9 @@ services:
       AIRFLOW__API__EXPOSE_CONFIG: true
       SPARK_HOME: /opt/bitnami/spark
       JAVA_HOME: /opt/bitnami/java
-      AIRFLOW_VAR_S3_ENDPOINT: http://minio-1:9000
+      AIRFLOW_VAR_S3_ENDPOINT: http://rustfs-1:9000
       AIRFLOW_VAR_S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW_VAR_S3_PATH_STYLE_ACCESS: 'true'
       AIRFLOW__LOGGING__REMOTE_LOGGING: true
       AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: log_s3_conn
@@ -648,13 +648,13 @@ services:
         { "conn_type": "aws", 
           "host": "minio-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
-          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}", 
+          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
           "port": 9000, 
-          "extra": {"endpoint_url": "http://minio-1:9000", "region_name": "us-east-1"}
+          "extra": {"endpoint_url": "http://rustfs-1:9000", "region_name": "us-east-1"}
         }
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW__OPENLINEAGE__DISABLED: true
     volumes:
       - ./data-transfer:/data-transfer
@@ -712,9 +712,9 @@ services:
       AIRFLOW__API__EXPOSE_CONFIG: true
       SPARK_HOME: /opt/bitnami/spark
       JAVA_HOME: /opt/bitnami/java
-      AIRFLOW_VAR_S3_ENDPOINT: http://minio-1:9000
+      AIRFLOW_VAR_S3_ENDPOINT: http://rustfs-1:9000
       AIRFLOW_VAR_S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW_VAR_S3_PATH_STYLE_ACCESS: 'true'
       AIRFLOW__LOGGING__REMOTE_LOGGING: true
       AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: log_s3_conn
@@ -723,13 +723,13 @@ services:
         { "conn_type": "aws", 
           "host": "minio-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
-          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}", 
+          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
           "port": 9000, 
-          "extra": {"endpoint_url": "http://minio-1:9000", "region_name": "us-east-1"}
+          "extra": {"endpoint_url": "http://rustfs-1:9000", "region_name": "us-east-1"}
         }
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW__OPENLINEAGE__DISABLED: true
     volumes:
       - ./data-transfer:/data-transfer
@@ -897,9 +897,9 @@ services:
       AIRFLOW__API__EXPOSE_CONFIG: true
       SPARK_HOME: /opt/bitnami/spark
       JAVA_HOME: /opt/bitnami/java
-      AIRFLOW_VAR_S3_ENDPOINT: http://minio-1:9000
+      AIRFLOW_VAR_S3_ENDPOINT: http://rustfs-1:9000
       AIRFLOW_VAR_S3_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AIRFLOW_VAR_S3_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW_VAR_S3_PATH_STYLE_ACCESS: 'true'
       AIRFLOW__LOGGING__REMOTE_LOGGING: true
       AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: log_s3_conn
@@ -908,13 +908,13 @@ services:
         { "conn_type": "aws", 
           "host": "minio-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
-          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}", 
+          "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
           "port": 9000, 
-          "extra": {"endpoint_url": "http://minio-1:9000", "region_name": "us-east-1"}
+          "extra": {"endpoint_url": "http://rustfs-1:9000", "region_name": "us-east-1"}
         }
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AIRFLOW__OPENLINEAGE__DISABLED: true
     volumes:
       - ./data-transfer:/data-transfer
@@ -942,7 +942,7 @@ services:
       # for awscli & s3cmd
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
       AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      AWS_ENDPOINT: http://minio-1:9000
+      AWS_ENDPOINT: http://rustfs-1:9000
       AWS_DEFAULT_REGION: us-east-1
       SPARK_HOME: /opt/bitnami/spark
       ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
@@ -1015,7 +1015,7 @@ services:
       # for awscli & s3cmd
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
       AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      AWS_ENDPOINT: http://minio-1:9000
+      AWS_ENDPOINT: http://rustfs-1:9000
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
       #PYSPARK_PYTHON: /opt/bitnami/python/bin/python3.12
@@ -1093,10 +1093,10 @@ services:
       QUERY_MAX_MEMORY_PER_NODE: 4GB
       HMS_ICEBERG_REST_CATALOG_URI: http://hive-metastore:9084/iceberg
       HMS_ICEBERG_REST_CATALOG_WAREHOUSE: s3a://admin-bucket/iceberg/warehouse
-      S3_ENDPOINT: http://minio-1:9000
+      S3_ENDPOINT: http://rustfs-1:9000
       S3_REGION: us-east-1
       S3_AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      S3_AWS_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      S3_AWS_SECRET_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       S3_PATH_STYLE_ACCESS: 'true'
       HIVE_METASTORE_URI: thrift://hive-metastore:9083
       HIVE_STORAGE_FORMAT: ORC
@@ -1126,61 +1126,55 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  #  ================================== Minio ========================================== #
-  minio-1:
-    image: quay.io/minio/aistor/minio:latest
-    container_name: minio-1
-    hostname: minio-1
+  #  ================================== RustFS (S3 Storage) ========================================== #
+  rustfs-1:
+    image: rustfs/rustfs:latest
+    container_name: rustfs-1
+    hostname: rustfs-1
+    security_opt:
+      - no-new-privileges:true
     labels:
-      com.platys.name: minio
+      com.platys.name: rustfs
       com.platys.description: Software-defined Object Storage
-      com.platys.webui.title: MinIO UI
-      com.platys.webui.url: http://dataplatform:9010
-      com.platys.password.envvars: PLATYS_AWS_SECRET_ACCESS_KEY, PLATYS_MINIO_AISTOR_LICENSE
+      com.platys.webui.title: RustFS Console
+      com.platys.webui.url: http://dataplatform:9014
+      com.platys.password.envvars: PLATYS_AWS_SECRET_ACCESS_KEY
     ports:
-      # S3 API Port
-      - 9000:9000
-      # UI Port
-      - 9010:9010
+      - 9005:9000   # S3 API port
+      - 9014:9010   # Console port    
     environment:
-      MINIO_ROOT_USER: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      MINIO_ROOT_PASSWORD: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      # remove region due to problems with RisingWave
-      #MINIO_REGION_NAME: us-east-1
-      #MINIO_REGION: us-east-1
-      MINIO_DOMAIN: minio
-      MINIO_SERVER_URL: http://${PUBLIC_IP:-127.0.0.1}:9000
-      MINIO_COMPRESSION_ENABLE: off
-      MINIO_PROMETHEUS_AUTH_TYPE: public
-      MINIO_PROMETHEUS_URL: http://prometheus-1:9090
-      MINIO_LICENSE: ${PLATYS_MINIO_AISTOR_LICENSE:-None}
+      - RUSTFS_VOLUMES=/data/rustfs{0..3} # Define 4 storage volumes
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9010
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
+      - RUSTFS_SECRET_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
+      - RUSTFS_OBS_LOGGER_LEVEL=info
+#      - RUSTFS_TLS_PATH=/opt/tls
     volumes:
       - ./data-transfer:/data-transfer
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        mkdir -p /root/.minio && echo "$$MINIO_LICENSE" > /root/.minio/minio.license && exec /usr/bin/docker-entrypoint.sh "$$@"
-    command: minio server /data --console-address ":9010" --license /root/.minio/minio.license
     restart: unless-stopped
     healthcheck:
-      test: [CMD, curl, -f, http://minio-1:9000/minio/health/live]
-      interval: 15s
-      timeout: 20s
+      test: [CMD, sh, -c, curl -f http://127.0.0.1:9000/health && curl -f http://127.0.0.1:9001/rustfs/console/health]
+      interval: 30s
+      timeout: 10s
       retries: 3
-  #  ================================== Minio MC ========================================== #
-  minio-mc:
+      start_period: 40s
+  #  ================================== RustFS MC ========================================== #
+  rustfs-mc:
     image: minio/mc:latest
-    container_name: minio-mc
-    hostname: minio-mc
+    container_name: rustfs-mc
+    hostname: rustfs-mc
     labels:
-      com.platys.name: minio
-      com.platys.description: MinIO Console
+      com.platys.name: rustfs
+      com.platys.description: RustFS CLI
     environment:
       # these two env variables are also needed for the s3-credentials.properties file gen to work! 
       AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      MC_HOST_minio-1: http://${PLATYS_AWS_ACCESS_KEY:-admin}:${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}@minio-1:9000
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
+      MC_HOST_rustfs-1: http://${PLATYS_AWS_ACCESS_KEY:-admin}:${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}@rustfs-1:9000
     volumes:
       - ./data-transfer:/data-transfer
       - ./scripts/docker/wait-for-it.sh:/usr/src/app/wait-for-it.sh
@@ -1188,32 +1182,14 @@ services:
       - /bin/sh
       - -c
       - |
-        /usr/src/app/wait-for-it.sh -t 180 minio-1:9000
-        mc mb --ignore-existing minio-1/admin-bucket
+        /usr/src/app/wait-for-it.sh -t 180 rustfs-1:9000
+        mc mb --ignore-existing rustfs-1/admin-bucket
               for bucket in $$(tr ',' '\n' <<< "")
         do
-          mc mb --ignore-existing minio-1/$$bucket
+          mc mb --ignore-existing rustfs-1/$$bucket
         done
         #
         while [ 1 -eq 1 ];do sleep 60;done
-    restart: unless-stopped
-  #  ================================== Awscli ========================================== #
-  awscli:
-    image: trivadis/awscli-s3cmd:latest
-    container_name: awscli
-    hostname: awscli
-    labels:
-      com.platys.name: awscli
-      com.platys.description: AWS CLI
-    environment:
-      AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      AWS_ENDPOINT: minio-1:9000
-      AWS_DEFAULT_REGION: us-east-1
-    volumes:
-      - ./data-transfer:/data-transfer
-      - ./conf/awscli/s3cfg.template:/root/.s3cfg.template
-    command: tail -f /dev/null
     restart: unless-stopped
   #  ================================== File Browser ================= #
   filebrowser:
@@ -1331,13 +1307,13 @@ services:
       com.platys.description: Platys MDP Init Service
     environment:
       AWS_ACCESS_KEY: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      S3_ENDPOINT: http://minio-1:9000
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
+      S3_ENDPOINT: http://rustfs-1:9000
       S3_PATH_STYLE_ACCESS: 'true'
-      MC_HOST_minio-1: http://${PLATYS_AWS_ACCESS_KEY:-admin}:${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}@minio-1:9000
-      MINIO_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      MINIO_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
-      MINIO_URL: http://minio-1:9000
+      MC_HOST_rustfs-1: http://${PLATYS_AWS_ACCESS_KEY:-admin}:${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}@rustfs-1:9000
+      RUSTFS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
+      RUSTFS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
+      RUSTFS_URL: http://rustfs-1:9000
       NIFI2_URL: https://nifi2-1:18083
       NIFI2_VERSION: 2.0.0
       NIFI2_USERNAME: nifi
