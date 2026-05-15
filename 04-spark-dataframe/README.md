@@ -26,7 +26,7 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 ## What you will learn
 
-- How to read structured data (CSV, JSON) from MinIO into Spark DataFrames with schema inference
+- How to read structured data (CSV, JSON) from Object Storage into Spark DataFrames with schema inference
 - How to define explicit schemas using `StructType` and `StructField`
 - How to transform and join multiple DataFrames using the DataFrame API and Spark SQL
 - How to write DataFrames to object storage in different formats (JSON, Parquet) with partitioning
@@ -37,22 +37,16 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
-- Airport, plane, carrier, and flight data uploaded to MinIO (instructions provided if needed)
+- Airport, plane, carrier, and flight data uploaded to Object Storage (instructions provided if needed)
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
 ```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
-```
-
-or with `mc`
- 
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
 ```
 
 **Airports:**
@@ -61,34 +55,16 @@ docker exec -ti minio-mc mc mb minio-1/flight-bucket
 docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
 ```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
-```
-
 **Plane-Data:**
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
 ```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
-```
-
 **Carriers:**
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/carriers.json minio-1/flight-bucket/raw/carriers/carriers.json
 ```
 
 **Flights:**
@@ -101,16 +77,6 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_3.csv minio-1/flight-bucket/raw/flights/
-```
-
 ## Create a new Zeppelin notebook
 
 For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you can also use **Jupyter** if you prefer.
@@ -120,6 +86,8 @@ In a browser window, navigate to <http://dataplatform:28080> and you should see 
 Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
 
 Click on **Create Note** and a new Notebook is created with one cell which is empty. 
+
+> **What you should see:** An empty notebook named `SparkDataFrame` with a single empty paragraph ready for input.
 
 ### Add some Markdown first
 
@@ -131,6 +99,8 @@ Navigate to the first cell and start with a title. By using the `%md` directive 
 ```
 
 Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
+
+> **What you should see:** The markdown source is replaced by a rendered **Heading 1** title: *Spark DataFrame sample with flights data*.
 
 The markdown code should now be rendered as a Heading-1 title.
 
@@ -152,9 +122,11 @@ First we have to import the spark python API. Use the `%pyspark` directive to sw
 from pyspark.sql.types import *
 ```
 
+> **What you should see:** No output — the import executes silently. The PySpark type classes are now available in subsequent cells.
+
 We wil not show the `%pyspark` directive in the following statements.
 
-Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema
+Next let's import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema
  
 ```python
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
@@ -166,7 +138,9 @@ The output will show the header line followed by the 5 data lines.
 
 ![Alt Image Text](./images/zeppelin-show-airports-raw.png "Zeppelin Welcome Screen")
 
-Now let’s display the schema, which has been derived from the data:
+> **What you should see:** A table with 5 rows of airport data and columns derived from the CSV header row, including `id`, `ident`, `type`, `name`, `latitude_deg`, `longitude_deg`, and others.
+
+Now let's display the schema, which has been derived from the data:
 
 ```	python
 airportsRawDF.printSchema()
@@ -195,25 +169,32 @@ root
  |-- wikipedia_link: string (nullable = true)
  |-- keywords: string (nullable = true)
 ``` 
- 
-Next let’s ask for the total number of rows in the dataset. 
+
+> **What you should see:** An 18-column schema where numeric fields like `latitude_deg` and `longitude_deg` were automatically inferred as `double`, and text fields as `string`.
+
+> **What just happened?** With `inferSchema="true"`, Spark reads a sample of the file to determine column types automatically. This is convenient but requires an extra pass over the data — for large production datasets it is faster to specify the schema explicitly.
+
+Next let's ask for the total number of rows in the dataset. 
 
 ```python
 airportsRawDF.count()
 ```
 
-It should return a total of **81193**. 
-
+> **What you should see:** The integer `81193` — the total number of airport records in the dataset.
 
 You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
-Let’s create a JSON representation of the data in the refined folder. 
+Let's create a JSON representation of the data in the refined folder. 
 
 ```python
 airportsRawDF.write.json("s3a://flight-bucket/refined/airports")
 ```
 
-Check that the file has been written to MinIO using either one of the techniques seen before. 
+> **What you should see:** No output in the cell — the write is an action that executes silently. Check in Object Storage to confirm the JSON files were created under `refined/airports/`.
+
+> **What just happened?** Spark writes one JSON file per partition in parallel. Each file contains newline-delimited JSON records (not a JSON array). The `refined/` prefix represents the next layer of the data lake — data that has been read, validated, and stored in a more queryable format.
+
+Check that the file has been written to Object Storage using either one of the techniques seen before. 
 
  
 ## Working with Flights Data
@@ -225,11 +206,11 @@ First add another title, this time as a Heading-2.
 ## Working with the Flights data
 ```
 
-Let’s now start working with the Flights data, which we have uploaded with the various files within the `s3://flight-bucket/raw/flights/`.
+Let's now start working with the Flights data, which we have uploaded with the various files within the `s3://flight-bucket/raw/flights/`.
 
 Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
  
-Let's see the data in the `flight-bucket` bucket in MinIO. In a terminal window execute the following `s3cmd` 
+Let's see the data in the `flight-bucket` bucket in Object Storage. In a terminal window execute the following `s3cmd` 
 
 ```
 docker exec -ti awscli s3cmd ls -r s3://flight-bucket/raw/flights/
@@ -246,6 +227,8 @@ ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker ex
 2025-05-18 16:12       989831  s3://flight-bucket/raw/flights/flights_2008_5_3.csv
 ```
 
+> **What you should see:** Five CSV files listed under `raw/flights/`, each approximately 1 MB, covering April and May 2008.
+
 The CSV files in this case do not contain a header line, therefore we cannot use the same technique as before with the airports data and derive the schema from the header. 
 
 We first have to manually define a schema. One way is to use a DSL as shown in the next code block. 
@@ -256,6 +239,8 @@ flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOf
                    `crsElapsedTime` INTEGER, `airTime` INTEGER, `arrDelay` INTEGER,`depDelay` INTEGER,`origin` STRING, `destination` STRING, `distance` INTEGER, `taxiIn` INTEGER, `taxiOut` INTEGER, `cancelled` STRING, `cancellationCode` STRING, `diverted` STRING, 
                    `carrierDelay` STRING, `weatherDelay` STRING, `nasDelay` STRING, `securityDelay` STRING, `lateAircraftDelay` STRING"""
 ```
+
+> **What you should see:** No output — the schema string is stored in a Python variable and will be passed to the CSV reader in the next step.
 
 Now we can import the flights data into a DataFrame using this schema and show the first 5 rows. 
 
@@ -271,7 +256,9 @@ The output will show the header line followed by the 5 data lines.
 
 ![Alt Image Text](./images/zeppelin-show-flights-raw.png "Zeppelin Welcome Screen")
 
-Let’s also see the schema, which is not very surprising
+> **What you should see:** A table with 5 rows of flight data with 29 columns — year, month, day, departure/arrival times, carrier, flight number, origin, destination, distance, and delay fields.
+
+Let's also see the schema, which is not very surprising
 
 ```	python
 flightsRawDF.printSchema()
@@ -311,24 +298,30 @@ root
  |-- securityDelay: string (nullable = true)
  |-- lateAircraftDelay: string (nullable = true)
 ```
-	
-Next let’s ask for the total number of rows in the dataset
+
+> **What you should see:** A 29-column schema matching the field names defined in `flightSchema`, with integer types for numeric columns and string types for delay reason codes.
+
+Next let's ask for the total number of rows in the dataset
  
 ```python
 flightsRawDF.count()
 ```
 
-It should return **50'000**. 
-	
+> **What you should see:** The integer `50000` — 10,000 flight records per file across the five CSV files.
+
 You can also transform data easily into another format, just by writing the DataFrame out to a new file or object. 
 
-Let’s create a Parquet representation of the data in the refined folder. Additionally we partition the data by `year` and `month`. 
+Let's create a Parquet representation of the data in the refined folder. Additionally we partition the data by `year` and `month`. 
 
 ```python
 flightsRawDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/refined/flights")
 ```
 
-In a terminal window, check that the file has been written to MinIO using the `s3cmd`. 
+> **What you should see:** No cell output — the write executes silently. Check Object Storage to confirm the Parquet files were created under `refined/flights/year=2008/month=4/` and `refined/flights/year=2008/month=5/`.
+
+> **What just happened?** Spark wrote the data in Parquet format with Hive-style partitioning — each partition becomes a separate folder named `year=<value>/month=<value>/`. This allows Spark (and other tools like Trino/Hive) to skip entire partitions when a query filters on `year` or `month`, dramatically reducing I/O.
+
+In a terminal window, check that the file has been written to Object Storage using the `s3cmd`. 
 
 ```bash
 docker exec -ti awscli s3cmd ls -r s3://flight-bucket/refined/flights
@@ -342,7 +335,9 @@ ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker ex
 2026-04-02 18:56       377251  s3://flight-bucket/refined/flights/year=2008/month=4/part-00001-78e4939e-cf76-476c-a699-222d75714fcc.c000.snappy.parquet
 2026-04-02 18:56       461116  s3://flight-bucket/refined/flights/year=2008/month=5/part-00000-78e4939e-cf76-476c-a699-222d75714fcc.c000.snappy.parquet
 ```	
-	
+
+> **What you should see:** A `_SUCCESS` marker plus one Snappy-compressed Parquet file per partition — one for month 4 and one for month 5. The Parquet files are much smaller than the original CSVs due to columnar compression.
+
 Should you want to execute the write a 2nd time, then you first have to delete the output folder, otherwise the 2nd execution of the write will throw an error. 
 
 **Note**: If you want to rerun the creation of the data, then you first have to remove the folder using the following command
@@ -363,6 +358,8 @@ First let's read the data from the parquet refined structure just created before
 flightsRefinedDF = spark.read.format("parquet").load("s3a://flight-bucket/refined/flights")
 ```
 
+> **What you should see:** No output — reading Parquet is also lazy. Spark records the source path and schema but reads no data yet.
+
 With the `flightsRefinedDF` DataFrame in place, register the two DataFrames as temporary tables in Spark SQL
 
 ```python
@@ -370,11 +367,15 @@ flightsRefinedDF.createOrReplaceTempView("flights")
 airportsRawDF.createOrReplaceTempView("airports")
 ```
 
+> **What you should see:** No output — `createOrReplaceTempView` registers the DataFrames as named views in the Spark SQL catalogue without executing any queries.
+
 We can always display the registered tables by using the following statement:
 
 ```python
 spark.sql("show tables").show()
 ```
+
+> **What you should see:** A table listing `airports` and `flights` as temporary views (with `isTemporary = true`).
 
 We can use `spark.sql()` to now execute an SELECT statement using one of the two tables
 
@@ -389,28 +390,12 @@ and you will see part of the data as a table
 |    id|ident|         type|                name|      latitude_deg|      longitude_deg|elevation_ft|continent|iso_country|iso_region|municipality|scheduled_service|gps_code|iata_code|local_code|           home_link|      wikipedia_link|keywords|
 +------+-----+-------------+--------------------+------------------+-------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------------+--------+
 |  6523|  00A|     heliport|   Total RF Heliport|         40.070985|         -74.933689|          11|       NA|         US|     US-PA|    Bensalem|               no|    K00A|     NULL|       00A|https://www.pennd...|                NULL|    NULL|
-|323361| 00AA|small_airport|Aero B Ranch Airport|         38.704022|        -101.473911|        3435|       NA|         US|     US-KS|       Leoti|               no|    00AA|     NULL|      00AA|                NULL|                NULL|    NULL|
-|  6524| 00AK|small_airport|        Lowell Field|         59.947733|        -151.692524|         450|       NA|         US|     US-AK|Anchor Point|               no|    00AK|     NULL|      00AK|                NULL|                NULL|    NULL|
-|  6525| 00AL|small_airport|        Epps Airpark| 34.86479949951172| -86.77030181884766|         820|       NA|         US|     US-AL|     Harvest|               no|    00AL|     NULL|      00AL|                NULL|                NULL|    NULL|
-|506791| 00AN|small_airport|Katmai Lodge Airport|         59.093287|        -156.456699|          80|       NA|         US|     US-AK| King Salmon|               no|    00AN|     NULL|      00AN|                NULL|                NULL|    NULL|
-|  6526| 00AR|       closed|Newport Hospital ...|           35.6087|         -91.254898|         237|       NA|         US|     US-AR|     Newport|               no|    NULL|     NULL|      NULL|                NULL|                NULL|    00AR|
-|322127| 00AS|small_airport|      Fulton Airport|        34.9428028|        -97.8180194|        1100|       NA|         US|     US-OK|        Alex|               no|    00AS|     NULL|      00AS|                NULL|                NULL|    NULL|
-|  6527| 00AZ|small_airport|      Cordes Airport|34.305599212646484|-112.16500091552734|        3810|       NA|         US|     US-AZ|      Cordes|               no|    00AZ|     NULL|      00AZ|                NULL|                NULL|    NULL|
-|  6528| 00CA|small_airport|Goldstone (GTS) A...|          35.35474|        -116.885329|        3038|       NA|         US|     US-CA|     Barstow|               no|    00CA|     NULL|      00CA|                NULL|https://en.wikipe...|    NULL|
-|324424| 00CL|small_airport| Williams Ag Airport|         39.427188|        -121.763427|          87|       NA|         US|     US-CA|       Biggs|               no|    00CL|     NULL|      00CL|                NULL|                NULL|    NULL|
-|322658| 00CN|     heliport|Kitchen Creek Hel...|        32.7273736|       -116.4597417|        3350|       NA|         US|     US-CA| Pine Valley|               no|    00CN|     NULL|      00CN|                NULL|                NULL|    NULL|
-|  6529| 00CO|       closed|          Cass Field|         40.622202|        -104.344002|        4830|       NA|         US|     US-CO|  Briggsdale|               no|    NULL|     NULL|      NULL|                NULL|                NULL|    00CO|
-|  6531| 00FA|small_airport| Grass Patch Airport| 28.64550018310547| -82.21900177001953|          53|       NA|         US|     US-FL|    Bushnell|               no|    00FA|     NULL|      00FA|                NULL|                NULL|    NULL|
-|  6532| 00FD|       closed|  Ringhaver Heliport|           28.8466|         -82.345398|          25|       NA|         US|     US-FL|   Riverview|               no|    NULL|     NULL|      NULL|                NULL|                NULL|    00FD|
-|  6533| 00FL|small_airport|   River Oak Airport|27.230899810791016| -80.96920013427734|          35|       NA|         US|     US-FL|  Okeechobee|               no|    00FL|     NULL|      00FL|                NULL|                NULL|    NULL|
-|  6534| 00GA|small_airport|    Lt World Airport| 33.76750183105469| -84.06829833984375|         700|       NA|         US|     US-GA|    Lithonia|               no|    00GA|     NULL|      00GA|                NULL|                NULL|    NULL|
-|  6535| 00GE|     heliport|    Caffrey Heliport|         33.887982|         -84.736983|         957|       NA|         US|     US-GA|       Hiram|               no|    00GE|     NULL|      00GE|                NULL|                NULL|    NULL|
-|  6536| 00HI|     heliport|  Kaupulehu Heliport|         19.832881|        -155.978347|          43|       OC|         US|     US-HI| Kailua-Kona|               no|    00HI|     NULL|      00HI|                NULL|                NULL|    NULL|
-|  6537| 00ID|small_airport|Delta Shores Airport|48.145301818847656|-116.21399688720703|        2064|       NA|         US|     US-ID|  Clark Fork|               no|    00ID|     NULL|      00ID|                NULL|                NULL|    NULL|
-|322581| 00IG|small_airport|       Goltl Airport|         39.724028|        -101.395994|        3359|       NA|         US|     US-KS|    McDonald|               no|    00IG|     NULL|      00IG|                NULL|                NULL|    NULL|
+...
 +------+-----+-------------+--------------------+------------------+-------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------------+--------+
 only showing top 20 rows
 ```
+
+> **What you should see:** The first 20 rows of the airports table with all 18 columns. The wide table will likely wrap in the terminal — use the `%sql` directive in Zeppelin for a cleaner view.
 
 But in Zeppelin and Jupyter testing such a statement is even easier. You can use the `%sql` directive (`%%sql` in Jupyter) to directly perform an SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit. 
 
@@ -424,6 +409,8 @@ and you see the result as a nicely formatted table (replace `%sql` by `%%sql` if
 
 ![Alt Image Text](./images/zeppelin-sql-result.png "Zeppelin Welcome Screen")
 
+> **What you should see:** A paginated, scrollable table in the Zeppelin UI showing all airport columns with proper alignment — much more readable than the raw `show()` output.
+
 Let's see some other SQL statement in action, first with a `GROUP BY`
 
 ```sql
@@ -431,6 +418,8 @@ SELECT iso_country, iso_region, count(*)
 FROM airports
 GROUP BY iso_country,  iso_region
 ```
+
+> **What you should see:** One row per country/region combination, with a count of airports in each region. There will be many rows covering countries worldwide.
 
 If we only want to see the ones for the USA, we add a `WHERE` clause
 
@@ -440,6 +429,8 @@ FROM airports
 WHERE iso_country = 'US'
 GROUP BY iso_country,  iso_region
 ```
+
+> **What you should see:** Rows for US regions only (e.g. `US-CA`, `US-TX`, `US-FL`, ...) with their airport counts, filtered down from the full global result.
 
 Once a SQL statement is producing the right result, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. Make sure that you again use the `%pyspark` directive
 
@@ -454,6 +445,8 @@ usAirportsByStateDF = spark.sql("""
 usAirportsByStateDF.show()
 ```
 
+> **What you should see:** The same US airports-by-region result, now stored as a DataFrame in `usAirportsByStateDF` and printed via `show()`.
+
 You can now use the data frame and persist it to S3 if you wish. We will see that in use below.
 
 **Note**: If you perform a SELECT on the flights table using one or more of the partition columns, the query will prune the non-used partitions and only read the necessary files for the needed partitions
@@ -466,9 +459,13 @@ WHERE year = 2008
 AND month = 04
 ```
 
-As an alternative to specifying SQL statement as a string, Data Frames provide a domain-specific language for structured data manipulation. These operations are also referred as “untyped transformations” in contrast to “typed transformations” come with strongly typed Scala/Java Datasets.
+> **What you should see:** Only April 2008 flight records — approximately 20,000 rows. Spark reads only the `year=2008/month=4/` partition folder and skips `year=2008/month=5/` entirely.
 
-In Python, it’s possible to access a DataFrame’s columns either by attribute (df.age) or by indexing (df['age']). While the former is convenient for interactive data exploration, users are highly encouraged to use the latter form, which is future proof and won’t break with column names that are also attributes on the DataFrame class.
+> **What just happened?** This is **partition pruning** — because the data was written with `partitionBy("year","month")`, Spark maps the `WHERE year = 2008 AND month = 04` predicate directly to the folder path `year=2008/month=4/` and never opens the other partition. For large datasets this can reduce I/O by orders of magnitude.
+
+As an alternative to specifying SQL statement as a string, Data Frames provide a domain-specific language for structured data manipulation. These operations are also referred as "untyped transformations" in contrast to "typed transformations" come with strongly typed Scala/Java Datasets.
+
+In Python, it's possible to access a DataFrame's columns either by attribute (df.age) or by indexing (df['age']). While the former is convenient for interactive data exploration, users are highly encouraged to use the latter form, which is future proof and won't break with column names that are also attributes on the DataFrame class.
 
 ```
 %pyspark
@@ -478,6 +475,8 @@ airportsRawDF.select(airportsRawDF['iso_country'], airportsRawDF['iso_region']) 
     .count() \
     .show()
 ```
+
+> **What you should see:** The same US airports-by-region result as the SQL query above — the DataFrame API and Spark SQL compile to the same physical execution plan.
 
 ## Use Spark SQL to join flights with airports
 
@@ -501,6 +500,8 @@ LEFT JOIN airports AS ad
 ON (f.destination = ad.iata_code)
 ```
 
+> **What you should see:** Flight rows enriched with origin and destination airport names, types, and municipalities — replacing raw IATA codes like `ATL` with `Hartsfield-Jackson Atlanta International Airport`.
+
 As soon as we are happy, we can again wrap it in a `spark.sql()` statement. 
 
 ```sql
@@ -521,17 +522,23 @@ flightEnrichedDF = spark.sql("""
 		""")
 ```
 
+> **What you should see:** No output — the SQL is captured as a lazy DataFrame. No join executes until an action is called.
+
 Let's see the result behind the DataFrame
 
 ```python
 flightEnrichedDF.show()
 ```
 
+> **What you should see:** The first 20 enriched flight rows with airport name columns prepended to all the original flight columns.
+
 Finally let's write the enriched structure as a result to object storage using again the Parquet format:
 
 ```python
 flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/result/flights")
 ```
+
+> **What you should see:** No cell output. This action triggers the full join and writes the enriched Parquet files to `result/flights/year=2008/month=4/` and `result/flights/year=2008/month=5/`.
 
 To perform the same join using the domain-specific language, the statement looks like this
 
@@ -554,6 +561,8 @@ flightsRefinedDF.alias("f") \
     .show()
 ```
 
+> **What you should see:** The same enriched flight rows as the SQL join, with origin and destination airport names alongside all flight fields. Note this uses `inner` join so unmatched IATA codes are dropped (vs the `LEFT JOIN` above which keeps all flights).
+
 ## Use Spark SQL to perform analytics on the data
 
 Let's see the the 10 longest flights in descending order with `origin` and `destination`
@@ -567,6 +576,8 @@ FROM (SELECT origin, destination, MAX(distance) distance
 ORDER BY distance DESC
 LIMIT 10
 ```
+
+> **What you should see:** The 10 origin-destination pairs with the greatest maximum distance, showing the longest routes in the dataset (e.g. transcontinental US routes).
 
 Let's categorize the various delays
 
@@ -583,6 +594,8 @@ SELECT arrDelay, origin, destination,
     END AS flight_delay
 FROM flights
 ```
+
+> **What you should see:** All 50,000 flight rows with a `flight_delay` classification column appended based on the arrival delay value.
 
 and with that get an overview of the 
 
@@ -604,6 +617,8 @@ FROM (
 GROUP BY year, month, flight_delay
 ```
 
+> **What you should see:** A compact summary table — one row per year/month/delay-category combination, showing how many flights fall into each delay bucket for April and May 2008. `Early` and `Tolerable Delays` should be the largest categories.
+
 ## Provide delay classification as permanent table
 
 So far we have only worked with temporary views, which are only visible while the Spark session is active and will be removed as soon as it is closed. 
@@ -614,6 +629,8 @@ But we can also create permanent tables which will survive a Spark session. Firs
 %sql
 CREATE DATABASE IF NOT EXISTS flight_db;
 ```
+
+> **What you should see:** No output (or a confirmation message) — the database `flight_db` is created in Spark's metastore and will persist across sessions.
 
 and then we create the table within that database
 
@@ -637,6 +654,10 @@ FROM (
 GROUP BY year, month, flight_delay
 ```
 
+> **What you should see:** No output — the `CREATE TABLE AS SELECT` executes the aggregation and persists the result as a permanent Parquet-backed table in `flight_db`.
+
+> **What just happened?** Unlike `createOrReplaceTempView`, a `CREATE TABLE` writes data to the metastore and to object storage, making the table available to any Spark session that connects to the same metastore — including the Thrift Server queried in the next section.
+
 If we execute a `show tables` command
 
 ```sql
@@ -647,6 +668,8 @@ show tables from flight_db;
 we can see the two temporary tables with the additional permanent table just created:
 
 ![](./images/zeppelin-show-tables.png)
+
+> **What you should see:** Three entries — `airports` and `flights` as temporary views (isTemporary=true) and `count_delaygroups_t` as a permanent table (isTemporary=false).
 
 Let's see that by connecting to the `spark-sql` CLI. In a terminal window execute
 
@@ -667,6 +690,8 @@ Time taken: 3.358 seconds, Fetched 2 row(s)
 spark-sql>
 ```
 
+> **What you should see:** Two databases listed — `default` and `flight_db` — confirming the database created in Zeppelin is visible from the CLI as well (both share the same metastore).
+
 switch to the database and 
 
 ```sql
@@ -682,6 +707,8 @@ Time taken: 0.062 seconds, Fetched 1 row(s)
 2023-05-22 07:56:47,840 INFO thriftserver.SparkSQLCLIDriver: Time taken: 0.062 seconds, Fetched 1 row(s)
 spark-sql>
 ```
+
+> **What you should see:** `count_delaygroups_t` listed — confirming the table persists across Spark sessions and is accessible from any client connected to the same metastore.
 
 Now check that the data is in fact available by executing
 
@@ -708,11 +735,13 @@ Time taken: 1.599 seconds, Fetched 10 row(s)
 spark-sql (flight_db)> 
 ```
 
+> **What you should see:** 10 rows of delay group counts for year 2008 months 4 and 5, confirming the permanent table is queryable from the CLI. The WARN line about `METASTORE_FILTER_HOOK` is harmless and can be ignored.
+
 There are is a WARN log messages but we can also see the 10 results we asked for. This is not really usable but it proofs the fact that we have made the results available for querying over SQL. 
 
 ## Use Spark Thriftserver to query the table from outside of Spark
 
-The Thrift JDBC/ODBC Server (aka Spark Thrift Server or STS) is Spark SQL’s port of Apache Hive’s HiveServer2 that allows JDBC/ODBC clients to execute SQL queries over JDBC and ODBC protocols on Apache Spark.
+The Thrift JDBC/ODBC Server (aka Spark Thrift Server or STS) is Spark SQL's port of Apache Hive's HiveServer2 that allows JDBC/ODBC clients to execute SQL queries over JDBC and ODBC protocols on Apache Spark.
 
 With Spark Thrift Server, business users can work with their Business Intelligence (BI) tools, e.g. Tableau or Microsoft Excel, and connect to Apache Spark using the ODBC or JDBC API.
 
@@ -745,6 +774,10 @@ Transaction isolation: TRANSACTION_REPEATABLE_READ
 0: jdbc:hive2://spark-thriftserver:10000> 
 ```
 
+> **What you should see:** The Beeline prompt `0: jdbc:hive2://spark-thriftserver:10000>` confirming a successful JDBC connection to Spark SQL via the Thrift Server.
+
+> **What just happened?** The Spark Thrift Server exposes Spark SQL over the standard HiveServer2 JDBC/ODBC protocol. Any tool that can connect to Hive — Beeline, DBeaver, Tableau, Power BI — can now query Spark DataFrames and permanent tables without needing a Spark client library.
+
 Now let's again issue a query on the `flight_db.count_delaygroups_t` table
 
 ```sql
@@ -772,6 +805,8 @@ and we get the same result, just formatted a bit nicer
 10 rows selected (7.898 seconds)
 ```
 
+> **What you should see:** The same 10 delay-group rows as before, now displayed in Beeline's formatted ASCII table with column headers and a row count footer.
+
 ## Use Spark Thriftserver from a standalone SQL Tool (optional)
 
 You can also use a standalone SQL Tool or BI tool, as long as it supports **Hive** or **Spark SQL**. 
@@ -792,11 +827,15 @@ and click **Test Connection ...** and DBeaver will ask you for downloading the J
 
 ![](./images/dbeaver-3.png)
 
+> **What you should see:** A green **Connected** confirmation dialog showing the Spark SQL server version, confirming DBeaver can reach the Thrift Server over JDBC.
+
 Click **OK** and **Finish** to close the **Connect to a database** window.
 
 Use the **Database Navigator** to drill down into the new connection
 
 ![](./images/dbeaver-navigator.png)
+
+> **What you should see:** The connection tree expanded to show the `flight_db` database and its `count_delaygroups_t` table alongside the `default` database.
 
 Double-click on the `count_delaygroups_t` table to see the metadata of the table.  
 
@@ -805,6 +844,8 @@ Double-click on the `count_delaygroups_t` table to see the metadata of the table
 Navigate to the **Data** tab and you should see the same data as before
 
 ![](./images/dbeaver-show-data.png)
+
+> **What you should see:** The delay group counts displayed in DBeaver's grid view — the same data queried through a standard BI tool connected via JDBC, no Spark client needed.
 
 You can of course also use the SQL Console to execute ad-hoc SQL statements. In the **Database Navigator**, right-click on the database and select **SQL Editor** | **Open SQL console**. Start entering a SELECT statement and you get help by DBeaver's IntelliSense feature.
 
@@ -837,6 +878,8 @@ def classify_delay(delay):
         return 'Early'
 ```
 
+> **What you should see:** No output — the Python function is defined in the local scope and is ready to be wrapped as a Spark UDF.
+
 Register it as a Spark UDF
 
 ```python
@@ -846,6 +889,10 @@ from pyspark.sql.types import StringType
 classify_delay_udf = udf(classify_delay, StringType())
 spark.udf.register("classify_delay", classify_delay_udf)
 ```
+
+> **What you should see:** The UDF object reference printed (e.g. `<function classify_delay at 0x...>`). The UDF is now registered under the name `classify_delay` and can be used in `spark.sql()` calls.
+
+> **What just happened?** `udf()` wraps the Python function so Spark knows its return type (`StringType`). `spark.udf.register` makes it available by name in SQL strings. Each row's `arrDelay` value will be passed to the Python function and the returned string written into the new column.
 
 And then you can use it in Spark SQL. We can rewrite the `SELECT` statement from above using the UDF instead of the CASE expression. 
 
@@ -889,3 +936,7 @@ and in the result we can see the output from the custom UDF
 +--------+------+-----------+----------------+
 only showing top 20 rows
 ```
+
+> **What you should see:** The first 20 flight rows with the `flight_delay` classification applied by the Python UDF — identical output to the CASE expression version but now the logic lives in a reusable Python function.
+
+> **What just happened?** Spark serialises the Python UDF and ships it to each executor, where it is called once per row. While convenient, Python UDFs have overhead compared to built-in Spark functions (which run on the JVM) — for high-performance production pipelines, prefer built-in functions or Pandas UDFs when possible.
