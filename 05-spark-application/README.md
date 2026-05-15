@@ -19,30 +19,24 @@ The workshop is written in a way that it has to be executed on the same machine 
 - How to structure a PySpark application as a self-contained Python script
 - How to accept command-line arguments in a Spark application using `argparse`
 - How to submit an application to the Spark cluster using `spark-submit`
-- How to package the application so it runs on workers with access to MinIO (S3A)
+- How to package the application so it runs on workers with access to Object Storage (S3A)
 - How Spark applications differ from interactive notebook usage
 
 ## Prerequisites
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed
-- Airport and flight data uploaded to MinIO (instructions provided if needed)
+- Airport and flight data uploaded to Object Storage (instructions provided if needed)
 - Access to a terminal on the machine running the data platform
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
+The data needed here has been uploaded in workshop 1b - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
 ```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
-```
-
-or with `mc`
- 
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
 ```
 
 **Airports:**
@@ -71,6 +65,8 @@ First let's create a folder for the Spark application (**Note**: make sure that 
 cd $DATAPLATFORM_HOME
 mkdir -p ./data-transfer/app
 ```
+
+> **What you should see:** No output — the directory is created silently. You can confirm with `ls ./data-transfer/app`.
 
 Create a file, e.g. `prep_refined.py` and save it into the `./data-transfer/app` folder
 
@@ -127,6 +123,10 @@ if __name__ == "__main__":
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
 
+> **What you should see:** Nano shows `[ Wrote N lines ]` at the bottom confirming the file was saved, then returns to the terminal prompt after `Ctrl-X`.
+
+> **What just happened?** Unlike a Zeppelin or Jupyter notebook, this is a standalone Python script that creates its own `SparkSession` at startup and calls `spark.stop()` when done. The `argparse` block at the bottom lets it accept command-line arguments from `spark-submit`, making it reusable across different bucket/path configurations without editing the code.
+
 The application accepts 3 parameters to specify the S3 bucket name, the raw folder and the refined folder.
 
 ## Execute the application on the Spark Cluster using the `spark-submit` command
@@ -136,6 +136,8 @@ Before we submit the application, let's make sure that the `refined` folder does
 ```bash
 docker exec -ti awscli s3cmd del --recursive s3://flight-bucket/refined
 ```
+
+> **What you should see:** One `delete:` line per object removed from the `refined/` prefix. If the folder did not exist yet, no output is shown — that is fine.
 
 Now we can submit it using `spark-submit` CLI, which is part of the `spark-master` docker container. 
 
@@ -1218,3 +1220,7 @@ message spark_schema {
 25/05/25 20:04:38 INFO MetricsSystemImpl: s3a-file-system metrics system stopped.
 25/05/25 20:04:38 INFO MetricsSystemImpl: s3a-file-system metrics system shutdown complete.
 ```
+
+> **What you should see:** The key line to look for in the output is `Reading data from raw s3a://flight-bucket/raw and writing to refined s3a://flight-bucket/refined` (the `print` statement in the app), followed by stage-completion messages for each job, and finally `SparkContext: Successfully stopped SparkContext` with exit code 0. The `WARN AbstractS3ACommitterFactory` messages about `FileOutputCommitter` are harmless.
+
+> **What just happened?** `spark-submit` packages the Python script, submits it to the Spark cluster as a batch job, and streams the driver logs to the terminal. Unlike an interactive notebook session, the application runs to completion and shuts Spark down — the SparkSession lifecycle is fully managed by the script itself. The four Spark jobs visible in the log correspond to: schema inference on airports CSV, reading airports, writing airports as JSON, and writing flights as partitioned Parquet.
