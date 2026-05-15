@@ -13,6 +13,9 @@ In this workshop, we will use the `airports-data` and `flight-data` available in
 - [Accessing MinIO](#accessing-minio)
 - [Create a Bucket](#create-a-bucket)
 - [Uploading data](#uploading-data)
+- [Downloading objects](#downloading-objects)
+- [Copying objects within MinIO](#copying-objects-within-minio)
+- [Deleting objects and buckets](#deleting-objects-and-buckets)
 
 ## What you will learn
 
@@ -20,6 +23,9 @@ In this workshop, we will use the `airports-data` and `flight-data` available in
 - How to upload files (CSV, JSON, PDF) to object storage using the command line and the browser
 - How to list, browse, and inspect objects using `mc ls`, `mc tree`, and the MinIO Aistor Console
 - How to share objects via a pre-signed URL
+- How to download objects back to the local filesystem using `mc cp` and `s3cmd get`
+- How to delete objects and buckets using `mc rm` and `mc rb`
+- How to copy and move objects within MinIO using `mc cp` and `mc mv`
 - How an object store serves as an S3-compatible drop-in replacement for HDFS
 
 ## Prerequisites
@@ -286,4 +292,86 @@ Copy the link into a Web-browser window (make sure to replace `127.0.0.1:9014` b
 ![Alt Image Text](./images/minio-share-link-3.png "Minio list objects")
 
 We can see that an object store can also handle binary objects such as images, pdfs, ... and that they can be retrieved over these URLs.
+
+## Downloading objects
+
+### Using mc
+
+To download an object from MinIO to the local filesystem, use the `mc cp` command with source and destination reversed:
+
+```bash
+docker exec -ti minio-mc mc cp minio-1/flight-bucket/raw/airports/airports.csv /data-transfer/airports-download.csv
+```
+
+You can also download an entire prefix recursively with the `--recursive` flag:
+
+```bash
+docker exec -ti minio-mc mc cp --recursive minio-1/flight-bucket/raw/flights/ /data-transfer/flights-download/
+```
+
+### Using s3cmd
+
+To download an object using `s3cmd get`:
+
+```bash
+docker exec -ti awscli s3cmd get s3://flight-bucket/raw/carriers/carriers.json /data-transfer/carriers-download.json
+```
+
+## Copying objects within MinIO
+
+You can copy objects between paths or buckets entirely within MinIO without downloading them locally, using `mc cp`:
+
+```bash
+docker exec -ti minio-mc mc cp minio-1/flight-bucket/raw/airports/airports.csv minio-1/flight-bucket/backup/airports/airports.csv
+```
+
+To copy a whole prefix to another bucket:
+
+```bash
+docker exec -ti minio-mc mc cp --recursive minio-1/flight-bucket/raw/ minio-1/flight-bucket/backup/
+```
+
+To move (copy then delete the source), use `mc mv`:
+
+```bash
+docker exec -ti minio-mc mc mv minio-1/flight-bucket/raw/airports/airports.csv minio-1/flight-bucket/archive/airports/airports.csv
+```
+
+## Deleting objects and buckets
+
+### Deleting objects
+
+To delete a single object, use `mc rm`:
+
+```bash
+docker exec -ti minio-mc mc rm minio-1/flight-bucket/raw/airports/airports.csv
+```
+
+To delete all objects under a prefix recursively:
+
+```bash
+docker exec -ti minio-mc mc rm --recursive --force minio-1/flight-bucket/raw/flights/
+```
+
+You can also use `s3cmd del` to remove an object:
+
+```bash
+docker exec -ti awscli s3cmd del s3://flight-bucket/raw/carriers/carriers.json
+```
+
+### Deleting a bucket
+
+To remove an empty bucket, use `mc rb`:
+
+```bash
+docker exec -ti minio-mc mc rb minio-1/flight-bucket
+```
+
+To remove a bucket and all its contents in one step, add the `--force` flag:
+
+```bash
+docker exec -ti minio-mc mc rb --force minio-1/flight-bucket
+```
+
+**Note**: use `--force` with care — this is irreversible.
 
