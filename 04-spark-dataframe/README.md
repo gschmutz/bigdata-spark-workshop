@@ -187,6 +187,8 @@ root
  |-- keywords: string (nullable = true)
 ``` 
 
+> **Production note:** Defining an explicit schema rather than using `inferSchema="true"` is strongly recommended for production pipelines. Schema inference requires Spark to do an extra full scan of the data just to determine column types — this doubles the number of S3 reads and slows startup. More importantly, inferred types can silently change if the source data changes (e.g. a column that only contained integers in the sample suddenly contains strings), causing downstream failures that are hard to trace. An explicit schema makes the contract clear, fails fast on unexpected input, and costs nothing at runtime.
+
 Next let's ask for the total number of rows in the dataset. 
 
 ```python
