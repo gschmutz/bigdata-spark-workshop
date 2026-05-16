@@ -2,10 +2,6 @@
 
 In this workshop we will work with [Delta Lake](https://delta.io/), an open-source table format that brings ACID transactions to Apache Spark™ and big data workloads.. 
 
-The same data as in the [Object Storage Workshop](../03-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
-
-We assume that you have done Workshop 5 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark form either Apache Zeppelin or Jupyter Notebook. 
-
 ## Table of Contents
 
 - [What you will learn](#what-you-will-learn)
@@ -31,33 +27,21 @@ We assume that you have done Workshop 5 **Getting Started using Spark RDD and Da
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
-- Airport data uploaded to MinIO (instructions provided if needed)
 
-## Prepare the data, if no longer available
+## Upload the data, if no longer available
 
-The data needed here has been uploaded in workshop 3 - [Working with MinIO Object Storage](03-object-storage). You can skip this section, if you still have the data available in MinIO. 
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
 ```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
-or with `mc`
- 
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
-```
 
-**Airports**:
+and upload the data
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 ## Working with Spark and Delta table
@@ -73,7 +57,7 @@ For **Jupyter**, perform the next paragraph, for **Apache Zeppelin**, this is no
 
 ### If you are using Jupyter
 
-This workshop can be done with either Zeppelin or Jupyter, but to use Jupyter, you have to extend the Spark context with additional configuration settings in the init script:
+You have to create the Spark context with additional configuration settings in the init script:
 
 ```python
 import os
@@ -149,11 +133,18 @@ from delta.tables import *
 from pyspark.sql.types import *
 ```
 
-Next let’s import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema.  
+Next let’s import the airports data into a DataFrame and show the first 5 rows. We define the schema explicitly instead of inferring it, which avoids the double-scan and gives us stable types.
 
 ```python
+airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
+    `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
+    `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
+    `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
+    `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
+    `wikipedia_link` STRING, `keywords` STRING"
+
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
-    	sep=",", inferSchema="true", header="true")
+    	sep=",", inferSchema="false", header="true", schema=airportSchema)
 airportsRawDF.show(5)
 ```
 
@@ -178,7 +169,7 @@ Create a variable for destination of the Delta table
 deltaTableDest = "s3a://flight-bucket/delta/airports"
 ```
 
-and write the data as a Delta table
+and write the dataframe as a Delta table
 
 ```python
 airportsRawDF.write.format("delta").save(deltaTableDest)
@@ -194,14 +185,18 @@ and you should see that the data has been written as parquet files, but that the
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2026-04-03 06:08         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
-2026-04-03 06:08         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2026-04-03 06:08            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2026-04-03 06:08      3366543  s3://flight-bucket/delta/airports/part-00000-ebb58ff2-3a3c-4b9e-954f-381366c9f876-c000.snappy.parquet
-2026-04-03 06:08      1618896  s3://flight-bucket/delta/airports/part-00001-99a8c87f-436a-4704-bbfd-bc2e8ad665eb-c000.snappy.parquet
+2026-05-16 18:51         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
+2026-05-16 18:51         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
+2026-05-16 18:51            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
+2026-05-16 18:51      3366543  s3://flight-bucket/delta/airports/part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet
+2026-05-16 18:51      1618896  s3://flight-bucket/delta/airports/part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet
 ```
 
-We can also alternatively use the MinIO Aistor console to view the data
+> **What you should see:** Two Parquet data files and a `_delta_log/` folder containing the transaction log. The log already has one entry (`00000000000000000000.json`) and its corresponding `.crc` checksum. The empty `_commits/` folder is a placeholder for future concurrent writer coordination.
+
+> **What just happened?** `write.format("delta").save()` did two things simultaneously: (1) wrote the airport data as standard Parquet files — identical to what `write.parquet()` would produce — and (2) created the Delta transaction log file `00000000000000000000.json` recording which files were written and their statistics. Every future read or write on this Delta table will first consult the `_delta_log/` folder to determine the current table state. The Parquet files themselves have no idea they are part of a Delta table.
+
+We can also alternatively use the RustFS console to view the data
 
 ![Alt Image Text](images/spark-delta-lake-1st-write.png "Spark Delta Lake")
 
@@ -231,7 +226,7 @@ you should see content similar to the one shown below
 ```
 {
   "commitInfo": {
-    "timestamp": 1747914926643,
+    "timestamp": 1778957487015,
     "operation": "WRITE",
     "operationParameters": {
       "mode": "ErrorIfExists",
@@ -244,13 +239,13 @@ you should see content similar to the one shown below
       "numOutputRows": "81193",
       "numOutputBytes": "4985439"
     },
-    "engineInfo": "Apache-Spark/3.5.3 Delta-Lake/3.2.1",
-    "txnId": "af51c609-dc06-4c3a-9e71-878b7f193178"
+    "engineInfo": "Apache-Spark/3.5.3 Delta-Lake/3.3.2",
+    "txnId": "d6b01d06-9be9-475b-bb13-c016925ea139"
   }
 }
 {
   "metaData": {
-    "id": "2192da69-2b1d-46ab-906a-3f2a797a26d0",
+    "id": "bde28fb0-94f0-4884-87fd-d9403e3afa1b",
     "format": {
       "provider": "parquet",
       "options": {}
@@ -258,7 +253,7 @@ you should see content similar to the one shown below
     "schemaString": "{\"type\":\"struct\",\"fields\":[{\"name\":\"id\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"ident\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"type\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"name\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"latitude_deg\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"longitude_deg\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"elevation_ft\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"continent\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"iso_country\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"iso_region\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"municipality\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"scheduled_service\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"gps_code\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"iata_code\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"local_code\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"home_link\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"wikipedia_link\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"keywords\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}}]}",
     "partitionColumns": [],
     "configuration": {},
-    "createdTime": 1747914919593
+    "createdTime": 1778957480165
   }
 }
 {
@@ -269,22 +264,22 @@ you should see content similar to the one shown below
 }
 {
   "add": {
-    "path": "part-00000-235e5c19-143e-4930-8733-1922fa83f2af-c000.snappy.parquet",
+    "path": "part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet",
     "partitionValues": {},
     "size": 3366543,
-    "modificationTime": 1747914925000,
+    "modificationTime": 1778957484000,
     "dataChange": true,
-    "stats": "{\"numRecords\":54024,\"minValues\":{\"id\":2,\"ident\":\"00A\",\"type\":\"balloonport\",\"name\":\"\\\"\\\"\\\"Ghost\\\"\\\" International Airport\",\"latitude_deg\":-89.989444,\"longitude_deg\":-179.876999,\"elevation_ft\":-1266,\"continent\":\"AF\",\"iso_country\":\"AD\",\"iso_region\":\"AD-04\",\"municipality\":\"\\\"\\\"\\\"Jaunkalmes\\\"\\\"\",\"scheduled_service\":\" Lejasciema pag.\",\"gps_code\":\" LV4412\\\"\",\"iata_code\":\"AAA\",\"local_code\":\"00A\",\"home_link\":\"http://GillespieField.com/\",\"wikipedia_link\":\"http://de.wikipedia.org/wiki/Alb\",\"keywords\":\"\\\"\\\"\\\"Alas de Rauch\\\"\\\"\\\"\"},\"maxValues\":{\"id\":558440,\"ident\":\"rjns\",\"type\":\"small_airport\",\"name\":\"​Isla de Desecheo Helipad\",\"latitude_deg\":82.75,\"longitude_deg\":179.9757,\"elevation_ft\":17372,\"continent\":\"SA\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Žocene\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYXC\",\"iata_code\":\"no\",\"local_code\":\"ZZV\",\"home_link\":\"https:/https://www.dynali.com//w�\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E�\",\"keywords\":\"황수원비행장, 黃水院飛行場\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":10066,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":2895,\"scheduled_service\":0,\"gps_code\":25018,\"iata_code\":47912,\"local_code\":28459,\"home_link\":50494,\"wikipedia_link\":41736,\"keywords\":40762}}"
+    "stats": "{\"numRecords\":54024,\"minValues\":{\"id\":2,\"ident\":\"00A\",\"type\":\"balloonport\",\"name\":\"\\\"\\\"\\\"Ghost\\\"\\\" International Airport\",\"latitude_deg\":-89.989444,\"longitude_deg\":-179.876999,\"elevation_ft\":-1266,\"continent\":\"AF\",\"iso_country\":\"AD\",\"iso_region\":\"AD-04\",\"municipality\":\"\\\"\\\"\\\"Jaunkalmes\\\"\\\"\",\"scheduled_service\":\" Lejasciema pag.\",\"gps_code\":\" LV4412\\\"\",\"iata_code\":\"AAA\",\"local_code\":\"00A\",\"home_link\":\"http://GillespieField.com/\",\"wikipedia_link\":\"http://de.wikipedia.org/wiki/Alb\",\"keywords\":\"\\\"\\\"\\\"Alas de Rauch\\\"\\\"\\\"\"},\"maxValues\":{\"id\":558440,\"ident\":\"rjns\",\"type\":\"small_airport\",\"name\":\"​Isla de Desecheo Helipad\",\"latitude_deg\":82.75,\"longitude_deg\":179.9757,\"elevation_ft\":17372,\"continent\":\"SA\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Žocene\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYXC\",\"iata_code\":\"no\",\"local_code\":\"ZZV\",\"home_link\":\"https:/https://www.dynali.com//w\u007f\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E\u007f\",\"keywords\":\"황수원비행장, 黃水院飛行場\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":10066,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":2895,\"scheduled_service\":0,\"gps_code\":25018,\"iata_code\":47912,\"local_code\":28459,\"home_link\":50494,\"wikipedia_link\":41736,\"keywords\":40762}}"
   }
 }
 {
   "add": {
-    "path": "part-00001-4f29c36d-90a0-45ae-a5a1-cc2b4bcbabcc-c000.snappy.parquet",
+    "path": "part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet",
     "partitionValues": {},
     "size": 1618896,
-    "modificationTime": 1747914924000,
+    "modificationTime": 1778957485000,
     "dataChange": true,
-    "stats": "{\"numRecords\":27169,\"minValues\":{\"id\":7,\"ident\":\"RK41\",\"type\":\"balloonport\",\"name\":\"\\\"Aeropuerto \\\"\\\"General Tomas de H\",\"latitude_deg\":-80.3142,\"longitude_deg\":-179.5,\"elevation_ft\":-223,\"continent\":\"AF\",\"iso_country\":\"AE\",\"iso_region\":\"AE-AZ\",\"municipality\":\"(Old) Scandium City\",\"scheduled_service\":\"no\",\"gps_code\":\"00AR\",\"iata_code\":\"AAB\",\"local_code\":\"00AR\",\"home_link\":\"http://813.mnd.gov.tw/english/\",\"wikipedia_link\":\"http://es.wikipedia.org/wiki/Aer\",\"keywords\":\"\\\"\\\"\\\"Black Bear Creek\\\"\\\"\\\"\"},\"maxValues\":{\"id\":558726,\"ident\":\"spgl\",\"type\":\"small_airport\",\"name\":\"Želiezovce Cropduster Strip\",\"latitude_deg\":81.15,\"longitude_deg\":179.292999,\"elevation_ft\":14965,\"continent\":\"SA\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Охá\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYYY\",\"iata_code\":\"ZZO\",\"local_code\":\"ZUL\",\"home_link\":\"https://za.geoview.info/himevill�\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E�\",\"keywords\":\"김해국제공항, 金海國際空港, Kimhae, Pusan\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":4522,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":2105,\"scheduled_service\":0,\"gps_code\":13315,\"iata_code\":24177,\"local_code\":18357,\"home_link\":26464,\"wikipedia_link\":23022,\"keywords\":21120}}"
+    "stats": "{\"numRecords\":27169,\"minValues\":{\"id\":7,\"ident\":\"RK41\",\"type\":\"balloonport\",\"name\":\"\\\"Aeropuerto \\\"\\\"General Tomas de H\",\"latitude_deg\":-80.3142,\"longitude_deg\":-179.5,\"elevation_ft\":-223,\"continent\":\"AF\",\"iso_country\":\"AE\",\"iso_region\":\"AE-AZ\",\"municipality\":\"(Old) Scandium City\",\"scheduled_service\":\"no\",\"gps_code\":\"00AR\",\"iata_code\":\"AAB\",\"local_code\":\"00AR\",\"home_link\":\"http://813.mnd.gov.tw/english/\",\"wikipedia_link\":\"http://es.wikipedia.org/wiki/Aer\",\"keywords\":\"\\\"\\\"\\\"Black Bear Creek\\\"\\\"\\\"\"},\"maxValues\":{\"id\":558726,\"ident\":\"spgl\",\"type\":\"small_airport\",\"name\":\"Želiezovce Cropduster Strip\",\"latitude_deg\":81.15,\"longitude_deg\":179.292999,\"elevation_ft\":14965,\"continent\":\"SA\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Охá\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYYY\",\"iata_code\":\"ZZO\",\"local_code\":\"ZUL\",\"home_link\":\"https://za.geoview.info/himevill\u007f\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E\u007f\",\"keywords\":\"김해국제공항, 金海國際空港, Kimhae, Pusan\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":4522,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":2105,\"scheduled_service\":0,\"gps_code\":13315,\"iata_code\":24177,\"local_code\":18357,\"home_link\":26464,\"wikipedia_link\":23022,\"keywords\":21120}}"
   }
 }
 ```
@@ -333,7 +328,7 @@ deltaTable.alias("oldData").merge(
     	.execute()
 ```
 
-Let's view the resulting objects using the `s3cmd` comnand line tool
+Let's view the resulting objects using the `s3cmd` command line tool
 
 ```bash
 docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
@@ -343,18 +338,22 @@ and you should see that more data has been written as parquet files, and that in
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2026-04-03 06:08         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
-2026-04-03 06:08         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2026-04-03 06:18         6784  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.crc
-2026-04-03 06:18         4626  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
-2026-04-03 06:08            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2026-04-03 06:18      1749796  s3://flight-bucket/delta/airports/part-00000-82530638-17eb-4eb1-a411-5c0d8c226c9b-c000.snappy.parquet
-2026-04-03 06:08      3366543  s3://flight-bucket/delta/airports/part-00000-ebb58ff2-3a3c-4b9e-954f-381366c9f876-c000.snappy.parquet
-2026-04-03 06:18      1763568  s3://flight-bucket/delta/airports/part-00001-2dbe30b4-d9f5-4cab-85e4-f058e907e83e-c000.snappy.parquet
-2026-04-03 06:08      1618896  s3://flight-bucket/delta/airports/part-00001-99a8c87f-436a-4704-bbfd-bc2e8ad665eb-c000.snappy.parquet
+2026-05-16 18:51         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
+2026-05-16 18:51         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
+2026-05-16 18:57         6784  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.crc
+2026-05-16 18:57         4622  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
+2026-05-16 18:51            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
+2026-05-16 18:57      1749796  s3://flight-bucket/delta/airports/part-00000-9656a858-41f2-4542-9a60-051d31152f02-c000.snappy.parquet
+2026-05-16 18:51      3366543  s3://flight-bucket/delta/airports/part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet
+2026-05-16 18:51      1618896  s3://flight-bucket/delta/airports/part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet
+2026-05-16 18:57      1763568  s3://flight-bucket/delta/airports/part-00001-ece6bbcc-af13-496b-90f2-d9f938c9b3ab-c000.snappy.parquet
 ```
 
-We can also alternatively use the MinIO Aistor console to see the data
+> **What you should see:** The original two Parquet files are still present alongside two new files written by the MERGE. The `_delta_log/` folder now contains a second JSON file (`00000000000000000001.json`) representing the MERGE transaction. The original files are still physically on disk but are now "logically deleted" — the new log entry marks them as removed so future reads skip them.
+
+> **What just happened?** Delta Lake's MERGE INTO performed an upsert: it matched rows on the `ident` column, updated the one matching row ("00A" name to uppercase), and inserted the one new row ("ADD"). Because Parquet files are immutable, the MERGE rewrote the entire affected partition into a new file rather than modifying rows in place. This write-on-merge pattern is Delta Lake's key trade-off: it provides ACID guarantees but at the cost of rewriting data files for every update or delete operation.
+
+We can also alternatively use the RustFS console to see the data
 
 ![Alt Image Text](images/spark-delta-lake-1st-merge.png "Spark Delta Lake")
 
@@ -383,10 +382,10 @@ you should see content similar to the one shown below
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ jq < ./data-transfer/00000000000000000001.json 
 {
   "commitInfo": {
-    "timestamp": 1747937543885,
+    "timestamp": 1778957833777,
     "operation": "MERGE",
     "operationParameters": {
-      "predicate": "[\"(ident#850 = ident#693)\"]",
+      "predicate": "[\"(ident#691 = ident#582)\"]",
       "matchedPredicates": "[{\"actionType\":\"update\"}]",
       "notMatchedPredicates": "[{\"actionType\":\"insert\"}]",
       "notMatchedBySourcePredicates": "[]"
@@ -402,11 +401,12 @@ ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ jq < ./dat
       "numTargetBytesRemoved": "3366543",
       "numTargetDeletionVectorsAdded": "0",
       "numTargetRowsMatchedUpdated": "1",
-      "executionTimeMs": "39343",
+      "executionTimeMs": "12556",
+      "materializeSourceTimeMs": "492",
       "numTargetRowsInserted": "1",
       "numTargetRowsMatchedDeleted": "0",
       "numTargetDeletionVectorsUpdated": "0",
-      "scanTimeMs": "29256",
+      "scanTimeMs": "9163",
       "numTargetRowsUpdated": "1",
       "numOutputRows": "54025",
       "numTargetDeletionVectorsRemoved": "0",
@@ -415,43 +415,43 @@ ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ jq < ./dat
       "numSourceRows": "2",
       "numTargetFilesRemoved": "1",
       "numTargetRowsNotMatchedBySourceDeleted": "0",
-      "rewriteTimeMs": "8703"
+      "rewriteTimeMs": "2837"
     },
-    "engineInfo": "Apache-Spark/3.5.3 Delta-Lake/3.2.1",
-    "txnId": "261addf6-33d3-42ab-90e1-8124815fa6dc"
+    "engineInfo": "Apache-Spark/3.5.3 Delta-Lake/3.3.2",
+    "txnId": "2fdd1c5e-aa5d-4d9f-b5c0-673b38f7f1da"
   }
 }
 {
   "add": {
-    "path": "part-00000-e4fc9ba1-f182-40b5-bb4f-cc7a4ba55a44-c000.snappy.parquet",
+    "path": "part-00000-9656a858-41f2-4542-9a60-051d31152f02-c000.snappy.parquet",
     "partitionValues": {},
     "size": 1749796,
-    "modificationTime": 1747937543000,
+    "modificationTime": 1778957833000,
     "dataChange": true,
-    "stats": "{\"numRecords\":26958,\"minValues\":{\"id\":11,\"ident\":\"00AA\",\"type\":\"balloonport\",\"name\":\"\\\"\\\"\\\"Ghost\\\"\\\" International Airport\",\"latitude_deg\":-78.466139,\"longitude_deg\":-179.876999,\"elevation_ft\":-1266,\"continent\":\"AF\",\"iso_country\":\"AD\",\"iso_region\":\"AD-08\",\"municipality\":\"\\\"Academia Militar \\\"\\\"Mcal. Franci\",\"scheduled_service\":\"no\",\"gps_code\":\"00AA\",\"iata_code\":\"AAD\",\"local_code\":\"00AA\",\"home_link\":\"http://GillespieField.com/\",\"wikipedia_link\":\"http://de.wikipedia.org/wiki/Ber\",\"keywords\":\"\\\"\\\"\\\"Garçon\\\"\\\"\\\"\"},\"maxValues\":{\"id\":558333,\"ident\":\"mdwo\",\"type\":\"small_airport\",\"name\":\"Želeč Airstrip\",\"latitude_deg\":81.697844,\"longitude_deg\":179.951004028,\"elevation_ft\":17372,\"continent\":\"SA\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Želeč\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYXC\",\"iata_code\":\"ZZU\",\"local_code\":\"ZVOL\",\"home_link\":\"https:/https://www.dynali.com//w�\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E�\",\"keywords\":\"의주비행장, 義州飛行場\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":5019,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":1445,\"scheduled_service\":0,\"gps_code\":12403,\"iata_code\":23930,\"local_code\":14195,\"home_link\":25254,\"wikipedia_link\":20796,\"keywords\":20343}}"
+    "stats": "{\"numRecords\":26958,\"minValues\":{\"id\":11,\"ident\":\"00AA\",\"type\":\"balloonport\",\"name\":\"\\\"\\\"\\\"Ghost\\\"\\\" International Airport\",\"latitude_deg\":-78.466139,\"longitude_deg\":-179.876999,\"elevation_ft\":-1266,\"continent\":\"AF\",\"iso_country\":\"AD\",\"iso_region\":\"AD-08\",\"municipality\":\"\\\"Academia Militar \\\"\\\"Mcal. Franci\",\"scheduled_service\":\"no\",\"gps_code\":\"00AA\",\"iata_code\":\"AAD\",\"local_code\":\"00AA\",\"home_link\":\"http://GillespieField.com/\",\"wikipedia_link\":\"http://de.wikipedia.org/wiki/Ber\",\"keywords\":\"\\\"\\\"\\\"Garçon\\\"\\\"\\\"\"},\"maxValues\":{\"id\":558333,\"ident\":\"mdwo\",\"type\":\"small_airport\",\"name\":\"Želeč Airstrip\",\"latitude_deg\":81.697844,\"longitude_deg\":179.951004028,\"elevation_ft\":17372,\"continent\":\"SA\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Želeč\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYXC\",\"iata_code\":\"ZZU\",\"local_code\":\"ZVOL\",\"home_link\":\"https:/https://www.dynali.com//w\u007f\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E\u007f\",\"keywords\":\"의주비행장, 義州飛行場\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":5019,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":1445,\"scheduled_service\":0,\"gps_code\":12403,\"iata_code\":23930,\"local_code\":14195,\"home_link\":25254,\"wikipedia_link\":20796,\"keywords\":20343}}"
   }
 }
 {
   "add": {
-    "path": "part-00001-3a745dd6-9d22-4a00-8ca4-253a6fa1232e-c000.snappy.parquet",
+    "path": "part-00001-ece6bbcc-af13-496b-90f2-d9f938c9b3ab-c000.snappy.parquet",
     "partitionValues": {},
     "size": 1763568,
-    "modificationTime": 1747937542000,
+    "modificationTime": 1778957833000,
     "dataChange": true,
-    "stats": "{\"numRecords\":27067,\"minValues\":{\"id\":2,\"ident\":\"00A\",\"type\":\"balloonport\",\"name\":\"\\\"Aeródromo \\\"\\\"Puente de Genave\\\"\\\"\\\"\",\"latitude_deg\":-89.989444,\"longitude_deg\":-179.667007,\"elevation_ft\":-1207,\"continent\":\"AF\",\"iso_country\":\"AD\",\"iso_region\":\"AD-04\",\"municipality\":\"\\\"\\\"\\\"Jaunkalmes\\\"\\\"\",\"scheduled_service\":\"\",\"gps_code\":\"\",\"iata_code\":\"\",\"local_code\":\"\",\"home_link\":\"\",\"wikipedia_link\":\"\",\"keywords\":\"\"},\"maxValues\":{\"id\":558440,\"ident\":\"rjns\",\"type\":\"small_airport\",\"name\":\"​Isla de Desecheo Helipad\",\"latitude_deg\":82.75,\"longitude_deg\":179.9757,\"elevation_ft\":16200,\"continent\":\"US\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Žocene\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYUH\",\"iata_code\":\"no\",\"local_code\":\"ZZV\",\"home_link\":\"https://yyb.ca/\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E�\",\"keywords\":\"황수원비행장, 黃水院飛行場\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":5047,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":1450,\"scheduled_service\":0,\"gps_code\":12615,\"iata_code\":23981,\"local_code\":14264,\"home_link\":25240,\"wikipedia_link\":20939,\"keywords\":20418}}"
+    "stats": "{\"numRecords\":27067,\"minValues\":{\"id\":2,\"ident\":\"00A\",\"type\":\"balloonport\",\"name\":\"\\\"Aeródromo \\\"\\\"Puente de Genave\\\"\\\"\\\"\",\"latitude_deg\":-89.989444,\"longitude_deg\":-179.667007,\"elevation_ft\":-1207,\"continent\":\"AF\",\"iso_country\":\"AD\",\"iso_region\":\"AD-04\",\"municipality\":\"\\\"\\\"\\\"Jaunkalmes\\\"\\\"\",\"scheduled_service\":\"\",\"gps_code\":\"\",\"iata_code\":\"\",\"local_code\":\"\",\"home_link\":\"\",\"wikipedia_link\":\"\",\"keywords\":\"\"},\"maxValues\":{\"id\":558440,\"ident\":\"rjns\",\"type\":\"small_airport\",\"name\":\"​Isla de Desecheo Helipad\",\"latitude_deg\":82.75,\"longitude_deg\":179.9757,\"elevation_ft\":16200,\"continent\":\"US\",\"iso_country\":\"ZW\",\"iso_region\":\"ZW-MW\",\"municipality\":\"Žocene\",\"scheduled_service\":\"yes\",\"gps_code\":\"ZYUH\",\"iata_code\":\"no\",\"local_code\":\"ZZV\",\"home_link\":\"https://yyb.ca/\",\"wikipedia_link\":\"https://zh.wikipedia.org/wiki/%E\u007f\",\"keywords\":\"황수원비행장, 黃水院飛行場\"},\"nullCount\":{\"id\":0,\"ident\":0,\"type\":0,\"name\":0,\"latitude_deg\":0,\"longitude_deg\":0,\"elevation_ft\":5047,\"continent\":0,\"iso_country\":0,\"iso_region\":0,\"municipality\":1450,\"scheduled_service\":0,\"gps_code\":12615,\"iata_code\":23981,\"local_code\":14264,\"home_link\":25240,\"wikipedia_link\":20939,\"keywords\":20418}}"
   }
 }
 {
   "remove": {
-    "path": "part-00000-235e5c19-143e-4930-8733-1922fa83f2af-c000.snappy.parquet",
-    "deletionTimestamp": 1747937543788,
+    "path": "part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet",
+    "deletionTimestamp": 1778957833743,
     "dataChange": true,
     "extendedFileMetadata": true,
     "partitionValues": {},
     "size": 3366543,
     "stats": "{\"numRecords\":54024}"
   }
-} 
+}
 ``` 
 
 Back in Spark, let's read the delta table and register it as a table, so we can query it using SQL
@@ -515,6 +515,10 @@ and perform another select and we can see that we again get the data after the m
 %sql
 SELECT * FROM airportsTimeTravel WHERE ident IN ("00A","ADD")
 ``` 
+
+> **What you should see:** Querying version 0 returns only the original "00A" record in mixed case, with no "ADD" airport present. Querying version 1 returns both the updated "TOTAL RF HELIPORT" record and the newly inserted "ADD" airport.
+
+> **What just happened?** Delta Lake's `versionAsOf` option told Spark to reconstruct the table state as it existed after transaction `N`. Spark replays the `_delta_log/` entries up to and including version `N`, building a file list from the resulting state. This is how Delta Lake provides point-in-time reads without physically copying data — the same underlying Parquet files serve multiple time-travel views simultaneously, and no data is ever re-read until a query action triggers execution.
 
 By default, Delta tables retain the commit history for 30 days. This means that you can always go back to a version from 30 days ago. 
 
