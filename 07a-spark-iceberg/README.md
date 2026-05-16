@@ -2,10 +2,6 @@
 
 In this workshop we will work with [Apache Iceberg](https://iceberg.apache.org/), a high performance open-source format for large analytic tables. Iceberg enables the use of SQL tables for big data while making it possible for engines like Spark, Trino, Flink, Presto, Hive, Impala, StarRocks, Doris, and Pig to safely work with the same tables, at the same time.
 
-The same data as in the [Object Storage Workshop](../02a-minio-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
-
-We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from Apache Zeppelin or Jupyter Notebook.
-
 ## Table of Contents
 
 - [What you will learn](#what-you-will-learn)
@@ -35,7 +31,7 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 2a - [Working with MinIO Object Storage](../02a-minio-object-storage). You can skip this section, if you still have the data available in MinIO.
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
@@ -43,22 +39,10 @@ Create the flight bucket:
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
-```
-
-**Airports**:
+Upload the data
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 ## Working with Spark and Iceberg table
@@ -93,7 +77,7 @@ spark = (
                 "org.apache.iceberg:iceberg-aws-bundle:1.10.1")
 
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+        .config("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
         .config("spark.hadoop.fs.s3a.access.key", accessKey)
         .config("spark.hadoop.fs.s3a.secret.key", secretKey)
@@ -105,8 +89,8 @@ spark = (
         .config("spark.sql.catalog.hive_iceberg.uri", "thrift://hive-metastore:9083")
         .config("spark.sql.catalog.hive_iceberg.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
 
-        # ==== REQUIRED FOR MINIO WITH ICEBERG AWS SDK ===
-        .config("spark.sql.catalog.hiverest.s3.endpoint", "http://minio-1:9000")
+        # ==== REQUIRED FOR RUSTFS WITH ICEBERG AWS SDK ===
+        .config("spark.sql.catalog.hiverest.s3.endpoint", "http://rustfs-1:9000")
         .config("spark.sql.catalog.hiverest.s3.path-style-access", "true")
         .config("spark.sql.catalog.hiverest.s3.access-key-id", accessKey)
         .config("spark.sql.catalog.hiverest.s3.secret-access-key", secretKey)
@@ -164,11 +148,18 @@ First import the required Spark Python API. Don't forget to add the `%pyspark` d
 from pyspark.sql.types import *
 ```
 
-Next let's import the airports data into a DataFrame and show the first 5 rows. We use `header=true` to use the header line for naming the columns and specify to infer the schema.
+Next let's import the airports data into a DataFrame and show the first 5 rows. We define the schema explicitly instead of inferring it, which avoids the double-scan and gives us stable types.
 
 ```python
+airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
+    `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
+    `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
+    `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
+    `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
+    `wikipedia_link` STRING, `keywords` STRING"
+
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports",
-        sep=",", inferSchema="true", header="true")
+        sep=",", inferSchema="false", header="true", schema=airportSchema)
 airportsRawDF.show(5)
 ```
 
@@ -191,7 +182,7 @@ Now let's write the data as an Iceberg table. We use the `hive_iceberg` catalog 
 
 you can either do it using `spark.sql()` to execute the Spark SQL statement
 
-```
+```python
 spark.sql("CREATE NAMESPACE IF NOT EXISTS hive_iceberg.flight_iceberg_db LOCATION 's3a://flight-bucket/iceberg/'")
 ```
 
@@ -225,14 +216,18 @@ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/iceberg/airports/
 and you should see that the data has been written as parquet files under a `data/` folder, with an `metadata/` folder holding the Iceberg metadata
 
 ```bash
-2026-04-03 14:59      2374368  s3://flight-bucket/iceberg/airports/data/00000-4-a72f4a1b-038d-4948-affb-5a53c1b2e760-0-00001.parquet
-2026-04-03 14:59      1146523  s3://flight-bucket/iceberg/airports/data/00001-5-a72f4a1b-038d-4948-affb-5a53c1b2e760-0-00001.parquet
-2026-04-03 14:59         2625  s3://flight-bucket/iceberg/airports/metadata/00000-a3a8f4fb-d2a0-4fe3-8299-f4269e825934.metadata.json
-2026-04-03 14:59         8921  s3://flight-bucket/iceberg/airports/metadata/a5701d5a-cc2e-4f1a-a845-d7a07c072411-m0.avro
-2026-04-03 14:59         4453  s3://flight-bucket/iceberg/airports/metadata/snap-1164668163188701807-1-a5701d5a-cc2e-4f1a-a845-d7a07c072411.avro
+2026-05-16 19:29      2374368  s3://flight-bucket/iceberg/airports/data/00000-1-0c1bb01b-12a0-411b-9be6-488eb52f1ec0-0-00001.parquet
+2026-05-16 19:29      1146523  s3://flight-bucket/iceberg/airports/data/00001-2-0c1bb01b-12a0-411b-9be6-488eb52f1ec0-0-00001.parquet
+2026-05-16 19:29         2627  s3://flight-bucket/iceberg/airports/metadata/00000-e36c1de3-1ae9-4fd7-9eb8-d63c35e77414.metadata.json
+2026-05-16 19:29         8919  s3://flight-bucket/iceberg/airports/metadata/e9cb0981-23fb-4ecb-8804-01cca870cfaf-m0.avro
+2026-05-16 19:29         4453  s3://flight-bucket/iceberg/airports/metadata/snap-4461469077893463285-1-e9cb0981-23fb-4ecb-8804-01cca870cfaf.avro
 ```
 
-We can also use the MinIO Aistor Console to see the data.
+> **What you should see:** Two Parquet data files in `data/` and three metadata files in `metadata/`: a `.metadata.json` (the table's top-level catalog entry), a `-m0.avro` manifest file (listing all data files with their statistics), and a `snap-...avro` snapshot file (the manifest list for this snapshot). This three-level metadata hierarchy is more complex than Delta Lake's single JSON log but enables the concurrent, multi-engine access that makes Iceberg unique.
+
+> **What just happened?** `writeTo().create()` registered the table in the Hive Metastore catalog (`hive_iceberg`) and wrote both the Parquet data files and the complete Iceberg metadata tree. Unlike Delta Lake's append-only JSON log, Iceberg uses immutable files at every level: the metadata JSON points to a snapshot Avro file, which points to a manifest list Avro file, which in turn references the actual Parquet data files. This immutability is what allows Iceberg to support concurrent reads and writes from different engines (Spark, Trino, Flink) against the same table simultaneously.
+
+We can also use the RustFS Console to see the data.
 
 ![Alt Image Text](images/spark-iceberg-1st-write.png "Spark Iceberg 1st write")
 
@@ -248,7 +243,7 @@ click on the `metadata/` folder to see the datafiles behind the iceberg table
 
 Unlike Delta Lake which uses plain JSON files for its transaction log, Iceberg uses a combination of JSON metadata files and Avro manifest files.
 
-Let's download and inspect the initial table metadata JSON file (replace `<snapshot-id>` by the correct UUID (`00000-a3a8f4fb-d2a0-4fe3-8299-f4269e825934` in the case here):
+Let's download and inspect the initial table metadata JSON file (replace `<snapshot-id>` by the correct UUID (`00000-e36c1de3-1ae9-4fd7-9eb8-d63c35e77414` in the case here):
 
 ```bash
 docker exec -ti awscli s3cmd get s3://flight-bucket/iceberg/airports/metadata/<snapshot-id>.metadata.json --force /data-transfer/iceberg-metadata.json
@@ -266,10 +261,10 @@ you should see content similar to the one shown below
 ```json
 {
   "format-version": 2,
-  "table-uuid": "d6b63989-1c5d-4c12-9387-5f5362e85a93",
+  "table-uuid": "f5f89db8-a51e-42b0-bb55-7aa58346300a",
   "location": "s3a://flight-bucket/iceberg/airports",
   "last-sequence-number": 1,
-  "last-updated-ms": 1775228381914,
+  "last-updated-ms": 1778959772104,
   "last-column-id": 18,
   "current-schema-id": 0,
   "schemas": [
@@ -404,24 +399,24 @@ you should see content similar to the one shown below
     }
   ],
   "properties": {
-    "owner": "root",
+    "owner": "jovyan",
     "write.parquet.compression-codec": "zstd"
   },
-  "current-snapshot-id": 1164668163188701807,
+  "current-snapshot-id": 4461469077893463285,
   "refs": {
     "main": {
-      "snapshot-id": 1164668163188701807,
+      "snapshot-id": 4461469077893463285,
       "type": "branch"
     }
   },
   "snapshots": [
     {
       "sequence-number": 1,
-      "snapshot-id": 1164668163188701807,
-      "timestamp-ms": 1775228381914,
+      "snapshot-id": 4461469077893463285,
+      "timestamp-ms": 1778959772104,
       "summary": {
         "operation": "append",
-        "spark.app.id": "app-20260403145823-0001",
+        "spark.app.id": "app-20260516192853-0011",
         "added-data-files": "2",
         "added-records": "81193",
         "added-files-size": "3520891",
@@ -433,11 +428,11 @@ you should see content similar to the one shown below
         "total-position-deletes": "0",
         "total-equality-deletes": "0",
         "engine-version": "3.5.3",
-        "app-id": "app-20260403145823-0001",
+        "app-id": "app-20260516192853-0011",
         "engine-name": "spark",
         "iceberg-version": "Apache Iceberg 1.10.1 (commit ccb8bc435062171e64bc8b7e5f56e6aed9c5b934)"
       },
-      "manifest-list": "s3a://flight-bucket/iceberg/airports/metadata/snap-1164668163188701807-1-a5701d5a-cc2e-4f1a-a845-d7a07c072411.avro",
+      "manifest-list": "s3a://flight-bucket/iceberg/airports/metadata/snap-4461469077893463285-1-e9cb0981-23fb-4ecb-8804-01cca870cfaf.avro",
       "schema-id": 0
     }
   ],
@@ -445,8 +440,8 @@ you should see content similar to the one shown below
   "partition-statistics": [],
   "snapshot-log": [
     {
-      "timestamp-ms": 1775228381914,
-      "snapshot-id": 1164668163188701807
+      "timestamp-ms": 1778959772104,
+      "snapshot-id": 4461469077893463285
     }
   ],
   "metadata-log": []
@@ -476,6 +471,10 @@ you should get a result with one row, similar to shown below
 |2026-04-03 14:59:41.914|1164668163188701807|NULL     |append   |s3a://flight-bucket/iceberg/airports/metadata/snap-1164668163188701807-1-a5701d5a-cc2e-4f1a-a845-d7a07c072411.avro|{spark.app.id -> app-20260403145823-0001, added-data-files -> 2, added-records -> 81193, added-files-size -> 3520891, changed-partition-count -> 1, total-records -> 81193, total-files-size -> 3520891, total-data-files -> 2, total-delete-files -> 0, total-position-deletes -> 0, total-equality-deletes -> 0, engine-version -> 3.5.3, app-id -> app-20260403145823-0001, engine-name -> spark, iceberg-version -> Apache Iceberg 1.10.1 (commit ccb8bc435062171e64bc8b7e5f56e6aed9c5b934)}|
 +-----------------------+-------------------+---------+---------+------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
+
+> **What you should see:** One snapshot row with operation `append`, showing the commit timestamp and a summary map containing statistics such as `added-data-files -> 2`, `added-records -> 81193`, and `total-records -> 81193`. The `manifest_list` column provides the S3 path to the Avro snapshot file for this operation.
+
+> **What just happened?** Iceberg stores all table history as an append-only sequence of snapshots. The `.snapshots` suffix on the table name is an Iceberg metadata table — a special virtual table that Iceberg exposes so you can query table history using plain SQL, without downloading and parsing raw Avro files. Every write operation to an Iceberg table creates a new snapshot, and the metadata tables give you a SQL interface to inspect them.
 
 ```python
 spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.history").show(truncate=False)
@@ -532,20 +531,20 @@ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/iceberg/airports/
 and you should see that new data files have been written, and that a new metadata JSON file and a new snapshot Avro file have been created in the `metadata/` folder
 
 ```bash
-2026-04-03 15:18      1261619  s3://flight-bucket/iceberg/airports/data/00000-19-2e12a916-0cbd-411b-ae76-647ff66e6a1d-0-00001.parquet
-2026-04-03 14:59      2374368  s3://flight-bucket/iceberg/airports/data/00000-4-a72f4a1b-038d-4948-affb-5a53c1b2e760-0-00001.parquet
-2026-04-03 15:18      1290332  s3://flight-bucket/iceberg/airports/data/00001-20-2e12a916-0cbd-411b-ae76-647ff66e6a1d-0-00001.parquet
-2026-04-03 14:59      1146523  s3://flight-bucket/iceberg/airports/data/00001-5-a72f4a1b-038d-4948-affb-5a53c1b2e760-0-00001.parquet
-2026-04-03 14:59         2625  s3://flight-bucket/iceberg/airports/metadata/00000-a3a8f4fb-d2a0-4fe3-8299-f4269e825934.metadata.json
-2026-04-03 15:18         3712  s3://flight-bucket/iceberg/airports/metadata/00001-48b598d9-f6ec-47e3-8566-85b4758ec402.metadata.json
-2026-04-03 15:18         8933  s3://flight-bucket/iceberg/airports/metadata/48b85f13-5a8a-428f-a2d4-f9e12d16aa05-m0.avro
-2026-04-03 15:18         8833  s3://flight-bucket/iceberg/airports/metadata/48b85f13-5a8a-428f-a2d4-f9e12d16aa05-m1.avro
-2026-04-03 14:59         8921  s3://flight-bucket/iceberg/airports/metadata/a5701d5a-cc2e-4f1a-a845-d7a07c072411-m0.avro
-2026-04-03 14:59         4453  s3://flight-bucket/iceberg/airports/metadata/snap-1164668163188701807-1-a5701d5a-cc2e-4f1a-a845-d7a07c072411.avro
-2026-04-03 15:18         4496  s3://flight-bucket/iceberg/airports/metadata/snap-4018939087453753958-1-48b85f13-5a8a-428f-a2d4-f9e12d16aa05.avro
+2026-05-16 19:29      2374368  s3://flight-bucket/iceberg/airports/data/00000-1-0c1bb01b-12a0-411b-9be6-488eb52f1ec0-0-00001.parquet
+2026-05-16 19:44      1261619  s3://flight-bucket/iceberg/airports/data/00000-21-d51e048e-a3bb-4141-a718-bd1010ac86e9-0-00001.parquet
+2026-05-16 19:29      1146523  s3://flight-bucket/iceberg/airports/data/00001-2-0c1bb01b-12a0-411b-9be6-488eb52f1ec0-0-00001.parquet
+2026-05-16 19:44      1290332  s3://flight-bucket/iceberg/airports/data/00001-22-d51e048e-a3bb-4141-a718-bd1010ac86e9-0-00001.parquet
+2026-05-16 19:29         2627  s3://flight-bucket/iceberg/airports/metadata/00000-e36c1de3-1ae9-4fd7-9eb8-d63c35e77414.metadata.json
+2026-05-16 19:44         3714  s3://flight-bucket/iceberg/airports/metadata/00001-ea6471e9-c08a-4a8f-8a5d-0045c72740e7.metadata.json
+2026-05-16 19:44         8932  s3://flight-bucket/iceberg/airports/metadata/2c966610-a941-4e15-b985-343decf3f392-m0.avro
+2026-05-16 19:44         8832  s3://flight-bucket/iceberg/airports/metadata/2c966610-a941-4e15-b985-343decf3f392-m1.avro
+2026-05-16 19:29         8919  s3://flight-bucket/iceberg/airports/metadata/e9cb0981-23fb-4ecb-8804-01cca870cfaf-m0.avro
+2026-05-16 19:29         4453  s3://flight-bucket/iceberg/airports/metadata/snap-4461469077893463285-1-e9cb0981-23fb-4ecb-8804-01cca870cfaf.avro
+2026-05-16 19:44         4497  s3://flight-bucket/iceberg/airports/metadata/snap-8541851118740059401-1-2c966610-a941-4e15-b985-343decf3f392.avro
 ```
 
-We can also see the snapshots via the metadata table:
+We can also alternatively use the RustFS console to see the data
 
 ![Alt Image Text](images/spark-iceberg-1st-merge.png "Spark Iceberg 1st merge")
 
@@ -565,6 +564,10 @@ You should now see two snapshots — the initial `append` and a new `overwrite` 
 |2026-04-03 15:18:49.759|4018939087453753958|1164668163188701807|overwrite|s3a://flight-bucket/iceberg/airports/metadata/snap-4018939087453753958-1-48b85f13-5a8a-428f-a2d4-f9e12d16aa05.avro|{spark.app.id -> app-20260403145823-0001, added-data-files -> 2, deleted-data-files -> 1, added-records -> 54025, deleted-records -> 54024, added-files-size -> 2551951, removed-files-size -> 2374368, changed-partition-count -> 1, total-records -> 81194, total-files-size -> 3698474, total-data-files -> 3, total-delete-files -> 0, total-position-deletes -> 0, total-equality-deletes -> 0, engine-version -> 3.5.3, app-id -> app-20260403145823-0001, engine-name -> spark, iceberg-version -> Apache Iceberg 1.10.1 (commit ccb8bc435062171e64bc8b7e5f56e6aed9c5b934)}|
 +-----------------------+-------------------+-------------------+---------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
+
+> **What you should see:** Two snapshot rows — the initial `append` and a new `overwrite` from the MERGE. The overwrite snapshot's summary shows `added-data-files -> 2`, `deleted-data-files -> 1`, `added-records -> 54025`, and `deleted-records -> 54024`, confirming that the affected partition file was rewritten with the upserted rows.
+
+> **What just happened?** Iceberg's MERGE INTO rewrote the file containing the affected row ("00A") and created a new snapshot. Unlike Delta Lake's append-only JSON log, Iceberg updates the manifest entry for the rewritten file — the old manifest becomes part of the previous snapshot only, while the new snapshot references both the surviving old files and the newly written ones. This immutable snapshot-per-operation model is what allows Iceberg to serve concurrent reads from a previous snapshot while a write is in progress on the same table.
 
 Let's use SQL to query the Iceberg table either using `spark.sql()` 
 
@@ -607,6 +610,10 @@ The output will show how many files were rewritten:
 |                         3|                    83|              3698474|                      0|                         0|
 +--------------------------+----------------------+---------------------+-----------------------+--------------------------+
 ```
+
+> **What you should see:** The procedure rewrote all 3 existing data files into 83 new files (smaller target file size splits the data into more files). `rewritten_bytes_count` matches the total size of the input files, confirming all data was processed.
+
+> **What just happened?** `rewrite_data_files` compacted the three Parquet files into smaller, more uniformly sized files targeting 128 MB each (the `target-file-size-bytes` setting). This creates a new Iceberg snapshot with the rewritten files while the old files are retained until `expire_snapshots` removes them. Compaction is a maintenance operation — it does not change the logical table content, only the physical file layout to improve read performance.
 
 ## Read older versions of data using time travel
 
@@ -653,7 +660,6 @@ spark.sql(f"""
 **Time travel by timestamp** — you can also use a timestamp string:
 
 ```python
-%pyspark
 timestamp = str(snapshots[0]["committed_at"])
 print ("Redcover to timestamp: " + commitedAt)
 
@@ -695,6 +701,10 @@ The output shows how many snapshots and files were removed (because we defined 7
 |                       0|                                  0|                                  0|                           0|                           0|                             0|
 +------------------------+-----------------------------------+-----------------------------------+----------------------------+----------------------------+------------------------------+
 ```
+
+> **What you should see:** All counts show `0` — no snapshots, manifests, or data files were removed. This is expected because the retention window is 7 days and all snapshots in this workshop are only minutes old.
+
+> **What just happened?** `expire_snapshots` removes snapshot metadata entries and any data files no longer referenced by a surviving snapshot, freeing up storage space. The 7-day retention period is a safety guard: it prevents removing snapshots that upstream consumers may still be reading via time travel. In production you would schedule this procedure as regular table maintenance, equivalent to Delta Lake's `VACUUM` command.
 
 You can also remove orphan files (data files not referenced by any snapshot) using:
 
