@@ -308,9 +308,9 @@ ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker ex
 
 > **What you should see:** Five CSV files listed under `raw/flights/`, each approximately 1 MB, covering April and May 2008.
 
-The CSV files in this case do not contain a header line, therefore we cannot use the same technique as before with the airports data and derive the schema from the header. 
+The CSV files in this case do not contain a header line, therefore we cannot use the technique to derive the schema from the header. 
 
-We first have to manually define a schema. One way is to use a DSL as shown in the next code block. 
+We first have to manually define a schema, like we did with the airports to avoid the error. We can do it using the DSL option, as shown in the next code block. 
 
 ```python
 %pyspark
@@ -674,7 +674,7 @@ SELECT arrDelay, origin, destination,
 FROM flights
 ```
 
-> **What you should see:** All 50,000 flight rows with a `flight_delay` classification column appended based on the arrival delay value.
+> **What you should see:** flight rows with a `flight_delay` classification column appended based on the arrival delay value.
 
 and with that get an overview of the 
 
