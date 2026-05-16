@@ -2,8 +2,6 @@
 
 In this workshop we will working with various data types. 
 
-We assume that the **Data Platform** described [here](../00-environment) is running and accessible. 
-
 We only show the pure PySpark statement, if you want to execute the in Zepplin, then you have to add the `%pyspark` directive. 
 
 ## Table of Contents
@@ -27,12 +25,11 @@ We only show the pure PySpark statement, if you want to execute the in Zepplin, 
 ## Prerequisites
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
-- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
-- Airport data uploaded to MinIO (instructions provided if needed)
+- Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed to understand the basics of working with Spark
 
 # Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
@@ -40,22 +37,10 @@ Create the flight bucket:
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
-or with `mc`
- 
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
-```
-
-**Airports:**
+Upload all data
 
 ```bash
 docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
 ```
 
 ## Read CSV File
@@ -64,8 +49,16 @@ Let's read the raw airport data in CSV file format. You can either use Zeppelin,
 
 ```python
 from pyspark.sql.types import *
+
+airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
+    `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
+    `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
+    `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
+    `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
+    `wikipedia_link` STRING, `keywords` STRING"
+
 airportsRawDF = spark.read.csv("file:///data-transfer/airport-data/airports.csv", 
-    	sep=",", inferSchema="true", header="true")
+    	sep=",", inferSchema="false", header="true", schema=airportSchema)
 airportsRawDF.show(5)
 ```
 
@@ -101,10 +94,12 @@ root
  |-- keywords: string (nullable = true)
 ``` 
 
+> **What you should see:** The schema shows 18 columns matching the explicit schema defined above: `id` as integer, coordinate columns as double, and all remaining columns as string.
+
 Let's create another new bucket to store the results of this workshop
 
 ```bash
-docker exec -ti minio-mc mc mb minio-1/datatype-bucket
+docker exec -ti awscli s3cmd mb s3://datatype-bucket/
 ```
 
 ## Write as JSON
@@ -125,15 +120,19 @@ and you should see a result similar to the one shown below
 
 ```bash
 ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/json/
-2025-05-19 20:22            0  s3://datatype-bucket/json/_SUCCESS
-2025-05-19 20:22     16767132  s3://datatype-bucket/json/part-00000-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
-2025-05-19 20:22      8106536  s3://datatype-bucket/json/part-00001-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json
+2026-05-16 17:45            0  s3://datatype-bucket/json/_SUCCESS
+2026-05-16 17:45     16767132  s3://datatype-bucket/json/part-00000-8b434776-29e3-470c-81c1-d067990112b5-c000.json
+2026-05-16 17:45      8106536  s3://datatype-bucket/json/part-00001-8b434776-29e3-470c-81c1-d067990112b5-c000.json
 ```
+
+> **What you should see:** Two part files plus a `_SUCCESS` marker. Spark writes data in parallel — one file per partition — so the file count depends on the number of partitions in the DataFrame (2 for this dataset size). The combined file size (≈ 25 MB) is much larger than the original CSV because every row now carries its own field names.
+
+> **What just happened?** `write.json()` serialised every row as a self-describing JSON object. Each row contains all 18 fields including their field names, making the format human-readable and schema-flexible but verbose. The `_SUCCESS` marker is an empty file written last to signal that the write completed successfully — downstream tools check for it before reading the data.
 
 Let's view the content of one of the objects (make sure to adapt the object name)
 
 ```bash
-docker exec -ti awscli s3cmd get s3://datatype-bucket/json/part-00000-6a7a29b7-d94b-42d9-a7f6-40281a1fa0ff-c000.json - | less
+docker exec -ti awscli s3cmd get s3://datatype-bucket/json/part-00001-8b434776-29e3-470c-81c1-d067990112b5-c000.json - | less
 ```
 
 ## Write as Avro
@@ -154,16 +153,20 @@ and you should see a result similar to the one shown below
 
 ```bash
 ubuntu@ip-172-26-9-171:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/avro/
-2025-05-19 20:31            0  s3://datatype-bucket/avro/_SUCCESS
-2025-05-19 20:31      3539632  s3://datatype-bucket/avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
-2025-05-19 20:31      1731266  s3://datatype-bucket/avro/part-00001-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
+2026-05-16 17:46            0  s3://datatype-bucket/avro/_SUCCESS
+2026-05-16 17:46      3539632  s3://datatype-bucket/avro/part-00000-633ac89f-92d0-49d2-85f1-62be5870ac5b-c000.avro
+2026-05-16 17:46      1731266  s3://datatype-bucket/avro/part-00001-633ac89f-92d0-49d2-85f1-62be5870ac5b-c000.avro
 ```
+
+> **What you should see:** Two `.avro` part files plus a `_SUCCESS` marker. The combined size (≈ 5.3 MB) is much smaller than the JSON output because Avro stores the schema once in the file header and serialises field values in a compact binary format with Snappy compression applied by default.
+
+> **What just happened?** `write.format("avro").save()` serialised each row as an Avro binary record. Avro is a row-based format like JSON — all columns for a given row are stored together — but unlike JSON, the schema is written once at the start of the file rather than repeated for every record. The result is a compact format well-suited for write-heavy pipelines and schema evolution.
 
 Let's download the files to the local folder
 
 ```bash
 cd $DATAPLATFORM_HOME
-sudo mkdir -p data-transfer/result/avro
+mkdir -p data-transfer/result/avro
 docker exec -ti awscli s3cmd get --recursive --force s3://datatype-bucket/avro/ data-transfer/result/avro
 ```
 
@@ -183,7 +186,7 @@ avro
 └── part-00001-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
 ```
 
-Let's see the first 2 lines of the avro file. 
+Let's see the first 2 lines of the avro file (adapt the file name). 
 
 ```bash
 head -n 2 avro/part-00000-4e0989a0-7992-4fcb-bfb6-d92db095acab-c000.avro
@@ -260,6 +263,10 @@ WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string.
 54024
 ```
 
+> **What you should see:** A count of `54024` — the number of airport records in the first partition of the original CSV.
+
+> **What just happened?** The `avro-tools count` command read the Avro file header to retrieve the record count stored in the file metadata — it did not need to deserialise every row. This is one of Avro's format advantages: file-level statistics are embedded in the header and can be retrieved cheaply without a full data scan.
+
 Let's use `tojson`to dump the Avro file as JSON, one line per record and only showing the first 10 records (using the `--head` option)
 
 ```
@@ -281,6 +288,10 @@ WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string.
 {"id":{"int":6528},"ident":{"string":"00CA"},"type":{"string":"small_airport"},"name":{"string":"Goldstone (GTS) Airport"},"latitude_deg":{"double":35.35474},"longitude_deg":{"double":-116.885329},"elevation_ft":{"int":3038},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-CA"},"municipality":{"string":"Barstow"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00CA"},"iata_code":null,"local_code":{"string":"00CA"},"home_link":null,"wikipedia_link":{"string":"https://en.wikipedia.org/wiki/Goldstone_Gts_Airport"},"keywords":null}
 {"id":{"int":324424},"ident":{"string":"00CL"},"type":{"string":"small_airport"},"name":{"string":"Williams Ag Airport"},"latitude_deg":{"double":39.427188},"longitude_deg":{"double":-121.763427},"elevation_ft":{"int":87},"continent":{"string":"NA"},"iso_country":{"string":"US"},"iso_region":{"string":"US-CA"},"municipality":{"string":"Biggs"},"scheduled_service":{"string":"no"},"gps_code":{"string":"00CL"},"iata_code":null,"local_code":{"string":"00CL"},"home_link":null,"wikipedia_link":null,"keywords":null}
 ```
+
+> **What you should see:** Ten JSON objects, one per line, each representing an airport record. Notice that nullable fields use Avro's union type notation — `{"int": 6523}` rather than just `6523` and `null` for missing values. This wrapping is Avro's way of representing optional (nullable) fields via a union type `["int","null"]`.
+
+> **What just happened?** The `avro-tools tojson` command decoded each Avro binary row back into a JSON representation for human inspection. The `--head` option limits output to the first 10 records. The `{"string": ...}` and `{"int": ...}` wrapper objects are Avro's serialised union type notation — in a schema defined as `["int","null"]`, Avro must tag each value with its actual type so the reader knows which branch of the union to use during deserialisation.
 
 Now let's see the meta data of the Avro file
 
@@ -390,16 +401,20 @@ and you should see a result similar to the one shown below
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls s3://datatype-bucket/parquet/
-2025-05-22 11:37            0  s3://datatype-bucket/parquet/_SUCCESS
-2025-05-22 11:37      3366543  s3://datatype-bucket/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
-2025-05-22 11:37      1618896  s3://datatype-bucket/parquet/part-00001-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
+2026-05-16 17:56            0  s3://datatype-bucket/parquet/_SUCCESS
+2026-05-16 17:56      3366543  s3://datatype-bucket/parquet/part-00000-221400ae-7e4e-4730-8e2b-ae78d39d7a0d-c000.snappy.parquet
+2026-05-16 17:56      1618896  s3://datatype-bucket/parquet/part-00001-221400ae-7e4e-4730-8e2b-ae78d39d7a0d-c000.snappy.parquet
 ```
+
+> **What you should see:** Two `.snappy.parquet` part files plus a `_SUCCESS` marker. The file sizes (≈ 5 MB combined) are similar to Avro, but Parquet achieves this through column-level encoding and compression rather than row-level binary serialisation.
+
+> **What just happened?** `write.parquet()` serialised the data in Parquet's columnar format — all values for a given column are stored together rather than all columns for a given row. Snappy compression is applied per column. This layout means that queries reading only a few columns can skip the rest of the file entirely at the storage level, making Parquet extremely efficient for analytical read-heavy workloads — which is why it is the default format for Delta Lake and Iceberg tables.
 
 Let's download the files to the local folder
 
 ```bash
 cd $DATAPLATFORM_HOME
-sudo mkdir -p data-transfer/result/parquet
+mkdir -p data-transfer/result/parquet
 docker exec -ti awscli s3cmd get --recursive s3://datatype-bucket/parquet/ /data-transfer/result/parquet 
 ```
 
@@ -423,7 +438,13 @@ parquet
 1 directory, 3 files
 ```
 
-Let's use the Parquet tools to inspect the Parquet files.
+Let's use the Parquet tools to inspect the Parquet files. `parquet-tools` is running as a container, therefore we can just run it.
+
+```bash
+docker compose run --rm parquet-tools
+```
+
+you should see the help page of the `parquet-tools`
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools
@@ -555,6 +576,10 @@ WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string.
 Total RowCount: 54024
 ```
 
+> **What you should see:** `Total RowCount: 54024`, confirming the file holds the same number of records as the first Avro partition.
+
+> **What just happened?** Parquet files store per-file and per-row-group row counts in the file footer metadata. The `parquet-tools rowcount` command reads only the small footer — not the data pages — and returns the count instantly. This is the same principle that Iceberg and Delta Lake use for file-level statistics to decide which files to skip entirely during query planning (predicate pushdown).
+
 To see the metadata of the Parquet file, use the `meta` tool
 
 ```bash
@@ -615,6 +640,10 @@ keywords:           BINARY SNAPPY DO:0 FPO:3176686 SZ:183387/264205/1.44 VC:5402
 and to see the schema, use the `schema` tool
 
 ```bash
+docker compose run --rm parquet-tools schema /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+```
+
+```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools schema /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
 WARN[0000] The "AIRFLOW_UID" variable is not set. Defaulting to a blank string. 
 message spark_schema {
@@ -639,7 +668,15 @@ message spark_schema {
 }
 ```
 
+> **What you should see:** The Parquet physical schema — `optional int32`, `optional binary (STRING)`, `optional double`, etc. This is the low-level Parquet representation of the logical types Spark wrote. `binary (STRING)` means the bytes are UTF-8 encoded text, annotated with Parquet's STRING logical type so readers know how to interpret them.
+
+> **What just happened?** Spark wrote Parquet type metadata to the file footer that maps its SQL type system onto Parquet's physical types. The `parquet-tools schema` command parsed and printed this footer section. The annotations in parentheses (like `STRING`) are Parquet logical-type annotations that add semantic meaning on top of the physical representation — without the `STRING` annotation, `binary` would just be raw bytes with no implied encoding.
+
 and finally to see the first 10 records, use the `head` tool with the `-n` option
+
+```bash
+docker compose run --rm parquet-tools head -n 10 /data-transfer/result/parquet/part-00000-80dc22bc-1025-425b-b91a-dbe801dba04d-c000.snappy.parquet
+```
 
 ```bash
 ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker compose run --rm parquet-tools head -n 10 /data-transfer/result/parquet/part-00000-9a680a61-9993-4651-a110-5adf979095ba-c000.snappy.parquet
@@ -800,7 +837,7 @@ local_code = 00CL
 
 In this section we will see how we can use Spark to read from a relational database table. We will use PostgreSQL which is part of the dataplatform.
 
-Let's create the `pg_airports_t` table in PostgreSQL, which we will use.
+Let's create the `pg_airports_t` table in PostgreSQL, which we will then read from.
 
 Connect to PostgreSQL using the `psql` CLI
 
@@ -846,7 +883,7 @@ COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg
 FROM '/data-transfer/airport-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
-Now in Pyspark (for example from Zeppelin) use the following statement to read from the `flight_data.pg_airport_t` table.
+Now in Pyspark (for example from Zeppelin) we can use the following statement to read from the `flight_data.pg_airport_t` table.
 
 ```python
 jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://postgresql:5432/postgres").option("dbtable", "flight_data.pg_airport_t").option("user", "postgres").option("password", "abc123!").load()
@@ -863,3 +900,31 @@ let's see the schema derived from the table
 ```python
 jdbcDF.printSchema()
 ```
+
+and it will show the schema 
+
+```
+root
+ |-- id: integer (nullable = true)
+ |-- ident: string (nullable = true)
+ |-- type: string (nullable = true)
+ |-- name: string (nullable = true)
+ |-- latitude_deg: double (nullable = true)
+ |-- longitude_deg: double (nullable = true)
+ |-- elevation_ft: integer (nullable = true)
+ |-- continent: string (nullable = true)
+ |-- iso_country: string (nullable = true)
+ |-- iso_region: string (nullable = true)
+ |-- municipality: string (nullable = true)
+ |-- scheduled_service: string (nullable = true)
+ |-- gps_code: string (nullable = true)
+ |-- iata_code: string (nullable = true)
+ |-- local_code: string (nullable = true)
+ |-- home_link: string (nullable = true)
+ |-- wikipedia_link: string (nullable = true)
+ |-- keywords: string (nullable = true)
+```
+
+> **What you should see:** The JDBC DataFrame contains the same 18-column airport schema, but this time the types are derived from PostgreSQL's native column definitions (`integer`, `character varying`, `double precision`) rather than inferred from a CSV scan. `jdbcDF.show()` will display the same airport rows as the CSV reads, confirming that the data round-trips correctly through the relational database.
+
+> **What just happened?** Spark connected to PostgreSQL using the JDBC driver bundled in the cluster and issued a `SELECT *` query. The database executed the query and streamed the results back to Spark's executors via the JDBC connection. Unlike the file-based reads above, no data was ever written to the local filesystem or object storage — Spark read directly from the relational database at query time. Spark also fetched the table's column metadata from PostgreSQL's information schema to build the DataFrame schema without needing to infer types.
