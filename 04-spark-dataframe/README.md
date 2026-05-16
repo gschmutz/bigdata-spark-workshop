@@ -12,9 +12,10 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
-- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Load the data, if no longer available](#prepare-the-data-if-no-longer-available)
 - [Create a new Zeppelin notebook](#create-a-new-zeppelin-notebook)
 - [Working with the Airport Data](#working-with-the-airport-data)
+- [Working with Carriers Data](#working-with-carriers-data)
 - [Working with Flights Data](#working-with-flights-data)
 - [Use SparkSQL to work with the data](#use-sparksql-to-work-with-the-data)
 - [Use Spark SQL to join flights with airports](#use-spark-sql-to-join-flights-with-airports)
@@ -39,7 +40,7 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport, plane, carrier, and flight data uploaded to Object Storage (instructions provided if needed)
 
-## Prepare the data, if no longer available
+## Load the data, if no longer available
 
 The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
@@ -49,27 +50,19 @@ Create the flight bucket:
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
-**Airports:**
+Upload all data
 
 ```bash
+# Airports
 docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
-```
 
-**Plane-Data:**
-
-```bash
+# Plane Data
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
-```
 
-**Carriers:**
-
-```bash
+# Carriers
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
-```
 
-**Flights:**
-
-```bash
+ #Flights
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
@@ -77,9 +70,9 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
-## Create a new Zeppelin notebook
+## Create a new Zeppelin or Jupyter notebook
 
-For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you can also use **Jupyter** if you prefer.
+For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you can easily adapt it for Jupyter. 
   
 In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin login page. Login with `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
 
@@ -91,8 +84,9 @@ Click on **Create Note** and a new Notebook is created with one cell which is em
 
 ### Add some Markdown first
 
-Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
+Navigate to the first cell and start with a title. 
 
+In **Zeppelin**, by using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
 ```
 %md 
 # Spark DataFrame sample with flights data
@@ -101,6 +95,10 @@ Navigate to the first cell and start with a title. By using the `%md` directive 
 Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
 
 > **What you should see:** The markdown source is replaced by a rendered **Heading 1** title: *Spark DataFrame sample with flights data*.
+
+In **Jupyter**, you can do the same by changing the drop-down in the menu bar from **Code** to **Markdown**.
+
+![Alt Image Text](./images/jupyter-markdown.png "Jupyter Markdown cell")
 
 The markdown code should now be rendered as a Heading-1 title.
 
@@ -115,7 +113,7 @@ First add another title, this time as a Heading-2.
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. 
 
-First we have to import the spark python API. Use the `%pyspark` directive to switch to the PySpark interpreter.
+First we have to import the spark python API. In Zepplein, use the `%pyspark` directive to switch to the PySpark interpreter.
 
 ```python
 %pyspark
@@ -124,9 +122,9 @@ from pyspark.sql.types import *
 
 > **What you should see:** No output — the import executes silently. The PySpark type classes are now available in subsequent cells.
 
-We wil not show the `%pyspark` directive in the following statements.
+We will no longer show the `%pyspark` directive in the following statements.
 
-Next let's import the flights data into a DataFrame and show the first 5 rows. We use header=true to use the header line for naming the columns and specify to infer the schema
+Next let's import the flights data into a DataFrame and show the first 5 rows. We use `header=true` to use the header line for naming the columns and specify to infer the schema
  
 ```python
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
@@ -134,13 +132,32 @@ airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports",
 airportsRawDF.show(5)
 ```
 
+> **What just happened?:** with RustFS in place of MinIO we get a `java.io.FileNotFoundException: No such file or directory: s3a://flight-bucket/raw/airports/airports_2.csv/95a10df7-eadf-4ece-87a6-8853bc3f146f`. It is not clear why that happens as with MinIO that piece of code worked fine. 
+
+We can solve the issue by not inferring the schema but create the schema upfront instead. 
+
+```python
+airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
+    `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
+    `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
+    `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
+    `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
+    `wikipedia_link` STRING, `keywords` STRING"
+```
+
+Now adapt the spark read to `inferSchema="false"` and add the schema. 
+
+```python
+airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
+    	sep=",", inferSchema="false", header="true", schema=airportSchema)
+airportsRawDF.show(5)
+```
+
 The output will show the header line followed by the 5 data lines.
 
 ![Alt Image Text](./images/zeppelin-show-airports-raw.png "Zeppelin Welcome Screen")
 
-> **What you should see:** A table with 5 rows of airport data and columns derived from the CSV header row, including `id`, `ident`, `type`, `name`, `latitude_deg`, `longitude_deg`, and others.
-
-Now let's display the schema, which has been derived from the data:
+Now let's display the schema, which in that case matches of course the schema we defined before:
 
 ```	python
 airportsRawDF.printSchema()
@@ -170,10 +187,6 @@ root
  |-- keywords: string (nullable = true)
 ``` 
 
-> **What you should see:** An 18-column schema where numeric fields like `latitude_deg` and `longitude_deg` were automatically inferred as `double`, and text fields as `string`.
-
-> **What just happened?** With `inferSchema="true"`, Spark reads a sample of the file to determine column types automatically. This is convenient but requires an extra pass over the data — for large production datasets it is faster to specify the schema explicitly.
-
 Next let's ask for the total number of rows in the dataset. 
 
 ```python
@@ -196,7 +209,73 @@ airportsRawDF.write.json("s3a://flight-bucket/refined/airports")
 
 Check that the file has been written to Object Storage using either one of the techniques seen before. 
 
- 
+## Working with Carriers Data
+
+First add a heading cell.
+
+```
+%md 
+## Working with the Carriers data
+```
+
+Now let's work with the Carriers data, which we have uploaded to `s3://flight-bucket/raw/carriers/`.
+
+The carriers data is stored as a JSON file. Unlike the airports CSV, the file contains a **JSON array** — all records are wrapped in a single `[...]` block — so we need to pass `multiLine=True` when reading it.
+
+```python
+carriersRawDF = spark.read.json("s3a://flight-bucket/raw/carriers/carriers.json", multiLine=True)
+carriersRawDF.show(5)
+```
+
+You should see the first 5 carrier records:
+
+```
++----+--------------------+
+|Code|         Description|
++----+--------------------+
+| 02Q|       Titan Airways|
+| 04Q|  Tradewind Aviation|
+| 05Q| Comlux Aviation, AG|
+| 06Q|Master Top Linhas...|
+| 07Q| Flair Airlines Ltd.|
++----+--------------------+
+only showing top 5 rows
+
+```
+
+> **What you should see:** Two columns — `Code` (the carrier IATA code) and `Description` (the airline name) — with 5 rows displayed.
+
+Now let's display the schema:
+
+```python
+carriersRawDF.printSchema()
+```
+
+```
+root
+ |-- Code: string (nullable = true)
+ |-- Description: string (nullable = true)
+```
+
+> **What just happened?** Even though a handful of `Code` values in the raw file are stored as JSON numbers (e.g. `16`, `17`), Spark infers the column as `string` because the majority of values are strings. If you need strict typing you can again define a schema explicitly:
+> ```python
+> from pyspark.sql.types import StructType, StructField, StringType
+> carrierSchema = StructType([
+>     StructField("Code",        StringType(), True),
+>     StructField("Description", StringType(), True),
+> ])
+> carriersRawDF = spark.read.json("s3a://flight-bucket/raw/carriers/carriers.json",
+>     multiLine=True, schema=carrierSchema)
+> ```
+
+Next let's ask for the total number of carrier records:
+
+```python
+carriersRawDF.count()
+```
+
+> **What you should see:** The total number of carrier entries in the dataset.
+
 ## Working with Flights Data
 
 First add another title, this time as a Heading-2.
