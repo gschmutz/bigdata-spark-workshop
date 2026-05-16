@@ -9,6 +9,10 @@ We assume that the **Data platform** described [here](../00-environment) is runn
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
 - [Accessing Spark](#accessing-spark)
+  - [Using the Python API through PySpark](#using-the-python-api-through-pyspark)
+  - [Using Apache Zeppelin (used for this workshop)](#using-apache-zeppelin-used-for-this-workshop)
+  - [Using Jupyter (Alternative to Zeppelin)](#using-jupyter-alternative-to-zeppelin)
+- [Load Source Data to Object Storage](#load-source-data-to-object-storage)
 - [Working with Spark Resilient Distributed Datasets (RDDs)](#working-with-spark-resilient-distributed-datasets-rdds)
 - [Working with Spark DataFrames](#working-with-spark-dataframes)
 
@@ -25,6 +29,12 @@ We assume that the **Data platform** described [here](../00-environment) is runn
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 1b ([Working with RustFS Object Storage](../01b-rustfs-object-storage)) completed, or at minimum the `rustfs-mc` container available to upload data
+- To avoid problems with not being able to write to `spark/logs` folder, execute once the following statement in a terminal:
+
+```bash
+cd $DATAPLATFORM_HOME
+sudo chmod 777 container-volume/spark/logs
+```
 
 ## Accessing Spark
 
@@ -46,12 +56,6 @@ The [PySpark API](https://spark.apache.org/docs/latest/api/python/index.html) al
 
 In our environment, PySpark is accessible inside the `spark-master` container. 
 
-To avoid problems with not being able to write to `spark/logs` folder, execute once the following statement in a terminal:
-
-```bash
-cd $DATAPLATFORM_HOME
-sudo chmod 777 container-volume/spark/logs
-```
 
 Now to start PySpark use the `pyspark` command. 
 
@@ -166,7 +170,7 @@ Zeppelin allows for mixing different interpreters in one and the same Notebook, 
 
 You can **use Apache Zeppelin** to perform the workshop below. An other option is to use **Jupyter**. 
 
-### Using Jupyter
+### Using Jupyter (Alternative to Zeppelin)
 
 In a browser window, navigate to <http://dataplatform:28888>. 
 
@@ -221,13 +225,7 @@ Execute it by entering **Shift** + **Enter**.
 
 If you check the code you can see that we connect to the Spark Master and get a session on the "spark cluster", available through the `spark` variable. The Spark Context is available as variable `sc`.
 
-Now, execute `spark.version` in another shell to show the Spark version in place. 
-
-Also execute a python command `print ("hello")` just to see that you are executing python. 
-
-![Alt Image Text](./images/jupyter-execute-cell.png "Jupyter Execute cell")
-
-Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
+Also enable sql magic by executing the following commands in a new cell (this will enable the `%%sql` directive to execute plain SQL statements)
 
 ```python
 %load_ext sql
@@ -238,25 +236,17 @@ Also enable sql magic in Jupyter (this will enable the `%%sql` directive to exec
 %sql spark
 ```
 
-> **What you should see:** No visible output — the SQL magic extension loads silently. After this cell, you can use `%%sql` at the top of any cell to run SQL directly against Spark.
+Now, execute `spark.version` in another cell to show the Spark version in place. 
+
+Also execute a python command `print ("hello")` just to see that you are executing python. 
+
+![Alt Image Text](./images/jupyter-execute-cell.png "Jupyter Execute cell")
+
+> **What you should see:** No visible output — the SQL magic extension loads silently. After this cell, you can use `%%sql` at the top of any cell to run SQL directly against Spark. We will use this in a later workshop.
 
 You are now setup to use **Jupyter** for performing the workshop. 
 
-## Working with Spark Resilient Distributed Datasets (RDDs)
-
-Spark's primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. 
-
-It is a distributed collection of elements that is parallelised across the cluster. In other words, a RDD is an immutable collection of objects that is partitioned and distributed across multiple physical nodes of a YARN cluster and that can be operated in parallel.
-
-There are three methods for creating a RDD:
-
- 1. Parallelise an existing collection. This means that the data already resides within Spark and can now be operated on in parallel. 
- 2. Create a RDD by referencing a dataset. This dataset can come from any storage source supported by Hadoop such as HDFS, Cassandra, HBase etc.
- 3. Create a RDD by transforming an existing RDD to create a new RDD.
-
-We will be using the 2nd method in this workshop.
-
-### Uploading Raw Data to Object Storage
+## Load Source Data to Object Storage
 
 First let's upload the data needed for this workshop, using the techniques we have learned in the [Working with RustFS Object Storage](../01b-rustfs-object-storage/README.md) when working with Object Storage.
 
@@ -271,12 +261,26 @@ docker exec -ti rustfs-mc mc mb rustfs-1/wordcount-bucket
 And then upload the `big.txt` into the new bucket 
 
 ```bash
-docker exec -ti rustfs-mc mc cp /data-transfer/wordcount/big.txt rustfs-1/wordcount-bucket/raw-data/
+docker exec -ti rustfs-mc mc cp /data-transfer/wordcount/big.txt rustfs-1/wordcount-bucket/raw-data/book/
 ```
 
-> **What you should see:** A progress bar and a confirmation line showing `big.txt` was uploaded to `rustfs-1/wordcount-bucket/raw-data/`.
+> **What you should see:** A progress bar and a confirmation line showing `big.txt` was uploaded to `rustfs-1/wordcount-bucket/raw-data/book/`.
 
 Now with the data either available in Object Storage, let's use the data using Spark RDDs.
+
+## Working with Spark Resilient Distributed Datasets (RDDs)
+
+Spark's primary core abstraction is called a **Resilient Distributed Dataset** or **RDD**. 
+
+It is a distributed collection of elements that is parallelised across the cluster. In other words, a RDD is an immutable collection of objects that is partitioned and distributed across multiple physical nodes of a YARN cluster and that can be operated in parallel.
+
+There are three methods for creating a RDD:
+
+ 1. Parallelise an existing collection. This means that the data already resides within Spark and can now be operated on in parallel. 
+ 2. Create a RDD by referencing a dataset. This dataset can come from any storage source supported by Hadoop such as HDFS, Cassandra, HBase etc.
+ 3. Create a RDD by transforming an existing RDD to create a new RDD.
+
+We will be using the 2nd method in this workshop.
 
 ### Implementing Wordcount using Spark Python API
 
@@ -293,21 +297,21 @@ To start, let's read the data into an RDD. Copy the following line into the empt
 if using **pyspark** and **jupyter**
 
 ```python
-lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
+lines = sc.textFile("s3a://wordcount-bucket/raw-data/book/big.txt")
 ```
 
-if using **zeppelin**
+if using **zeppelin** you need to add the additional `%pyspark` directive to switch to the pyspark executor
 
 ```python
 %pyspark
-lines = sc.textFile("s3a://wordcount-bucket/raw-data/big.txt")
+lines = sc.textFile("s3a://wordcount-bucket/raw-data/book/big.txt")
 ```
+
+Click on **Shift-Enter** to execute the cell.
 
 ![](./images/zeppelin-rdd-1.png)
 
 > **What you should see:** No output — `textFile` is a transformation that records where to find the data but does not read it yet. Spark is lazy: no work happens until an action is called.
-
-Click on **Shift-Enter** to execute the cell.
 
 Next let's split the line into words and flat map it
 
@@ -346,7 +350,7 @@ counts.count()
 
 > **What you should see:** A single integer — the total number of distinct words found in `big.txt`. Note that running this re-executes the pipeline from scratch unless the RDD has been cached (`.cache()`).
 
-To check the results in Object Storage, do an `ls` to see the different objects in the S3 folder
+To check the results in Object Storage, do an `ls` in a terminal window to see the different objects in the S3 folder
 
 ```bash
 docker exec -it rustfs-mc mc ls rustfs-1/wordcount-bucket/result-data
@@ -371,13 +375,11 @@ Next let's do a wordcount using Spark DataFrames.
  
 ## Working with Spark DataFrames
 
-The data needed here has been uploaded to Object Storage in the **Working with RDD** section. 
+The data needed here has been uploaded to Object Storage at the beginning. 
 
 You can use one of the three different options described above (**PySpark**, **Apache Zeppelin** or **Jupyter**) to access the Spark environment. Don't forget to add the `%pyspark` directive when using **Apache Zeppelin**.
 
-For Zeppelin you can find a complete Notebook inside the [`zeppelin`](https://github.com/gschmutz/hadoop-spark-workshop/tree/master/03-spark-getting-started/zeppelin) folder. 
-
-Create a new notebook in Zeppelin, as we have learned before. 
+In Zeppelin or Jupyter, create a new notebook, as we have learned before. In Jupyter, create the Spark context the same way as before. 
 
 First let's see the `spark.read` method, which is part of the `DataFrameReader`. The following statement shows that:
 
@@ -402,9 +404,11 @@ In this workshop we will be using the `text()` operation.
 Let's start by reading the data from object storage into a `bookDF` DataFrame, using the `read.text` with the address of the object in Object Storage
 
 ```python
-bookDF = spark.read.text("s3a://wordcount-bucket/raw-data/big.txt")
+bookDF = spark.read.text("s3a://wordcount-bucket/raw-data/book/")
 bookDF
 ```
+
+> **Note:** The path points to the **folder** (`raw-data/book/`), not to a specific file. Spark reads all files in that prefix as a single dataset. This means you don't need to know the exact filename, and if you later add more text files to the folder they will automatically be included in the next run.
 
 > **What you should see:** A `DataFrame` object reference printed (e.g. `DataFrame[value: string]`) — no data is loaded yet. Like RDD transformations, `read.text` is lazy.
 
