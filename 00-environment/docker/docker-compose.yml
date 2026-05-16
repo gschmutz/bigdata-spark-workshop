@@ -941,7 +941,7 @@ services:
     environment:
       # for awscli & s3cmd
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
       AWS_ENDPOINT: http://rustfs-1:9000
       AWS_DEFAULT_REGION: us-east-1
       SPARK_HOME: /opt/bitnami/spark
@@ -1014,7 +1014,7 @@ services:
       REMOVE_JARS: guava-14.0.1.jar
       # for awscli & s3cmd
       AWS_ACCESS_KEY_ID: ${PLATYS_AWS_ACCESS_KEY:-admin}
-      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123!abc123!}
+      AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}}
       AWS_ENDPOINT: http://rustfs-1:9000
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
