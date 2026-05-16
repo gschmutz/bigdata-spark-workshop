@@ -143,6 +143,17 @@ Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
 
 > **What just happened?** Unlike a Zeppelin and similar to what we used in Jupyter, this is a standalone Python script that creates its own `SparkSession` at startup and calls `spark.stop()` when done. The `argparse` block at the bottom lets it accept command-line arguments from `spark-submit`, making it reusable across different bucket/path configurations without editing the code.
 
+> **Note:** Both write operations use `.mode("overwrite")`, which tells Spark to replace the output path entirely if it already exists. The four write modes available are:
+>
+> | Mode | Behavior |
+> |------|-----------|
+> | `overwrite` | Delete existing data at the path and write fresh output |
+> | `append` | Add new files alongside existing ones |
+> | `ignore` | Do nothing if the path already exists (no error) |
+> | `error` (default) | Throw an exception if the path already exists |
+>
+> `overwrite` is the right choice here because the app is designed to be re-run as a pipeline step — each run should produce a clean, complete refined dataset rather than accumulating duplicate records.
+
 The application accepts 3 parameters to specify the S3 bucket name, the raw folder and the refined folder.
 
 ## Execute the application on the Spark Cluster using the `spark-submit` command
