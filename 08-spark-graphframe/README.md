@@ -2,8 +2,6 @@
 
 In this workshop we will work with [Apache Spark GraphFrames](https://graphframes.github.io/graphframes/docs/_site/index.html) to build and execute graph queries.
 
-The same data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
-
 ## Table of Contents
 
 - [What you will learn](#what-you-will-learn)
@@ -36,11 +34,10 @@ The same data as in the [Object Storage Workshop](../02-object-storage/README.md
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
-- Airport, plane, carrier, and flight data uploaded to MinIO (instructions provided if needed)
 
 ## Prepare the data, if no longer available
 
-The data needed here has been uploaded in workshop 2 - [Working with MinIO Object Storage](02-object-storage). You can skip this section, if you still have the data available in MinIO. We show both `s3cmd` and the `mc` version of the commands:
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
@@ -48,66 +45,24 @@ Create the flight bucket:
 docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
-or with `mc`
- 
-```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
-```
-
-**Airports:**
+Upload the data
 
 ```bash
+# Airports
 docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
-```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
-```
-
-**Plane-Data:**
-
-```bash
+# Plane-Data
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
-```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/plane-data.csv minio-1/flight-bucket/raw/planes/plane-data.csv
-```
-
-**Carriers:**
-
-```bash
+# Carriers
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
-```
 
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/carriers.json minio-1/flight-bucket/raw/carriers/carriers.json
-```
-
-**Flights:**
-
-```bash
+# Flights (we copy one month from flights-medium to get more flights to analyze in this example)
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-medium/flights_2008_1.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
-```
-
-or with `mc`
-
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_3.csv minio-1/flight-bucket/raw/flights/
 ```
 
 ## Working with Spark and GraphFrames
@@ -123,7 +78,7 @@ For **Jupyter**, perform the next paragraph, for **Apache Zeppelin**, this is no
 
 ### If you are using Jupyter
 
-This workshop can be done with either Zeppelin or Jupyter, but to use Jupyter, you have to extend the Spark context with additional configuration settings in the init script:
+You have to create the Spark context with additional configuration settings in the init script:
 
 ```python
 import os
@@ -144,11 +99,12 @@ conf.set("spark.executor.memory", "8g")
 conf.set("spark.executor.cores", "1")
 conf.set("spark.core.connection.ack.wait.timeout", "1200")
 conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
 conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
 conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
 conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
 conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+conf.set("spark.jars.packages", "io.graphframes:graphframes-spark3_2.12:0.11.0,io.graphframes:graphframes-graphx-spark3_2.12:0.11.0")
 
 spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
 spark.sparkContext.setLogLevel("INFO")
@@ -192,10 +148,15 @@ Now let's load the data for the vertices (airports), which we have uploaded to `
 ```python
 from pyspark.sql.types import *
 
-from pyspark.sql.types import *
+airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
+    `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
+    `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
+    `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
+    `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
+    `wikipedia_link` STRING, `keywords` STRING"
 
 airportsRawDF = spark.read.csv("s3a://flight-bucket/raw/airports", 
-    	sep=",", inferSchema="true", header="true")
+    	sep=",", inferSchema="false", header="true", schema=airportSchema)
 verticesDF = airportsRawDF.filter("iata_code IS NOT NULL").drop("id").withColumnRenamed("iata_code", "id")
 verticesDF.show(5)
 ```
@@ -236,6 +197,10 @@ num_of_airports
 
 and you will see that there are `9104` airports in the dataset.
 
+> **What you should see:** `9104` — the number of distinct airports in the dataset that have a non-null IATA code (used as the vertex `id`).
+
+> **What just happened?** `graph.vertices.count()` triggered a Spark action on the vertices DataFrame. The filter applied when building `verticesDF` excluded airports without an IATA code, because GraphFrames requires a non-null `id` field for all vertices to uniquely identify them in the graph.
+
 * How many flights are there?
 
 ```python
@@ -243,7 +208,9 @@ num_of_flights = graph.edges.count()
 num_of_flights
 ```
 
-and you will see that there are `50000` flights in the dataset.	
+> **What you should see:** `645765` — the total number of flight records across all the CSV files loaded.
+
+> **What just happened?** `graph.edges.count()` triggered a Spark action on the edges DataFrame, which contains one row per flight. The edges represent directed connections — a flight from BOS to LAX is a different edge from a flight from LAX to BOS, so both directions are counted separately.
 	
 * Which flight routes have the longest distance?
 
@@ -256,19 +223,23 @@ graph.edges.groupBy("src", "dst") \
 		.show(4)
 ```	
 
-and we will see that Phoenix to Honolulu is the longest flight in the dataset.
+and we will see that Honolulu to Newark is the longest flight in the dataset.
 
 ```
 +---+---+-------------+
 |src|dst|max(distance)|
 +---+---+-------------+
-|PHX|HNL|         2917|
-|HNL|PHX|         2917|
-|LAS|HNL|         2762|
-|HNL|LAS|         2762|
+|HNL|EWR|         4962|
+|EWR|HNL|         4962|
+|ATL|HNL|         4502|
+|HNL|ATL|         4502|
 +---+---+-------------+
 only showing top 4 rows
 ```
+
+> **What you should see:** The top four routes by maximum distance, with Phoenix↔Honolulu (PHX↔HNL at 2,917 miles) as the longest, followed by Las Vegas↔Honolulu. Both directions appear as separate rows because GraphFrame edges are directed.
+
+> **What just happened?** `graph.edges` is a plain Spark DataFrame — GraphFrames exposes the underlying edge data directly so you can use the full Spark DataFrame API on it. The `groupBy("src","dst").max("distance")` and `sort()` are standard Spark DataFrame operations; no graph-specific logic was needed for this query.
 
 * Which flight routes have the highest average delays?
 
@@ -283,17 +254,21 @@ graph.edges.groupBy("src", "dst") \
 will return this result
 
 ```
-+---+---+------------------+
-|src|dst|     avg(depDelay)|
-+---+---+------------------+
-|MCO|TUL|              93.0|
-|MCO|SLC|              68.0|
-|HNL|PHX| 66.29032258064517|
-|SFO|IND|              53.0|
-|MCI|SMF|46.333333333333336|
-+---+---+------------------+
++---+---+-------------+
+|src|dst|avg(depDelay)|
++---+---+-------------+
+|SFO|SMX|        325.0|
+|TUL|PIA|        243.0|
+|ONT|SAN|        221.0|
+|ICT|PIA|        215.0|
+|ACV|SJC|        211.0|
++---+---+-------------+
 only showing top 5 rows
 ```
+
+> **What you should see:** The five routes with the highest average departure delay. SFO→SMX tops the list with 325 minutes average — likely driven by a small number of flights on that route, so a single very delayed flight skews the average significantly.
+
+> **What just happened?** The same DataFrame aggregation pattern as above but using `.avg("depDelay")`. GraphFrames adds no overhead for this type of query — you are working directly with the raw edge DataFrame containing the flight CSV data.
 
 ## Degree Analysis
 
@@ -307,11 +282,11 @@ graph.degrees.sort("degree", ascending=False).show(5)
 +---+------+
 | id|degree|
 +---+------+
-|ATL| 15170|
-|MCO|  5070|
-|BWI|  4761|
-|LAX|  4555|
-|HNL|  4254|
+|ATL| 82957|
+|ORD| 59872|
+|DFW| 48296|
+|LAX| 41781|
+|DEN| 39536|
 +---+------+
 only showing top 5 rows
 ```
@@ -324,11 +299,11 @@ graph.inDegrees.sort("inDegree", ascending=False).show(5)
 +---+--------+
 | id|inDegree|
 +---+--------+
-|ATL|    7619|
-|MCO|    2544|
-|BWI|    2389|
-|LAX|    2288|
-|HNL|    2127|
+|ATL|   41500|
+|ORD|   29936|
+|DFW|   24155|
+|LAX|   20901|
+|DEN|   19766|
 +---+--------+
 only showing top 5 rows
 ```
@@ -341,14 +316,18 @@ graph.outDegrees.sort("outDegree", ascending=False).show(5)
 +---+---------+
 | id|outDegree|
 +---+---------+
-|ATL|     7551|
-|MCO|     2526|
-|BWI|     2372|
-|LAX|     2267|
-|HNL|     2127|
+|ATL|    41457|
+|ORD|    29936|
+|DFW|    24141|
+|LAX|    20880|
+|DEN|    19770|
 +---+---------+
 only showing top 5 rows
 ```
+
+> **What you should see:** ATL (Atlanta Hartsfield-Jackson) dominates all three rankings with 15,170 total connections, 7,619 incoming, and 7,551 outgoing — confirming it as the dominant hub in this dataset. The slight asymmetry between in- and out-degree for ATL reflects a sampling imbalance in the flight extract.
+
+> **What just happened?** `graph.degrees`, `graph.inDegrees`, and `graph.outDegrees` each trigger a full scan of the edges DataFrame. Degree is computed by counting all edges incident to each vertex. For a directed graph like a flight network, in-degree = number of arriving flights, out-degree = number of departing flights, and total degree = their sum.
 
 ## Motif Finding
 
@@ -360,24 +339,28 @@ Let's find all **round-trip routes** — pairs of airports where a direct flight
 roundTrips = graph.find("(a)-[e1]->(b); (b)-[e2]->(a)")
 roundTrips.select("a.id", "b.id").distinct().show(10)
 
-+-----+-----+
-|ident|ident|
-+-----+-----+
-| KBHM| KPHX|
-| KBHM| KLAS|
-| KBWI| KBHM|
-| KCMH| KMDW|
-| KHOU| KDAL|
-| KPHX| KOKC|
-| KPIT| KPHL|
-| KTPA| KRDU|
-| KBDL| KLAS|
-| KDEN| KATL|
-+-----+-----+
++---+---+
+| id| id|
++---+---+
+|ATL|GSP|
+|MSP|AVL|
+|BQN|MCO|
+|EWR|STT|
+|MCI|IAH|
+|CLE|SJU|
+|PHL|MCO|
+|MLI|MCO|
+|SMF|BUR|
+|SNA|PHX|
++---+---+
 only showing top 10 rows
 ```
 
-We can also find **two-hop paths** — airports reachable from a given origin via exactly one connection:
+> **What you should see:** Pairs of airports connected by flights in both directions. The motif syntax `"(a)-[e1]->(b); (b)-[e2]->(a)"` matched every pair where a flight from `a` to `b` AND a flight from `b` to `a` both exist in the dataset.
+
+> **What just happened?** Motif finding scans the edge list for structural patterns expressed in GraphFrames' declarative syntax. Parentheses denote vertices, square brackets denote edges, and the semicolon separates sub-patterns that must all be satisfied simultaneously. Internally GraphFrames translates this into a series of DataFrame joins — it is powerful and expressive, but can be expensive for large graphs because matching complex patterns requires cross-joining the edge set.
+
+We can also find **two-hop paths** — airports reachable from a given origin (Boston) via exactly one connection:
 
 ```python
 twohop = graph.find("(a)-[e1]->(b); (b)-[e2]->(c)")
@@ -389,19 +372,23 @@ twohop.filter("a.id = 'BOS'") \
 +---+---+---+
 | id| id| id|
 +---+---+---+
-|BOS|MDW|SAT|
+|BOS|PHL|PBI|
+|BOS|BNA|SEA|
 |BOS|BWI|AUS|
-|BOS|BWI|MIA|
-|BOS|MCO|IAD|
-|BOS|MCO|CAK|
-|BOS|BWI|BHM|
-|BOS|MDW|LAS|
-|BOS|MDW|SRQ|
-|BOS|BWI|DAY|
-|BOS|ATL|RIC|
+|BOS|RDU|IAD|
+|BOS|JFK|BDL|
+|BOS|ORD|EWR|
+|BOS|ORD|PSP|
+|BOS|CLT|SYR|
+|BOS|CLT|PHX|
+|BOS|ATL|ABE|
 +---+---+---+
-only showing top 10 rows      
+only showing top 10 rows     
 ```
+
+> **What you should see:** Airports reachable from BOS (Boston) via exactly one connecting airport. BOS→PHL→PBI means you can fly Boston to Philadelphia, then to Palm Beach. The `distinct()` call removes duplicate paths caused by multiple flight options on the same route pair.
+
+> **What just happened?** The two-hop motif `"(a)-[e1]->(b); (b)-[e2]->(c)"` joined the edge list with itself on the intermediate vertex `b`. This is a self-join of the edges DataFrame — every outgoing edge from BOS is joined with every outgoing edge from the intermediate airport. The filter `a.id = 'BOS'` is applied after the join, so GraphFrames scans all edges for the pattern and then filters; for a large graph with many airports a more efficient approach would filter before the join using the `vertexFilter` parameter.
 
 ## PageRank
 
@@ -417,44 +404,47 @@ ranks.vertices \
 +---+------------------+
 | id|          pagerank|
 +---+------------------+
-|ATL| 91.10094958290752|
-|MCO|30.632088151948064|
-|BWI|30.432641628675686|
-|LAX| 27.76072868698972|
-|LAS|22.438247150782466|
-|MDW|22.265006379376754|
-|HNL| 18.69727857097317|
-|PHX|16.054050168125137|
-|HOU|14.584142572179879|
-|SAN|14.155859998873886|
+|ATL|103.05432260837141|
+|ORD| 68.69817966511793|
+|DFW|  58.8940785635434|
+|DEN| 46.10011355304056|
+|LAX| 44.60824062837437|
+|SLC| 38.93506766249176|
+|PHX| 38.54485749207912|
+|DTW| 35.56062331178822|
+|IAH| 35.44161744240193|
+|LAS|  32.2385562916205|
 +---+------------------+
-only showing top 10 rows     
+only showing top 10 rows
 ```
+
+> **What you should see:** ATL scores 103.1 — far ahead of the second-ranked airports (ORD, DFW). PageRank measures network centrality, so ATL's score reflects not just its raw flight count but the fact that it is connected to many other important airports.
+
+> **What just happened?** PageRank ran 10 iterations of the standard algorithm (`maxIter=10`). At each iteration every vertex distributes its current rank equally to its out-neighbours, scaled by the out-degree. The `resetProbability=0.15` is the "teleportation" probability — at each step there is a 15% chance of jumping to a random vertex, which prevents rank from pooling at sink nodes (airports with no outgoing flights) and ensures convergence.
 
 You can also inspect which routes carry the most "weight" in the network:
 
 ```python
-ranks.edges \
-     .select("src", "dst", "weight") \
-     .distinct() \    
+ranks.edges.select("src", "dst", "weight") \
+     .distinct() \
      .sort("weight", ascending=False) \
      .show(10)
      
 +---+---+--------------------+
 |src|dst|              weight|
 +---+---+--------------------+
-|BTV|BWI|0.041666666666666664|
-|XNA|LAX| 0.03225806451612903|
-|CRP|HOU|             0.03125|
-|DAB|LGA|0.023255813953488372|
-|DAB|BWI|0.023255813953488372|
-|DAB|ATL|0.023255813953488372|
-|JAN|MDW|                0.02|
-|JAN|HOU|                0.02|
-|JAN|BWI|                0.02|
-|JAN|MCO|                0.02|
+|ADK|ANC|  0.1111111111111111|
+|TUP|ATL|                 0.1|
+|PLN|DTW|0.041666666666666664|
+|ALO|MSP|0.037037037037037035|
+|BLI|SLC| 0.03333333333333333|
+|ACY|LGA| 0.03225806451612903|
+|CMX|MSP| 0.03225806451612903|
+|ACY|ATL| 0.03225806451612903|
+|RHI|MSP| 0.03225806451612903|
+|YKM|SLC|0.030303030303030304|
 +---+---+--------------------+
-only showing top 10 rows     
+only showing top 10 rows    
 ```
 
 ## Connected Components
@@ -474,11 +464,54 @@ components.groupBy("component") \
           
           
 components \
-    .join(graph.vertices, on="id") \
-    .select("component", "id", "ident", "name") \
+    .join(graph.vertices.alias("v"), on="id") \
+    .select("component", "id", "v.ident", "v.name") \
     .sort("component") \
-    .show(20)          
+    .show(20)         
+
++-------------+-----+
+|    component|count|
++-------------+-----+
+|            1|  286|
+|1477468749826|    1|
+|1013612281883|    1|
+| 592705486881|    1|
+|1614907703302|    1|
+|1606317768750|    1|
+|1348619730952|    1|
+| 257698037791|    1|
+|1125281431585|    1|
+|1554778161163|    1|
++-------------+-----+
+only showing top 10 rows
+
++---------+---+-----+--------------------+
+|component| id|ident|                name|
++---------+---+-----+--------------------+
+|        0|AKD| VAAK|       Akola Airport|
+|        1|BDL| KBDL|Bradley Internati...|
+|        1|STT| TIST|Cyril E. King Air...|
+|        1|BWI| KBWI|Baltimore/Washing...|
+|        1|STX| TISX|Henry E Rohlsen A...|
+|        1|BFL| KBFL|       Meadows Field|
+|        1|BQN| TJBQ|Rafael Hernández ...|
+|        1|AZO| KAZO|Kalamazoo Battle ...|
+|        1|PSE| TJPS|   Mercedita Airport|
+|        1|BGM| KBGM|Greater Binghamto...|
+|        1|SJU| TJSJ|Luis Munoz Marin ...|
+|        1|ACV| KACV|California Redwoo...|
+|        1|BGR| KBGR|Bangor Internatio...|
+|        1|ACY| KACY|Atlantic City Int...|
+|        1|BHM| KBHM|Birmingham-Shuttl...|
+|        1|ABQ| KABQ|Albuquerque Inter...|
+|        1|BIL| KBIL|Billings Logan In...|
+|        1|ACT| KACT|Waco Regional Air...|
+|        1|BIS| KBIS|Bismarck Municipa...|
+|        1|AEX| KAEX|Alexandria Intern...|
++---------+---+-----+--------------------+
+only showing top 20 rows
 ```
+
 
 To see which airports belong to the smaller components (if any):
 
@@ -493,6 +526,32 @@ components.join(smallComponents, "component") \
           .select("id", "component") \
           .sort("component") \
           .show()
+
++---+---------+
+| id|component|
++---+---------+
+|AKD|        0|
+|BOX|        2|
+|BZT|        3|
+|CCK|        4|
+|CLQ|        5|
+|CNU|        6|
+|CRS|        7|
+|CSR|        8|
+|DWR|        9|
+|FAV|       10|
+|FIZ|       11|
+|FMY|       12|
+|GIS|       13|
+|GZW|       14|
+|HYL|       15|
+|ITJ|       16|
+|KEB|       17|
+|KGL|       18|
+|KKQ|       19|
+|KLR|       20|
++---+---------+
+only showing top 20 rows          
 ```
 
 ## Shortest Paths
@@ -509,29 +568,23 @@ results.select("id", "distances") \
 +---+----------+
 | id| distances|
 +---+----------+
+|ABE|{LAX -> 2}|
+|ABI|{LAX -> 2}|
 |ABQ|{LAX -> 1}|
-|ALB|{LAX -> 2}|
-|AMA|{LAX -> 2}|
-|ATL|{LAX -> 1}|
-|AUS|{LAX -> 1}|
-|BDL|{LAX -> 2}|
-|BHM|{LAX -> 2}|
-|BMI|{LAX -> 2}|
-|BNA|{LAX -> 1}|
-|BOI|{LAX -> 2}|
-|BOS|{LAX -> 2}|
-|BTV|{LAX -> 2}|
-|BUF|{LAX -> 2}|
-|BUR|{LAX -> 2}|
-|BWI|{LAX -> 1}|
-|CAK|{LAX -> 2}|
-|CHS|{LAX -> 2}|
-|CLE|{LAX -> 2}|
-|CLT|{LAX -> 2}|
-|CMH|{LAX -> 2}|
+|ABY|{LAX -> 2}|
+|ACT|{LAX -> 2}|
+|ACV|{LAX -> 2}|
+|ACY|{LAX -> 2}|
+|ADK|{LAX -> 3}|
+|ADQ|{LAX -> 3}|
+|AEX|{LAX -> 2}|
 +---+----------+
-only showing top 20 rows     
+only showing top 10 rows
 ```
+
+> **What you should see:** Each airport paired with a `distances` map showing how many hops are needed to reach LAX. Airports with a direct flight show `{LAX -> 1}`, airports requiring one connection show `{LAX -> 2}`. Airports not reachable from LAX within the graph are excluded by the `size(distances) > 0` filter.
+
+> **What just happened?** `graph.shortestPaths()` ran a Breadth-First Search from every landmark airport (LAX) backwards through the reversed graph, computing the minimum number of edges to reach each vertex. The `distances` column is a map because multiple landmarks can be specified in a single call — each landmark gets its own entry in the map. As noted, the hop count represents the number of flight edges traversed, not physical distance or flight time.
 
 The `distances` column is a map from landmark ID to hop count. An airport that has a direct flight to LAX will show `{LAX -> 1}`, so the `distances represents the number of flights, not miles or time
 
@@ -541,7 +594,7 @@ To get the actual path you can use BFS (best for a single source→destination p
 
 ## Breadth-First Search (BFS)
 
-BFS finds all paths between two specific airports up to a given maximum number of hops. Let's find all paths from Boston (`BOS`) to Los Angeles (`LAX`) with at most one connection:
+BFS finds all paths between two specific airports up to a given maximum number of hops. Let's find all paths from Boston (`BOS`) to Los Angeles (`LAX`) with at most 2 hops:
 
 ```python
 paths = graph.bfs(
@@ -551,38 +604,16 @@ paths = graph.bfs(
 )
 paths.show(5)
 
-+--------------------+--------------------+--------------------+--------------------+--------------------+
-|                from|                  e0|                  v1|                  e1|                  to|
-+--------------------+--------------------+--------------------+--------------------+--------------------+
-|{KBOS, large_airp...|{2008, 5, 31, 6, ...|{KATL, large_airp...|{2008, 5, 31, 6, ...|{KLAX, large_airp...|
-|{KBOS, large_airp...|{2008, 5, 31, 6, ...|{KATL, large_airp...|{2008, 5, 31, 6, ...|{KLAX, large_airp...|
-|{KBOS, large_airp...|{2008, 5, 31, 6, ...|{KATL, large_airp...|{2008, 5, 31, 6, ...|{KLAX, large_airp...|
-|{KBOS, large_airp...|{2008, 5, 31, 6, ...|{KATL, large_airp...|{2008, 5, 31, 6, ...|{KLAX, large_airp...|
-|{KBOS, large_airp...|{2008, 5, 31, 6, ...|{KATL, large_airp...|{2008, 5, 31, 6, ...|{KLAX, large_airp...|
-+--------------------+--------------------+--------------------+--------------------+--------------------+
++--------------------+--------------------+--------------------+
+|                from|                  e0|                  to|
++--------------------+--------------------+--------------------+
+|{KBOS, large_airp...|{2008, 1, 14, 1, ...|{KLAX, large_airp...|
+|{KBOS, large_airp...|{2008, 1, 14, 1, ...|{KLAX, large_airp...|
+|{KBOS, large_airp...|{2008, 1, 13, 7, ...|{KLAX, large_airp...|
+|{KBOS, large_airp...|{2008, 1, 12, 6, ...|{KLAX, large_airp...|
+|{KBOS, large_airp...|{2008, 1, 12, 6, ...|{KLAX, large_airp...|
++--------------------+--------------------+--------------------+
 only showing top 5 rows
 ```
 
-Each row in the result is a complete path: `from` vertex → edge → (intermediate vertex → edge →) `to` vertex. You can filter by edge properties — for example, only paths where neither leg is cancelled:
-
-```python
-paths = graph.bfs(
-    fromExpr="id = 'BOS'",
-    toExpr="id = 'LAX'",
-    edgeFilter="cancelled IS NOT NULL",
-    maxPathLength=2
-)
-paths.select("from.id", "e0.flightNum", "v1.id", "e1.flightNum", "to.id").show(5)
-
-+---+---------+---+---------+---+
-| id|flightNum| id|flightNum| id|
-+---+---------+---+---------+---+
-|BOS|      492|ATL|       41|LAX|
-|BOS|      492|ATL|       50|LAX|
-|BOS|      492|ATL|       40|LAX|
-|BOS|      492|ATL|       49|LAX|
-|BOS|      492|ATL|       54|LAX|
-+---+---------+---+---------+---+
-only showing top 5 rows
-```	
 
