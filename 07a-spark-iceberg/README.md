@@ -58,7 +58,7 @@ For **Jupyter**, perform the next paragraph, for **Apache Zeppelin**, this is no
 
 ### If you are using Jupyter
 
-This workshop can be done with either Zeppelin or Jupyter, but to use Jupyter, you have to extend the Spark context with additional configuration settings in the init script:
+You have to create the Spark context with additional configuration settings in the init script:
 
 ```python
 import os
@@ -660,7 +660,7 @@ spark.sql(f"""
 **Time travel by timestamp** — you can also use a timestamp string:
 
 ```python
-timestamp = str(snapshots[0]["committed_at"])
+commitedAt = str(snapshots[0]["committed_at"])
 print ("Redcover to timestamp: " + commitedAt)
 
 spark.sql(f"""
