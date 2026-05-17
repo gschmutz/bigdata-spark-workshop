@@ -1,10 +1,11 @@
 # Working with Trino
 
-For this workshop you have to start a platform using the `minio` flavour in the init script.
+[Trino](https://trino.io/) (previously know as PrestoSQL) is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
+
+In this workshop we are using Trino to access the data we have available in the Object Storage. 
 
 ## Table of Contents
 
-- [Introduction](#introduction)
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
 - [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
@@ -13,16 +14,6 @@ For this workshop you have to start a platform using the `minio` flavour in the 
 - [Using Trino User-defined Functions (UDF)](#using-trino-user-defined-functions-udf)
 - [Using Trino to access a Relational Database](#using-trino-to-access-a-relational-database)
 - [Query Federation using Trino](#query-federation-using-trino)
-
-## Introduction
-
-[Trino](https://trino.io/) (previously know as PrestoSQL) is a distributed SQL query engine designed to query large data sets distributed over one or more heterogeneous data sources. Trino can natively query data in Hadoop, S3, Cassandra, MySQL, and many others, without the need for complex and error-prone processes for copying the data to a proprietary storage system. You can access data from multiple systems within a single query. For example, join historic log data stored in S3 with real-time customer data stored in MySQL. This is called **query federation**.
-
-In this workshop we are using Trino to access the data we have available in the Object Storage. 
-
-We assume that the **Data platform** described [here](../00-environment) is running using the `minio` flavour. 
-
-The docker image we use for the Trino container is from [Starburst Data](https://www.starburstdata.com/), the company offering an Enterprise version of Trino. 
 
 ## What you will learn
 
@@ -35,23 +26,22 @@ The docker image we use for the Trino container is from [Starburst Data](https:/
 ## Prerequisites
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
-- Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed — the refined data layer is required
-- Refined airport and flight data available in MinIO under `flight-bucket/refined/` (instructions provided if needed)
+- Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed to know about the refined data layer we will use
 
-## Prepare the data, if no longer available
+## Upload the data, if no longer available
 
-The data needed here has been uploaded in [Workshop 4 - Data Reading and Writing using DataFrames](../04-spark-dataframe). You can skip this section, if you still have the data available in MinIO.
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
- 
+
 ```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
+docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
 and then copy the refined data 
 
 ```bash
-docker exec -ti minio-mc mc cp --recursive /data-transfer/refined minio-1/flight-bucket/
+docker exec -ti awscli s3cmd put --recursive /data-transfer/refined-data/ s3://flight-bucket/refined/
 ```
 
 ## Using Trino to access Object Storage
@@ -59,8 +49,6 @@ docker exec -ti minio-mc mc cp --recursive /data-transfer/refined minio-1/flight
 In order for us to use Trino with Object Storage, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage)
 
 ### Create Airport Table in Hive Metastore
-
-In order to access data in Object Storage using Trino, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/refined/..` points to the data we have created in the [previous workshop](../04-spark-dataframe)/uploaded before.
 
 Connect to Hive Metastore CLI
 
@@ -113,6 +101,9 @@ Exit from the Hive Metastore CLI
 exit;
 ```
 
+> **Note:**  location `s3a://flight-bucket/refined/..` points to the data we have created in the [previous workshop](../04-spark-dataframe) and we have uploaded before.
+
+
 ### Query Airport Table from Trino
 
 Next let's query the data from Trino. Connect to the Trino CLI from a terminal window
@@ -142,6 +133,10 @@ trino:default> show tables;
  airport_t
 (1 row)
 ```
+
+> **What you should see:** One table — `airport_t` — the external table registered in the Hive Metastore pointing to the JSON files in MinIO.
+
+> **What just happened?** Trino queried the Hive Metastore for all tables in the `flight_db` database. Trino itself stores no table definitions — it delegates metadata management entirely to the Hive Metastore, which is why the same table is queryable from any engine connected to the same metastore (Spark, Hive, Trino, Impala, etc.).
 
 We can use the `DESCRIBE` command to see the structure of the table:
 
@@ -179,6 +174,10 @@ Query 20250525_133931_00004_83kbj, FINISHED, 1 node
 Splits: 5 total, 5 done (100.00%)
 0.64 [18 rows, 1.12KiB] [28 rows/s, 1.76KiB/s]
 ```
+
+> **What you should see:** The 18 airport columns with their types translated into Trino's type system — `integer` and `double` for numeric fields, `varchar` for text fields. The `Extra` and `Comment` columns are empty because they were not specified in the CREATE TABLE DDL.
+
+> **What just happened?** `DESCRIBE` reads the column definitions from the Hive Metastore table entry and translates them from Hive types (e.g. `string` → Trino `varchar`, `double` → Trino `double`) into Trino's own type system. No data was read from MinIO for this metadata operation.
 
 We can also leave out the `minio.fligth_db` qualifier, because it is the current database.
 
@@ -229,6 +228,10 @@ Query 20250525_134202_00014_83kbj, FINISHED, 1 node
 Splits: 5 total, 5 done (100.00%)
 0.93 [81.2K rows, 23.7MiB] [87K rows/s, 25.4MiB/s]
 ```
+
+> **What you should see:** `2364` — the number of airports in California (ISO region `US-CA`). The query metadata at the bottom shows it scanned 81.2K rows (the full table) in under a second.
+
+> **What just happened?** Trino pushed the filter predicates down to the file scan but still had to read the full JSON dataset since JSON files have no column statistics or row-group skipping capability. For the same query on Parquet files, Trino could use column statistics in the Parquet footer to skip files where no row could match the filter. All computation happened inside Trino's distributed engine — Hive and MapReduce were never involved.
 
 Exit from the Trino CLI
 
@@ -532,6 +535,10 @@ Splits: 1 total, 1 done (100.00%)
 0.04 [0 rows, 0B] [0 rows/s, 0B/s]
 ```
 
+> **What you should see:** `Short Delays` — the delay bucket for an input value of 100 minutes (between 60 and 120).
+
+> **What just happened?** The `WITH FUNCTION` clause defined an inline UDF that exists only for the duration of this single query. Trino compiled the SQL routine into a scalar function, evaluated the `CASE` expression against the literal value 100, and returned the result directly without reading any table data — as confirmed by `[0 rows, 0B]` in the query metadata.
+
 #### Catalog UDF `minio.flight_db.classify_delay`
 
 Let's create the same function as a catalog UDF using the SQL routine language
@@ -762,6 +769,10 @@ LEFT JOIN postgresql.flight_data.pg_airport_t AS ad
 ON (f.destination = ad.iata_code);
 ```
 
+
+> **What you should see:** Flight records enriched with the full airport name and municipality for both the origin and destination — joined from the PostgreSQL `pg_airport_t` table — all returned in a single query spanning two different data systems (MinIO object storage and PostgreSQL).
+
+> **What just happened?** Trino's query planner split the query into sub-queries targeted at each connector: the Hive connector fetched flight data from MinIO Parquet files, the PostgreSQL connector fetched airport data from the relational database, and Trino joined the results in its own distributed engine. Neither system was aware of the other — Trino acted as the federation layer. This is the core value proposition of Trino's connector architecture: one SQL dialect to query heterogeneous data sources simultaneously.
 
 Trino supports many other data sources in addition to Hive and PostgreSQL (RDBMS). 
 
