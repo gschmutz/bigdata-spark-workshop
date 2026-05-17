@@ -29,7 +29,7 @@ In this workshop we will work with [Apache Iceberg](https://iceberg.apache.org/)
 - Workshop 3 ([Getting Started using Spark RDD and DataFrames](../03-spark-getting-started)) completed
 - Airport data uploaded to MinIO (instructions provided if needed)
 
-## Prepare the data, if no longer available
+## Upload the data, if no longer available
 
 The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
