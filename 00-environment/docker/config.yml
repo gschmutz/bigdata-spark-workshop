@@ -305,7 +305,7 @@
       # a space separated list of python packages
       SPARK_install_python_packages: 'numpy graphframes-py typing_extensions'
       SPARK_executor_extraJavaOptions: ''
-      SPARK_sql_warehouse_dir: 's3a://admin-bucket/hive/warehouse'
+      SPARK_sql_warehouse_dir: 's3a://flight-bucket/warehouse'
       SPARK_sql_default_catalog: 
       SPARK_cores_max: 2
       SPARK_executor_memory: 2048mb 
