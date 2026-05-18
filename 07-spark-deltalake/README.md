@@ -183,18 +183,18 @@ airportsRawDF.write.format("delta").saveAsTable("flight_db.airports_delta_t")
 Let's view the resulting objects using the `s3cmd` command line tool
 
 ```bash
-docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
+docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
 ```
 
 and you should see that the data has been written as parquet files, but that there is also a `_delta_log` folder holding the transactional metadata for the delta table
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2026-05-16 18:51         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
-2026-05-16 18:51         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2026-05-16 18:51            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2026-05-16 18:51      3366543  s3://flight-bucket/delta/airports/part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet
-2026-05-16 18:51      1618896  s3://flight-bucket/delta/airports/part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer/result$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
+2026-05-16 18:51         5252  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000000.crc
+2026-05-16 18:51         5464  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000000.json
+2026-05-16 18:51            0  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/_commits/
+2026-05-16 18:51      3366543  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet
+2026-05-16 18:51      1618896  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet
 ```
 
 > **What you should see:** Two Parquet data files and a `_delta_log/` folder containing the transaction log. The log already has one entry (`00000000000000000000.json`) and its corresponding `.crc` checksum. The empty `_commits/` folder is a placeholder for future concurrent writer coordination.
@@ -216,7 +216,7 @@ As we have seen, there is currently one file (`00000000000000000000.json `) in t
 Let's see what is in this file by using the `s3cmd get` command
 
 ```
-docker exec -ti awscli s3cmd get s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json --force /data-transfer/
+docker exec -ti awscli s3cmd get s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000000.json --force /data-transfer/
 ```
 
 Let's view the content downloaded using the `jq` utility, a json pretty-printer (**Note:** make sure that DATAPLATFORM_HOME environment variable points to the `docker` folder)
@@ -319,7 +319,7 @@ Now let's update the delta lake table. First let's get a reference to the delta 
 from delta.tables import *
 from pyspark.sql.functions import *
 
-deltaTable = DeltaTable.forPath(spark, deltaTableDest)
+deltaTable = DeltaTable.forName(spark, "flight_db.airports_delta_t")
 ```
 
 and now perform the merge
@@ -336,22 +336,22 @@ deltaTable.alias("oldData").merge(
 Let's view the resulting objects using the `s3cmd` command line tool
 
 ```bash
-docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
+docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
 ```
 
 and you should see that more data has been written as parquet files, and that in the `_delta_log` folder an addional json file has been created
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2026-05-16 18:51         5252  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.crc
-2026-05-16 18:51         5464  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2026-05-16 18:57         6784  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.crc
-2026-05-16 18:57         4622  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
-2026-05-16 18:51            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2026-05-16 18:57      1749796  s3://flight-bucket/delta/airports/part-00000-9656a858-41f2-4542-9a60-051d31152f02-c000.snappy.parquet
-2026-05-16 18:51      3366543  s3://flight-bucket/delta/airports/part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet
-2026-05-16 18:51      1618896  s3://flight-bucket/delta/airports/part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet
-2026-05-16 18:57      1763568  s3://flight-bucket/delta/airports/part-00001-ece6bbcc-af13-496b-90f2-d9f938c9b3ab-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
+2026-05-16 18:51         5252  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000000.crc
+2026-05-16 18:51         5464  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000000.json
+2026-05-16 18:57         6784  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000001.crc
+2026-05-16 18:57         4622  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000001.json
+2026-05-16 18:51            0  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/_commits/
+2026-05-16 18:57      1749796  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00000-9656a858-41f2-4542-9a60-051d31152f02-c000.snappy.parquet
+2026-05-16 18:51      3366543  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00000-a13aa083-0671-45d8-8516-12c0462faafb-c000.snappy.parquet
+2026-05-16 18:51      1618896  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00001-5ac14239-2b82-4012-b12f-66962ba42aad-c000.snappy.parquet
+2026-05-16 18:57      1763568  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00001-ece6bbcc-af13-496b-90f2-d9f938c9b3ab-c000.snappy.parquet
 ```
 
 > **What you should see:** The original two Parquet files are still present alongside two new files written by the MERGE. The `_delta_log/` folder now contains a second JSON file (`00000000000000000001.json`) representing the MERGE transaction. The original files are still physically on disk but are now "logically deleted" — the new log entry marks them as removed so future reads skip them.
@@ -371,7 +371,7 @@ As we have seen, there is anew file (`00000000000000000001.json `) in the `_delt
 Let's see what is in this file by using the `s3cmd get` command
 
 ```
-docker exec -ti awscli s3cmd get s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json --force /data-transfer/
+docker exec -ti awscli s3cmd get s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000001.json --force /data-transfer/
 ```
 
 Let's view the content downloaded using the `jq` utility, a json pretty-printer
@@ -462,7 +462,7 @@ ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ jq < ./dat
 Back in Spark, let's read the delta table and register it as a table, so we can query it using SQL
 
 ``` 
-spark.read.format("delta").load(deltaTableDest).createOrReplaceTempView("airports")
+spark.table("flight_db.airports_delta_t").createOrReplaceTempView("airports")
 ``` 
 
 now you can query it by etiher using the `%sql` in Zeppelin or the `%%sql` directive in Jupyter (the statement in this workshop are shown for Zeppelin, replace the `%sql` by `%%sql` for Jupyter.
@@ -481,8 +481,7 @@ Delta Lake can improve the speed of read queries from a table by coalescing smal
 ```python
 from delta.tables import *
 
-deltaTable = DeltaTable.forPath(spark, deltaTableDest)  # For path-based tables
-# For Hive metastore-based tables: deltaTable = DeltaTable.forName(spark, tableName)
+deltaTable = DeltaTable.forName(spark, "flight_db.airports_delta_t")  
 
 deltaTable.optimize().executeCompaction()
 ```
@@ -494,7 +493,7 @@ Delta Lake time travel allows you to query an older snapshot of a Delta table.
 Let's go back to version 0, the version of our first insert of the data and register it as a new table `airportsTimeTravel`
 
 ```python
-airportsBeforeDF = spark.read.format("delta").option("versionAsOf", 0).load(deltaTableDest)
+airportsBeforeDF = spark.read.format("delta").option("versionAsOf", 0).table("flight_db.airports_delta_t")
 
 airportsBeforeDF.createOrReplaceTempView("airportsTimeTravel")
 ```
@@ -509,7 +508,7 @@ SELECT * FROM airportsTimeTravel WHERE ident IN ("00A","ADD")
 now let's switch to version 1, register the table
 
 ```python
-airportsBeforeDF = spark.read.format("delta").option("versionAsOf", 1).load(deltaTableDest)
+airportsBeforeDF = spark.read.format("delta").option("versionAsOf", 1).table("flight_db.airports_delta_t")
 
 airportsBeforeDF.createOrReplaceTempView("airportsTimeTravel")
 ```
@@ -534,7 +533,7 @@ You can remove files no longer referenced by a Delta table and are older than th
 ```python
 from delta.tables import *
 
-deltaTable = DeltaTable.forPath(spark, deltaTableDest) 
+deltaTable = DeltaTable.forName(spark, "flight_db.airports_delta_t") 
 ```
 
 vacuum files not required by versions older than the default retention period
@@ -555,28 +554,28 @@ deltaTable.vacuum(1)
 Let's view the resulting objects using the `s3cmd` comnand line tool
 
 ```bash
-docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
+docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
 ```
 
 and you should see that more data has been written as parquet files, and that in the `_delta_log` folder an addional json file has been created
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
-2025-05-22 11:55         5472  s3://flight-bucket/delta/airports/_delta_log/00000000000000000000.json
-2025-05-22 18:12         4597  s3://flight-bucket/delta/airports/_delta_log/00000000000000000001.json
-2025-05-22 18:18         2893  s3://flight-bucket/delta/airports/_delta_log/00000000000000000002.json
-2025-05-22 11:55            0  s3://flight-bucket/delta/airports/_delta_log/_commits/
-2025-05-22 11:55      3366543  s3://flight-bucket/delta/airports/part-00000-235e5c19-143e-4930-8733-1922fa83f2af-c000.snappy.parquet
-2025-05-22 18:18      5018495  s3://flight-bucket/delta/airports/part-00000-ccf77767-2ddf-4338-bac0-a103c24b4472-c000.snappy.parquet
-2025-05-22 18:12      1749796  s3://flight-bucket/delta/airports/part-00000-e4fc9ba1-f182-40b5-bb4f-cc7a4ba55a44-c000.snappy.parquet
-2025-05-22 18:12      1763568  s3://flight-bucket/delta/airports/part-00001-3a745dd6-9d22-4a00-8ca4-253a6fa1232e-c000.snappy.parquet
-2025-05-22 11:55      1618896  s3://flight-bucket/delta/airports/part-00001-4f29c36d-90a0-45ae-a5a1-cc2b4bcbabcc-c000.snappy.parquet
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker$ docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
+2025-05-22 11:55         5472  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000000.json
+2025-05-22 18:12         4597  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000001.json
+2025-05-22 18:18         2893  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000002.json
+2025-05-22 11:55            0  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/_commits/
+2025-05-22 11:55      3366543  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00000-235e5c19-143e-4930-8733-1922fa83f2af-c000.snappy.parquet
+2025-05-22 18:18      5018495  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00000-ccf77767-2ddf-4338-bac0-a103c24b4472-c000.snappy.parquet
+2025-05-22 18:12      1749796  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00000-e4fc9ba1-f182-40b5-bb4f-cc7a4ba55a44-c000.snappy.parquet
+2025-05-22 18:12      1763568  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00001-3a745dd6-9d22-4a00-8ca4-253a6fa1232e-c000.snappy.parquet
+2025-05-22 11:55      1618896  s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/part-00001-4f29c36d-90a0-45ae-a5a1-cc2b4bcbabcc-c000.snappy.parquet
 ```
 
 Let's see what is in this file by using the `s3cmd get` command
 
 ```
-docker exec -ti awscli s3cmd get s3://flight-bucket/delta/airports/_delta_log/00000000000000000002.json --force /data-transfer/
+docker exec -ti awscli s3cmd get s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/_delta_log/00000000000000000002.json --force /data-transfer/
 ```
 
 Let's view the content downloaded using the `jq` utility, a json pretty-printer
