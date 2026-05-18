@@ -8,12 +8,13 @@ In this workshop we are using Trino to access the data we have available in the 
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
-- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Upload the data, if no longer available](#upload-the-data-if-no-longer-available)
 - [Using Trino to access Object Storage](#using-trino-to-access-object-storage)
 - [Using Trino built-in Functions](#using-trino-built-in-functions)
 - [Using Trino User-defined Functions (UDF)](#using-trino-user-defined-functions-udf)
 - [Using Trino to access a Relational Database](#using-trino-to-access-a-relational-database)
 - [Query Federation using Trino](#query-federation-using-trino)
+- [Using Trino from a standalone SQL Tool (optional)](#using-trino-from-a-standalone-sql-tool-optional)
 
 ## What you will learn
 
@@ -508,8 +509,6 @@ JOIN airports_t  AS dest
 ON (orig.iata_code = 'SFO' AND dest.iata_code = 'JFK');
 ```
 
-
-
 ## Using Trino User-defined Functions (UDF)
 
 Instead of classifying the delays in SQL using the CASE expression as shown before, we can also make the bucket creation more reusable by creating a user-defined function (UDF). UDFs are scalar functions that return a single output value, similar to built-in functions, we seen above.
@@ -802,10 +801,55 @@ LEFT JOIN postgresql.flight_data.pg_airports_t AS ad
 ON (f.destination = ad.iata_code);
 ```
 
-
 > **What you should see:** Flight records enriched with the full airport name and municipality for both the origin and destination — joined from the PostgreSQL `pg_airports_t` table — all returned in a single query spanning two different data systems (MinIO object storage and PostgreSQL).
 
 > **What just happened?** Trino's query planner split the query into sub-queries targeted at each connector: the Hive connector fetched flight data from MinIO Parquet files, the PostgreSQL connector fetched airport data from the relational database, and Trino joined the results in its own distributed engine. Neither system was aware of the other — Trino acted as the federation layer. This is the core value proposition of Trino's connector architecture: one SQL dialect to query heterogeneous data sources simultaneously.
+
+## Using Trino from a standalone SQL Tool (optional)
+
+You can also use a standalone SQL tool such as [DBeaver](https://dbeaver.io/) to connect to Trino and run queries interactively. DBeaver is a desktop application and cannot be part of the Docker Compose stack, so you need to install it on your local machine first.
+
+To create a connection to Trino from DBeaver, click on the **+** icon in the top left corner, select the **Trino** database driver 
+
+![Alt Image Text](images/dbeaver-1.png "DBeaver")
+
+and click **Next >**.
+
+On the **Connect to a database** screen enter `dataplatform` into the **Host**, `28082` into the **Port** and `trino` into the **Username** field.
+
+![Alt Image Text](images/dbeaver-2.png "DBeaver")
+
+Click **Test Connection ...** and DBeaver will ask you to download the JDBC driver the first time. Confirm that and you should see a successful connection message.
+
+![Alt Image Text](images/dbeaver-3.png "DBeaver")
+
+> **What you should see:** A green **Connected** confirmation dialog showing the Trino server version, confirming DBeaver can reach Trino over JDBC.
+
+Click **OK** and **Finish** to close the **Connect to a database** window.
+
+Use the **Database Navigator** to drill down into the new connection — you should see the `minio` and `postgresql` catalogs (and any other connectors configured in the platform), and within `minio` the `flight_db` database and its tables.
+
+Navigat to `minio` - `flight_db` and double-click on the  `airports_t` table to see the rows directly. 
+
+![Alt Image Text](images/dbeaver-4.png "DBeaver")
+
+Navigate to **Properties** to see the metadata.
+
+You can also open the **SQL Editor** to run ad-hoc queries. Right-click on the `minio` catalog in the **Database Navigator**, select **SQL Editor** | **Open SQL Console**, and enter a query:
+
+```sql
+SELECT iata_code, name, municipality, iso_country
+FROM minio.flight_db.airports_t
+WHERE iso_country = 'US'
+ORDER BY name
+LIMIT 40;
+```
+
+Execute it by clicking on the orange play icon left to the editor
+
+![Alt Image Text](images/dbeaver-5.png "DBeaver")
+
+> **What you should see:** 40 US airport rows displayed in DBeaver's grid view — the same data as queried through the Trino CLI, now accessible from a standard desktop SQL tool via JDBC.
 
 Trino supports many other data sources in addition to Hive and PostgreSQL (RDBMS). 
 
