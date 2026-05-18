@@ -78,12 +78,16 @@ conf.set("spark.executor.memory", "8g")
 conf.set("spark.executor.cores", "1")
 conf.set("spark.core.connection.ack.wait.timeout", "1200")
 conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-conf.set("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
 conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
 conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
 conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
 conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+conf.set("spark.sql.catalogImplementation", "hive")
+conf.set("spark.sql.warehouse.dir", "s3a://flight-bucket/warehouse")
+conf.set("spark.hadoop.hive.metastore.uris", "thrift://hive-metastore:9083")
 conf.set("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+conf.set("spark.databricks.delta.catalog.update.metastore", "true")
 conf.set("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
 conf.set("spark.jars.packages", "io.delta:delta-spark_2.12:3.3.2,io.delta:delta-storage:3.3.2")
 
@@ -163,19 +167,20 @@ The output will show the header line followed by the 5 data lines.
 only showing top 5 rows
 ```
 
-Create a variable for destination of the Delta table
+Create the flight_db database, if it does not yet exists (we created it already in workshop 5)
 
-```python
-deltaTableDest = "s3a://flight-bucket/delta/airports"
+```sql
+%sql
+CREATE DATABASE IF NOT EXISTS flight_db;
 ```
 
-and write the dataframe as a Delta table
+Now we can write the dataframe as a Delta table
 
 ```python
-airportsRawDF.write.format("delta").save(deltaTableDest)
+airportsRawDF.write.format("delta").saveAsTable("flight_db.airports_delta_t")
 ```
 
-Let's view the resulting objects using the `s3cmd` comnand line tool
+Let's view the resulting objects using the `s3cmd` command line tool
 
 ```bash
 docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/delta/airports/
