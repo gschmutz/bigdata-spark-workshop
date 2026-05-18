@@ -74,7 +74,9 @@ you should see the data we have created in Workshop 4 ([Data Reading and Writing
 
 ## Using Trino to access Object Storage
 
-In order for us to use Trino with Object Storage, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage)
+In order for us to use Trino with Object Storage, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage).
+
+> **What is the Hive Metastore?** The Hive Metastore is a central metadata repository that stores table definitions — column names, data types, file format, and storage location — separately from the data itself. Multiple query engines (Trino, Spark, Hive) can share the same metastore, meaning a table registered once is immediately queryable from all of them without duplicating any data.
 
 ### Create Airport Table in Hive Metastore
 
@@ -88,7 +90,7 @@ and on the command prompt first create a new database `flight_db`
 
 ```sql
 CREATE DATABASE flight_db
-LOCATION 's3a://flight-bucket/';
+LOCATION 's3a://flight-bucket/warehouse';
 ```
 
 switch into that database
@@ -97,10 +99,10 @@ switch into that database
 USE flight_db;
 ```
 
-and create a table `airport_t`:
+and create a table `airports_t`:
 
 ```
-CREATE EXTERNAL TABLE airport_t (id int
+CREATE EXTERNAL TABLE airports_t (id int
                                 , ident string
                                 , type string
                                 , name string
@@ -152,30 +154,30 @@ Let's see that there is one table available:
 show tables;
 ```
 
-We can see the `airport_t` table we created in the Hive Metastore before
+We can see the `airports_t` table we created in the Hive Metastore before
 
 ```sql
 trino:default> show tables;
      Table
 ---------------
- airport_t
+ airports_t
 (1 row)
 ```
 
-> **What you should see:** One table — `airport_t` — the external table registered in the Hive Metastore pointing to the JSON files in MinIO.
+> **What you should see:** One table — `airports_t` — the external table registered in the Hive Metastore pointing to the JSON files in MinIO. You might additionally also see the `airports_delta_t` table from the Delta table workshop. 
 
 > **What just happened?** Trino queried the Hive Metastore for all tables in the `flight_db` database. Trino itself stores no table definitions — it delegates metadata management entirely to the Hive Metastore, which is why the same table is queryable from any engine connected to the same metastore (Spark, Hive, Trino, Impala, etc.).
 
 We can use the `DESCRIBE` command to see the structure of the table:
 
 ```sql
-DESCRIBE minio.flight_db.airport_t;
+DESCRIBE minio.flight_db.airports_t;
 ```
 
 and you should get the following result
 
 ```sql
-trino:flight_db> DESCRIBE minio.flight_db.airport_t;
+trino:flight_db> DESCRIBE minio.flight_db.airports_t;
       Column       |  Type   | Extra | Comment 
 -------------------+---------+-------+---------
  id                | integer |       |         
@@ -210,20 +212,20 @@ Splits: 5 total, 5 done (100.00%)
 We can also leave out the `minio.fligth_db` qualifier, because it is the current database.
 
 ```sql
-DESCRIBE airport_t;
+DESCRIBE airports_t;
 ```
 
 We can query the table from the current database
 
 ```sql
-SELECT * FROM airport_t;
+SELECT * FROM airports_t;
 ```
 
 And of course we can execute the same query with a fully qualified table, including the database:
 
 ```sql
 SELECT * 
-FROM minio.flight_db.airport_t;
+FROM minio.flight_db.airports_t;
 ```
 
 We will see later, that this becomes handy if we are querying from multiple, different databases.
@@ -231,21 +233,21 @@ We will see later, that this becomes handy if we are querying from multiple, dif
 We can use everything SQL provides, so for example let's see the airports in state California ('CA')
 
 ```sql
-SELECT * FROM airport_t 
+SELECT * FROM airports_t 
 WHERE iso_region = 'US-CA' AND iso_country = 'US';
 ```
 
 if you just want to know how many, then let's use `COUNT(*)` 
 
 ```sql
-SELECT count(*) FROM airport_t 
+SELECT COUNT(*) FROM airports_t 
 WHERE iso_region = 'US-CA' AND iso_country = 'US';
 ```
 
 and you should see a result similar to that
 
 ```sql
-trino:flight_db> SELECT count(*) FROM airport_t 
+trino:flight_db> SELECT count(*) FROM airports_t 
               -> WHERE iso_region = 'US-CA' AND iso_country = 'US';
  _col0 
 -------
@@ -347,7 +349,8 @@ show tables;
 So let's see the data
 
 ```sql
-SELECT * FROM flights_t;
+SELECT * 
+FROM flights_t;
 ```
 
 We can see the same data as when doing the Spark DataFrame workshop. 
@@ -488,7 +491,7 @@ SELECT arrDelay, origin, destination,
 FROM flights_t;
 ```         
 
-Let's see in another example, how to use some the [Geospational functions](https://trino.io/docs/current/functions/geospatial.html) on the `airport_t` table. 
+Let's see in another example, how to use some the [Geospational functions](https://trino.io/docs/current/functions/geospatial.html) on the `airports_t` table. 
 
 To calculate the distance between two airports, e.g. between New Jork (JFK) and San Francisco (SFO), we can use the following statement
 
@@ -500,10 +503,12 @@ SELECT orig.name
 , 	dest.latitude_deg
 , 	dest.longitude_deg
 , 	ST_Distance(to_spherical_geography(ST_Point(orig.longitude_deg, orig.latitude_deg)), to_spherical_geography(ST_Point(dest.longitude_deg, dest.latitude_deg))) / 1000 AS distance_km
-FROM airport_t   AS orig
-JOIN airport_t  AS dest
+FROM airports_t   AS orig
+JOIN airports_t  AS dest
 ON (orig.iata_code = 'SFO' AND dest.iata_code = 'JFK');
 ```
+
+
 
 ## Using Trino User-defined Functions (UDF)
 
@@ -702,14 +707,14 @@ Connect to Postgresql
 docker exec -ti postgresql psql -d postgres -U postgres
 ```
 
-Create a database and the table for the airport data using a different name  `pg_airport_t` to distinguish it to the one in Minio. 
+Create a database and the table for the airport data using a different name  `pg_airports_t` to distinguish it to the one in Minio. 
 
 ```sql
 CREATE SCHEMA flight_data;
 
-DROP TABLE IF EXISTS flight_data.pg_airport_t;
+DROP TABLE IF EXISTS flight_data.pg_airports_t;
 
-CREATE TABLE flight_data.pg_airport_t
+CREATE TABLE flight_data.pg_airports_t
 (
 	id int
 	, ident character varying(50)
@@ -736,7 +741,7 @@ CREATE TABLE flight_data.pg_airport_t
 Finally let's import the data from the data-transfer folder. 
 
 ```sql
-COPY flight_data.pg_airport_t(id, ident, type, name, latitude_deg, longitude_deg, elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords) 
+COPY flight_data.pg_airports_t(id, ident, type, name, latitude_deg, longitude_deg, elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords) 
 FROM '/data-transfer/airport-data/airports.csv' DELIMITER ',' CSV HEADER;
 ```
 
@@ -760,45 +765,45 @@ Let's see that there is one table available:
 show tables;
 ```
 
-We can see the `pg_airport_t` table we created in the Postgresql RDBMS 
+We can see the `pg_airports_t` table we created in the Postgresql RDBMS 
 
 ```sql
 trino:default> show tables;
      Table
 ---------------
- pg_airport_t
+ pg_airports_t
 (1 row)
 ```
 
 check that you can query the data, now from Postgresql RDBMS. 
 
 ```sql
-SELECT * FROM pg_airport_t;
+SELECT * FROM pg_airports_t;
 ```
 
 Of course you can also do analytical queries:
 
 ```sql
 SELECT iso_country, count(*)
-FROM pg_airport_t
+FROM pg_airports_t
 GROUP BY iso_country;
 ```
 
 ## Query Federation using Trino
 
-With the `pg_airport_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Trino's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
+With the `pg_airports_t` table available in the Postgresql and the `flights_t` available in the Object Store through Hive Metastore, we can finally use Trino's query federation capabilities to join the two tables using a `SELECT ... FROM ... LEFT JOIN` statement: 
 
 ```sql
 SELECT ao.name, ao.municipality, ad.name, ad.municipality, f.*
 FROM minio.flight_db.flights_t  AS f
-LEFT JOIN postgresql.flight_data.pg_airport_t AS ao
+LEFT JOIN postgresql.flight_data.pg_airports_t AS ao
 ON (f.origin = ao.iata_code)
-LEFT JOIN postgresql.flight_data.pg_airport_t AS ad
+LEFT JOIN postgresql.flight_data.pg_airports_t AS ad
 ON (f.destination = ad.iata_code);
 ```
 
 
-> **What you should see:** Flight records enriched with the full airport name and municipality for both the origin and destination — joined from the PostgreSQL `pg_airport_t` table — all returned in a single query spanning two different data systems (MinIO object storage and PostgreSQL).
+> **What you should see:** Flight records enriched with the full airport name and municipality for both the origin and destination — joined from the PostgreSQL `pg_airports_t` table — all returned in a single query spanning two different data systems (MinIO object storage and PostgreSQL).
 
 > **What just happened?** Trino's query planner split the query into sub-queries targeted at each connector: the Hive connector fetched flight data from MinIO Parquet files, the PostgreSQL connector fetched airport data from the relational database, and Trino joined the results in its own distributed engine. Neither system was aware of the other — Trino acted as the federation layer. This is the core value proposition of Trino's connector architecture: one SQL dialect to query heterogeneous data sources simultaneously.
 
