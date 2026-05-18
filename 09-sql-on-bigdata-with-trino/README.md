@@ -44,6 +44,8 @@ and then copy the refined data
 docker exec -ti awscli s3cmd put --recursive /data-transfer/refined-data/ s3://flight-bucket/refined/
 ```
 
+> **Note:** if you get a `Nothing to upload` error, use this copy command from within the `docker` folder `cp -R ../data/refined-data ./data-transfer`
+
 ## Using Trino to access Object Storage
 
 In order for us to use Trino with Object Storage, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage)

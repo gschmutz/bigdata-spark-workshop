@@ -27,7 +27,9 @@ export PLATYS_VERSION=2.4.0
 export NETWORK_NAME=ens5
 export USERNAME=ubuntu
 export PASSWORD=abc123!
-export PLATYS_MINIO_AISTOR_LICENSE=<replace by AIStor license key>
+
+# no longer needed with RustFS
+# export PLATYS_MINIO_AISTOR_LICENSE=<replace by AIStor license key>
 
 # Prepare Environment Variables 
 export PUBLIC_IP=$(curl ipinfo.io/ip)
@@ -90,7 +92,7 @@ sudo echo "export DATAPLATFORM_HOME=$PWD" | sudo tee -a /etc/profile.d/platys-pl
 sudo chmod 777 container-volume/spark/logs
 
 # copy refined data to ./data-transfer folder
-cp -R ../data/flight-data/refined ./data-transfer
+cp -R ../data/refined-data ./data-transfer
 
 # Startup Environment
 sudo -E docker compose up -d
