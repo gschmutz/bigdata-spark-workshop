@@ -72,15 +72,68 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 ## Create a new Zeppelin or Jupyter notebook
 
-For this workshop we will be using Zeppelin as demonstrated in the previous workshop. But you can easily adapt it for Jupyter. 
-  
-In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin login page. Login with `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
+**Using Apache Zeppelin**
 
-Now let's create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
+Navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin login page. Login with `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
+
+Now create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
 
 Click on **Create Note** and a new Notebook is created with one cell which is empty. 
 
 > **What you should see:** An empty notebook named `SparkDataFrame` with a single empty paragraph ready for input.
+
+**Using Jupyter**
+
+Navigate to <http://dataplatform:28888> and on the Jupyter login page enter `abc123!` for the **Password or token** and click on **Log in**. 
+
+Create a new notebook by clicking on the **Python 3.12.8 (ipykernel)** icon.
+
+To connect to Spark, execute the following block in the 1st cell.
+
+```python
+import os
+# get the accessKey and secretKey from Environment
+accessKey = os.environ['AWS_ACCESS_KEY_ID']
+secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
+
+import pyspark
+from pyspark.sql import SparkSession
+
+conf = pyspark.SparkConf()
+
+# point to mesos master or zookeeper entry (e.g., zk://10.10.10.10:2181/mesos)
+conf.setMaster("spark://spark-master:7077")
+
+# set other options as desired
+conf.set("spark.executor.memory", "8g")
+conf.set("spark.executor.cores", "1")
+conf.set("spark.core.connection.ack.wait.timeout", "1200")
+conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+conf.set("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
+conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
+conf.set("spark.hadoop.fs.s3a.access.key", accessKey)
+conf.set("spark.hadoop.fs.s3a.secret.key", secretKey)
+conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+conf.set("spark.sql.catalogImplementation", "hive")
+conf.set("spark.sql.warehouse.dir", "s3a://flight-bucket/warehouse")
+conf.set("spark.hadoop.hive.metastore.uris", "thrift://hive-metastore:9083")
+
+spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
+spark.sparkContext.setLogLevel("INFO")
+
+sc = spark.sparkContext
+```
+
+Also enable sql magic by executing the following commands in a new cell (this will enable the `%%sql` directive to execute plain SQL statements)
+
+```python
+%load_ext sql
+%config SqlMagic.autopandas = True
+%config SqlMagic.displaycon = False
+
+# Connect using the active SparkSession
+%sql spark
+```
 
 ### Add some Markdown first
 
@@ -113,7 +166,7 @@ First add another title, this time as a Heading-2.
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. 
 
-First we have to import the spark python API. In Zepplein, use the `%pyspark` directive to switch to the PySpark interpreter.
+First we have to import the spark python API. In Zeppelin, use the `%pyspark` directive to switch to the PySpark interpreter.
 
 ```python
 %pyspark
@@ -315,7 +368,6 @@ The CSV files in this case do not contain a header line, therefore we cannot use
 We first have to manually define a schema, like we did with the airports to avoid the error. We can do it using the DSL option, as shown in the next code block. 
 
 ```python
-%pyspark
 flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOfWeek` INTEGER, `depTime` INTEGER, `crsDepTime` INTEGER, `arrTime` INTEGER, `crsArrTime` INTEGER, `uniqueCarrier` STRING, `flightNum` STRING, `tailNum` STRING, `actualElapsedTime` INTEGER,
                    `crsElapsedTime` INTEGER, `airTime` INTEGER, `arrDelay` INTEGER,`depDelay` INTEGER,`origin` STRING, `destination` STRING, `distance` INTEGER, `taxiIn` INTEGER, `taxiOut` INTEGER, `cancelled` STRING, `cancellationCode` STRING, `diverted` STRING, 
                    `carrierDelay` STRING, `weatherDelay` STRING, `nasDelay` STRING, `securityDelay` STRING, `lateAircraftDelay` STRING"""
@@ -513,10 +565,9 @@ GROUP BY iso_country,  iso_region
 
 > **What you should see:** Rows for US regions only (e.g. `US-CA`, `US-TX`, `US-FL`, ...) with their airport counts, filtered down from the full global result.
 
-Once a SQL statement is producing the right result, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. Make sure that you again use the `%pyspark` directive
+Once a SQL statement is producing the right result, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. In Zepplin, make sure to use the `%pyspark` directive, because it is a pyspark statement.
 
 ```sql
-%pyspark
 usAirportsByStateDF = spark.sql("""
 			SELECT iso_country, iso_region, count(*)
 			FROM airports
@@ -549,7 +600,6 @@ As an alternative to specifying SQL statement as a string, Data Frames provide a
 In Python, it's possible to access a DataFrame's columns either by attribute (df.age) or by indexing (df['age']). While the former is convenient for interactive data exploration, users are highly encouraged to use the latter form, which is future proof and won't break with column names that are also attributes on the DataFrame class.
 
 ```
-%pyspark
 airportsRawDF.select(airportsRawDF['iso_country'], airportsRawDF['iso_region']) \
     .filter(airportsRawDF['iso_country'] == "US") \
     .groupBy("iso_country", "iso_region") \
@@ -586,7 +636,6 @@ ON (f.destination = ad.iata_code)
 As soon as we are happy, we can again wrap it in a `spark.sql()` statement. 
 
 ```sql
-%pyspark
 flightEnrichedDF = spark.sql("""
 		SELECT ao.name AS origin_airport
 				, ao.type AS origin_type
@@ -624,7 +673,6 @@ flightEnrichedDF.write.partitionBy("year","month").parquet("s3a://flight-bucket/
 To perform the same join using the domain-specific language, the statement looks like this
 
 ```python
-%pyspark
 from pyspark.sql.functions import col
 
 # Create aliases for clarity
@@ -941,7 +989,6 @@ Instead of calculating the delay classifciation in SQL using the CASE expression
 First create a python function with the delay classification logic
 
 ```python
-%pyspark
 from pyspark.sql.functions import udf
 
 def classify_delay(delay):
