@@ -551,7 +551,7 @@ deltaTable.vacuum(1)
 
 **Note**: To use deltaTable.vacuum(1), you need to enable a specific Spark configuration that allows retaining data for less than the default 7-day retention period. By default, Delta Lake enforces a minimum retention of 168 hours (7 days) as a safety check.
 
-Let's view the resulting objects using the `s3cmd` comnand line tool
+Let's view the resulting objects using the `s3cmd` command line tool
 
 ```bash
 docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/warehouse/flight_db.db/airports_delta_t/
