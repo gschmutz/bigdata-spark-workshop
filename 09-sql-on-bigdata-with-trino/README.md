@@ -46,6 +46,32 @@ docker exec -ti awscli s3cmd put --recursive /data-transfer/refined-data/ s3://f
 
 > **Note:** if you get a `Nothing to upload` error, use this copy command from within the `docker` folder `cp -R ../data/refined-data ./data-transfer`
 
+if you now execute 
+
+```bash
+docker exec -ti awscli s3cmd ls --recursive s3://flight-bucket/refined | awk '{print $4}' | tree --fromfile
+```
+
+you should see the data we have created in Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) which we will now use to query on
+
+```
+.
+└── s3:
+    └── flight-bucket
+        └── refined
+            ├── airports
+            │   ├── _SUCCESS
+            │   ├── part-00000-ba2a223c-c023-4b2e-8c8a-3b15af51be71-c000.json
+            │   └── part-00001-ba2a223c-c023-4b2e-8c8a-3b15af51be71-c000.json
+            └── flights
+                ├── _SUCCESS
+                └── year=2008
+                    ├── month=4
+                    │   └── part-00001-e5f29b95-0da3-40e8-beeb-5517c063459d.c000.snappy.parquet
+                    └── month=5
+                        └── part-00000-e5f29b95-0da3-40e8-beeb-5517c063459d.c000.snappy.parquet
+```
+
 ## Using Trino to access Object Storage
 
 In order for us to use Trino with Object Storage, we first have to create the necessary tables in Hive Metastore. Trino is using the Hive Metastore for a place to get the necessary metadata about the data itself (i.e. the table view on the raw data in object storage)
