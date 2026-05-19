@@ -350,7 +350,7 @@ Change the **AWS Access Key ID** in the `aws-s3` connection back to `admin`.
 
 Now navigate back to the detail page for the `spark_airport_and_flight_refined` DAG and click again on the red cell right to the first task, where we got the error. Click on **Clear Task** button and on the pop-up dialog click **Clear** to re-run the problematic task. 
 
-This time the whole DAG should again run successfullly.
+This time the whole DAG should again run successfully.
 
 
 

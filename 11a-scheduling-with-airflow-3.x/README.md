@@ -330,6 +330,10 @@ After a while all 5 should be green with the checkmark, indicating that the DAG 
 
 ![](./images/airflow-with-dag-details-run2.png)
 
+> **What you should see:** All five task boxes turn dark green from left to right as each task completes. The total wall-clock time is typically 1–3 minutes, dominated by the Spark job at the end of the pipeline.
+
+> **What just happened?** Airflow executed the five tasks in the dependency order defined by the `>>` chain: it deleted the existing `raw/` and `refined/` folders in MinIO, uploaded the airports CSV and all flights CSV files, and finally submitted the `prep_refined.py` Spark application using `SparkSubmitOperator`. The Spark job fetched the script from MinIO (`s3a://flight-bucket/app/prep_refined.py`), read the raw CSV files, applied the schema transformations, and wrote the refined Parquet files back to MinIO. Airflow tracked each task's status and dependencies — if any task had failed, downstream tasks would have been automatically skipped.
+
 Click on one of the dark green cells and navigate to the **Logs** tab to see the log of the task execution
 
 ![](./images/airflow-with-dag-details-run3.png)
@@ -383,6 +387,6 @@ and click **Confirm**
 
 This will run the other 4 tasks, after the first as well and they should all run successfully.
 
+> **What you should see:** The failed task turns green after clearing, and the remaining four downstream tasks execute automatically in sequence, all completing successfully.
 
-
-
+> **What just happened?** Airflow's "Clear" operation reset the task instance state from FAILED back to NONE, making it eligible to run again in the next scheduler cycle. Because the S3 connection was fixed before clearing, the task can now authenticate successfully. Airflow then automatically triggered the downstream tasks that were blocked by the failure — this is Airflow's DAG dependency model in action: upstream failures cascade to downstream tasks, and upstream recovery automatically unblocks them.
