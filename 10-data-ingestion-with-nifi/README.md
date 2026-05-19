@@ -271,6 +271,10 @@ minio-1/flight-nifi-bucket/
          └─ airports.csv
 ```
 
+> **What you should see:** The `airports.csv` file stored under a timestamped folder path `raw/airport/<timestamp>/airports.csv`. The timestamp matches the moment NiFi picked up and processed the file.
+
+> **What just happened?** The three-processor NiFi flow executed automatically: `GetFile` detected the CSV in the landing zone, `UpdateAttribute` computed the current timestamp and stored it as the `ingestionTime` FlowFile attribute, and `PutS3Object` uploaded the file to MinIO using the attribute value in the key expression `/raw/airport/${ingestionTime}/${filename}`. After upload, `GetFile` removed the source file from the landing zone so it won't be re-processed on the next poll cycle — this is NiFi's built-in delta mechanism for file-based ingestion.
+
 We can see that the file has been loaded into a folder with the timestamp of the file ingestion.
 
 ### Additional steps
