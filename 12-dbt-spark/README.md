@@ -813,7 +813,7 @@ Replace the `flight:` block with per-sublayer config:
 ```yaml
 models:
   spark_flight:
-    flight_db:
+    flight:
       prepared:
         +materialized: view
       refined:
@@ -1046,6 +1046,19 @@ Run it for the first time (full load):
 
 ```bash
 dbt run --select flight_prep_incremental_t
+```
+
+Run it again (incremental — only new rows, but there are none of course):
+
+```bash
+dbt run --select flight_prep_incremental_t
+```
+
+Upload two new flight files (month=6) to the raw folder
+
+```bash
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_6_1.csv s3://flight-bucket/raw/flights/
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_6_2.csv s3://flight-bucket/raw/flights/   
 ```
 
 Run it again (incremental — only new rows):
