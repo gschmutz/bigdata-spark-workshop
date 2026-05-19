@@ -88,7 +88,7 @@ and on the command prompt first create a new database `flight_db`
 
 ```sql
 CREATE DATABASE flight_db
-LOCATION 's3a://flight-bucket/';
+LOCATION 's3a://flight-bucket/warehouse';
 ```
 
 switch into that database
@@ -233,8 +233,8 @@ which should return
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt-spark$ dbt --version
 WARNING:thrift.transport.sslcompat:using legacy validation callback
 Core:
-  - installed: 1.11.7
-  - latest:    1.11.7 - Up to date!
+  - installed: 1.11.10
+  - latest:    1.11.10 - Up to date!
 
 Plugins:
   - spark: 1.10.1 - Up to date!
@@ -253,7 +253,7 @@ Enter the following values:
 
   * **Name of project**: `spark_flight`
   * **Which database**: `1` (i.e. spark)
-  * **Thrift Server Host**: `192.168.1.112`
+  * **Thrift Server Host**: `192.168.1.112` (IP address where the dataplatform is running)
   * **Desired authentication method**: `3` (i.e. thriftserver)
   * **poll_interval**: `5` (default)
   * **query_timeout**: `60`
