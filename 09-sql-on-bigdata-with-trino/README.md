@@ -18,7 +18,7 @@ In this workshop we are using Trino to access the data we have available in the 
 
 ## What you will learn
 
-- How to use Trino to query data stored in MinIO object storage using standard SQL
+- How to use Trino to query data stored in Object storage using standard SQL
 - How to register data in the Hive Metastore so Trino can discover and query it
 - How to create external tables over JSON and Parquet files in S3
 - How to run analytical SQL queries (aggregations, joins, filtering) in Trino
@@ -146,7 +146,7 @@ docker exec -it trino-1 trino --server trino-1:8080
 Now on the Trino command prompt, switch to the right database. 
 
 ```sql
-use minio.flight_db;
+use hive.flight_db;
 ```
 
 Let's see that there is one table available:
@@ -165,20 +165,20 @@ trino:default> show tables;
 (1 row)
 ```
 
-> **What you should see:** One table — `airports_t` — the external table registered in the Hive Metastore pointing to the JSON files in MinIO. You might additionally also see the `airports_delta_t` table from the Delta table workshop. 
+> **What you should see:** One table — `airports_t` — the external table registered in the Hive Metastore pointing to the JSON files in Object Storage. You might additionally also see the `airports_delta_t` table from the Delta table workshop. 
 
 > **What just happened?** Trino queried the Hive Metastore for all tables in the `flight_db` database. Trino itself stores no table definitions — it delegates metadata management entirely to the Hive Metastore, which is why the same table is queryable from any engine connected to the same metastore (Spark, Hive, Trino, Impala, etc.).
 
 We can use the `DESCRIBE` command to see the structure of the table:
 
 ```sql
-DESCRIBE minio.flight_db.airports_t;
+DESCRIBE hive.flight_db.airports_t;
 ```
 
 and you should get the following result
 
 ```sql
-trino:flight_db> DESCRIBE minio.flight_db.airports_t;
+trino:flight_db> DESCRIBE hive.flight_db.airports_t;
       Column       |  Type   | Extra | Comment 
 -------------------+---------+-------+---------
  id                | integer |       |         
@@ -208,9 +208,9 @@ Splits: 5 total, 5 done (100.00%)
 
 > **What you should see:** The 18 airport columns with their types translated into Trino's type system — `integer` and `double` for numeric fields, `varchar` for text fields. The `Extra` and `Comment` columns are empty because they were not specified in the CREATE TABLE DDL.
 
-> **What just happened?** `DESCRIBE` reads the column definitions from the Hive Metastore table entry and translates them from Hive types (e.g. `string` → Trino `varchar`, `double` → Trino `double`) into Trino's own type system. No data was read from MinIO for this metadata operation.
+> **What just happened?** `DESCRIBE` reads the column definitions from the Hive Metastore table entry and translates them from Hive types (e.g. `string` → Trino `varchar`, `double` → Trino `double`) into Trino's own type system. No data was read from Object Storage for this metadata operation.
 
-We can also leave out the `minio.fligth_db` qualifier, because it is the current database.
+We can also leave out the `hive.fligth_db` qualifier, because it is the current database.
 
 ```sql
 DESCRIBE airports_t;
@@ -226,7 +226,7 @@ And of course we can execute the same query with a fully qualified table, includ
 
 ```sql
 SELECT * 
-FROM minio.flight_db.airports_t;
+FROM hive.flight_db.airports_t;
 ```
 
 We will see later, that this becomes handy if we are querying from multiple, different databases.
@@ -338,7 +338,7 @@ docker exec -it trino-1 trino --server trino-1:8080
 and switch to the correct database
 
 ```sql
-use minio.flight_db;
+use hive.flight_db;
 ```
 
 Let's see that the newly created `flight_s` table is also available:
@@ -515,7 +515,7 @@ Instead of classifying the delays in SQL using the CASE expression as shown befo
 
 User defined functions can either be written in Java/Python or using the SQL routine language. We will see an example with SQL routing language first, followed by an example using Python. Java is a bit more  complicated and you have to [create a plugin](https://trino.io/docs/current/develop/functions.html), which is not covered in this workshop.
 
-A UDF can be declared as an [inline UDF](https://trino.io/docs/current/udf/introduction.html#udf-inline) to be used in the current query, or declared as a [catalog UDF](https://trino.io/docs/current/udf/introduction.html#udf-catalog) to be used in any future query, if the connector used for the catalog supports UDF storage. Our `minio` catalog, which is using the `Hive Connector`, supports that. 
+A UDF can be declared as an [inline UDF](https://trino.io/docs/current/udf/introduction.html#udf-inline) to be used in the current query, or declared as a [catalog UDF](https://trino.io/docs/current/udf/introduction.html#udf-catalog) to be used in any future query, if the connector used for the catalog supports UDF storage. Our `hive` catalog, which is using the `Hive Connector`, supports that. 
 
 ### SQL user-defined functions
 
@@ -571,12 +571,12 @@ Splits: 1 total, 1 done (100.00%)
 
 > **What just happened?** The `WITH FUNCTION` clause defined an inline UDF that exists only for the duration of this single query. Trino compiled the SQL routine into a scalar function, evaluated the `CASE` expression against the literal value 100, and returned the result directly without reading any table data — as confirmed by `[0 rows, 0B]` in the query metadata.
 
-#### Catalog UDF `minio.flight_db.classify_delay`
+#### Catalog UDF `hive.flight_db.classify_delay`
 
 Let's create the same function as a catalog UDF using the SQL routine language
 
 ```sql
-CREATE OR REPLACE FUNCTION minio.flight_db.classify_delay(delay int) 
+CREATE OR REPLACE FUNCTION hive.flight_db.classify_delay(delay int) 
   RETURNS varchar
   BEGIN
 	 RETURN CASE
@@ -593,13 +593,13 @@ CREATE OR REPLACE FUNCTION minio.flight_db.classify_delay(delay int)
 To test it we can also call it in a `SELECT` without reading from a table.
 
 ```sql
-SELECT minio.flight_db.classify_delay(100);
+SELECT hive.flight_db.classify_delay(100);
 ```
 
 And we can see that the value `100` is in the bucket `Short Delays`
 
 ```sql
-trino:flight_db> SELECT minio.flight_db.classify_delay(100);
+trino:flight_db> SELECT hive.flight_db.classify_delay(100);
     _col0     
 --------------
  Short Delays 
@@ -613,7 +613,7 @@ Splits: 1 total, 1 done (100.00%)
 Now let's change the statement from before to use the function instead of the CASE expression
 
 ```sql
-SELECT arrDelay, origin, destination, minio.flight_db.classify_delay(arrDelay) AS flight_delay
+SELECT arrDelay, origin, destination, hive.flight_db.classify_delay(arrDelay) AS flight_delay
 FROM flights_t;
 ```
 
@@ -622,7 +622,7 @@ We can also adpapt the other statement we have used with Spark SQL in [Workshop 
 ```sql
 SELECT year, month, flight_delay, count(*) AS count
 FROM (
-  SELECT year, month, destination, minio.flight_db.classify_delay(arrDelay) AS flight_delay
+  SELECT year, month, destination, hive.flight_db.classify_delay(arrDelay) AS flight_delay
   FROM flights_t
 )
 GROUP BY year, month, flight_delay;
@@ -660,12 +660,12 @@ WITH
 SELECT python_classify_delay(100);    
 ```
 
-#### Catalog UDF `minio.flight_db.python_classify_delay`
+#### Catalog UDF `hive.flight_db.python_classify_delay`
 
 Let's create the same function as a catalog UDF using the SQL routine language
 
 ```sql
-CREATE OR REPLACE FUNCTION minio.flight_db.python_classify_delay(delay int) 
+CREATE OR REPLACE FUNCTION hive.flight_db.python_classify_delay(delay int) 
   RETURNS varchar
   LANGUAGE PYTHON
   WITH (handler = 'classify_delay')
@@ -689,7 +689,7 @@ CREATE OR REPLACE FUNCTION minio.flight_db.python_classify_delay(delay int)
 To test it we can also call it in a `SELECT` without reading from a table.
 
 ```sql
-SELECT minio.flight_db.python_classify_delay(100);
+SELECT hive.flight_db.python_classify_delay(100);
 ```
 
 We can now of course use it in the same way as we have used the SQL user-defined function before.
@@ -706,7 +706,7 @@ Connect to Postgresql
 docker exec -ti postgresql psql -d postgres -U postgres
 ```
 
-Create a database and the table for the airport data using a different name  `pg_airports_t` to distinguish it to the one in Minio. 
+Create a database and the table for the airport data using a different name  `pg_airports_t` to distinguish it to the one in hive. 
 
 ```sql
 CREATE SCHEMA flight_data;
@@ -794,16 +794,16 @@ With the `pg_airports_t` table available in the Postgresql and the `flights_t` a
 
 ```sql
 SELECT ao.name, ao.municipality, ad.name, ad.municipality, f.*
-FROM minio.flight_db.flights_t  AS f
+FROM hive.flight_db.flights_t  AS f
 LEFT JOIN postgresql.flight_data.pg_airports_t AS ao
 ON (f.origin = ao.iata_code)
 LEFT JOIN postgresql.flight_data.pg_airports_t AS ad
 ON (f.destination = ad.iata_code);
 ```
 
-> **What you should see:** Flight records enriched with the full airport name and municipality for both the origin and destination — joined from the PostgreSQL `pg_airports_t` table — all returned in a single query spanning two different data systems (MinIO object storage and PostgreSQL).
+> **What you should see:** Flight records enriched with the full airport name and municipality for both the origin and destination — joined from the PostgreSQL `pg_airports_t` table — all returned in a single query spanning two different data systems (Object storage and PostgreSQL).
 
-> **What just happened?** Trino's query planner split the query into sub-queries targeted at each connector: the Hive connector fetched flight data from MinIO Parquet files, the PostgreSQL connector fetched airport data from the relational database, and Trino joined the results in its own distributed engine. Neither system was aware of the other — Trino acted as the federation layer. This is the core value proposition of Trino's connector architecture: one SQL dialect to query heterogeneous data sources simultaneously.
+> **What just happened?** Trino's query planner split the query into sub-queries targeted at each connector: the Hive connector fetched flight data from Parquet files, the PostgreSQL connector fetched airport data from the relational database, and Trino joined the results in its own distributed engine. Neither system was aware of the other — Trino acted as the federation layer. This is the core value proposition of Trino's connector architecture: one SQL dialect to query heterogeneous data sources simultaneously.
 
 ## Using Trino from a standalone SQL Tool (optional)
 
@@ -827,19 +827,19 @@ Click **Test Connection ...** and DBeaver will ask you to download the JDBC driv
 
 Click **OK** and **Finish** to close the **Connect to a database** window.
 
-Use the **Database Navigator** to drill down into the new connection — you should see the `minio` and `postgresql` catalogs (and any other connectors configured in the platform), and within `minio` the `flight_db` database and its tables.
+Use the **Database Navigator** to drill down into the new connection — you should see the `hive` and `postgresql` catalogs (and any other connectors configured in the platform), and within `hive` the `flight_db` database and its tables.
 
-Navigat to `minio` - `flight_db` and double-click on the  `airports_t` table to see the rows directly. 
+Navigat to `hive` - `flight_db` and double-click on the  `airports_t` table to see the rows directly. 
 
 ![Alt Image Text](images/dbeaver-4.png "DBeaver")
 
 Navigate to **Properties** to see the metadata.
 
-You can also open the **SQL Editor** to run ad-hoc queries. Right-click on the `minio` catalog in the **Database Navigator**, select **SQL Editor** | **Open SQL Console**, and enter a query:
+You can also open the **SQL Editor** to run ad-hoc queries. Right-click on the `hive` catalog in the **Database Navigator**, select **SQL Editor** | **Open SQL Console**, and enter a query:
 
 ```sql
 SELECT iata_code, name, municipality, iso_country
-FROM minio.flight_db.airports_t
+FROM hive.flight_db.airports_t
 WHERE iso_country = 'US'
 ORDER BY name
 LIMIT 40;
