@@ -1086,7 +1086,7 @@ dbt docs generate
 Serve it locally:
 
 ```bash
-dbt docs serve --port 8080
+dbt docs serve --host 0.0.0.0 --port 8080
 ```
 
 A browser window should open automatically on this ULR <http://dataplatform:8080>. 
