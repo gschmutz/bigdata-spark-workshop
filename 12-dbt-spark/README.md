@@ -8,7 +8,7 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
-- [Prepare the raw data, if no longer available](#prepare-the-raw-data-if-no-longer-available)
+- [Upload the raw data, if no longer available](#upload-the-raw-data-if-no-longer-available)
 - [Register tables for Raw data](#register-tables-for-raw-data)
 - [Install dbt](#install-dbt)
 - [Create the dbt project](#create-the-dbt-project)
@@ -44,30 +44,34 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 - The Hive Metastore is running and accessible (included in the data platform)
 - dbt with the `dbt-spark` adapter installed (instructions provided in the workshop)
 
-## Prepare the raw data, if no longer available
+## Upload the data, if no longer available
 
-The data needed here has been uploaded in [Workshop 2 - Working with MinIO Object Storage](../02a-minio-object-storage). You can skip this section, if you still have the raw data available in MinIO. We are using the `mc` command to load the raw airport and flight data:
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
 ```bash
-docker exec -ti minio-mc mc mb minio-1/flight-bucket
+docker exec -ti awscli s3cmd mb s3://flight-bucket
 ```
 
-**Airports:**
+Upload all data
 
 ```bash
-docker exec -ti minio-mc mc cp /data-transfer/airport-data/airports.csv minio-1/flight-bucket/raw/airports/airports.csv
-```
+# Airports
+docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://flight-bucket/raw/airports/airports.csv
 
-**Flights:**
+# Plane Data
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://flight-bucket/raw/planes/plane-data.csv
 
-```bash
-docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_4_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_1.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_2.csv minio-1/flight-bucket/raw/flights/ &&
-   docker exec -ti minio-mc mc cp /data-transfer/flight-data/flights-small/flights_2008_5_3.csv minio-1/flight-bucket/raw/flights/
+# Carriers
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
+
+ #Flights
+docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_2.csv s3://flight-bucket/raw/flights/ &&
+   docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
 ## Register tables for Raw data
@@ -598,6 +602,10 @@ There are 1 unused configuration paths:
 19:02:31  Done. PASS=2 WARN=0 ERROR=0 SKIP=0 TOTAL=2
 ```
 
+> **What you should see:** Two models created as `view model` in under 2 seconds. The model names match the SQL files you created in the prepared layer.
+
+> **What just happened?** dbt parsed the SQL files, resolved the `{{ source() }}` references to determine execution order, and submitted each SELECT to the Spark Thrift Server wrapped in a `CREATE OR REPLACE VIEW AS SELECT ...` statement. Each view is registered in the Hive Metastore under `flight_db`. No data was moved or read from MinIO yet — views are just stored query definitions that execute lazily when queried.
+
 The two objects in the prepared layer have been created as views (as shown by `view model`). You can check these either by using Hive Metastore CLI or DBeaver. 
 
 Using Hive Metastore CLI
@@ -721,6 +729,10 @@ There are 1 unused configuration paths:
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$
 ```
 
+> **What you should see:** All four models created as `view model` in under 2 seconds. The two new refined models (`flight_delays_ref_t` and `flight_ref_t`) were created after the prepared models because dbt resolved their `{{ ref() }}` dependencies automatically.
+
+> **What just happened?** dbt built a dependency graph from the `{{ ref() }}` and `{{ source() }}` calls, then executed models in topological order: prepared models first, then refined models. The `{{ ref('flight_prep_t') }}` in the refined SQL was automatically resolved to the actual table/view name in the Hive Metastore, making models portable across environments without hardcoded schema names.
+
 We can see that these are also created as Views (`view model`).
 
 You can crosscheck that by using DBeaver and connecting to the Spark Thriftserver, as demonstrated in [Workshop 4 - Data Reading and Writing using DataFrames](../04-spark-dataframe/README.md).
@@ -783,6 +795,10 @@ WARNING:thrift.transport.sslcompat:using legacy validation callback
 19:21:56  Done. PASS=4 WARN=0 ERROR=0 SKIP=0 TOTAL=4
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$
 ```
+
+> **What you should see:** The log now says `table model` instead of `view model` and the run takes about 12 seconds — because dbt now actually executes each SELECT and materialises the results as a physical Parquet-backed table in the Hive Metastore.
+
+> **What just happened?** Changing `+materialized: table` in `dbt_project.yml` caused dbt to wrap each SELECT in a `CREATE TABLE AS SELECT ...` (CTAS) statement. The `airport_prep_t` and `flight_prep_t` tables now exist as real tables in the Hive Metastore backed by Parquet files in MinIO — downstream tools like Trino can query them without traversing the view chain back to the raw CSV files, improving query performance for downstream consumers significantly.
 
 ## Per-layer Materialization
 
@@ -956,6 +972,10 @@ You should see output similar to:
 19:45:12  Completed successfully
 19:45:12  Done. PASS=8 WARN=0 ERROR=0 SKIP=0 TOTAL=8
 ```
+
+> **What you should see:** All 8 tests passing. Each test name shows the model, column, and test type — e.g., `not_null_airport_prep_t_id` confirms no airport has a null `id` value, and `unique_airport_prep_t_id` confirms all IDs are distinct.
+
+> **What just happened?** dbt translated each generic test declaration from `schema.yml` into a SQL query that runs on Spark: `not_null` becomes `SELECT count(*) WHERE column IS NULL`, `unique` becomes a GROUP BY counting duplicates, `accepted_values` becomes a `NOT IN` filter, and `relationships` becomes a LEFT JOIN looking for orphan rows. Any query returning one or more rows is treated as a test failure. All queries ran on Spark via the Thrift Server, validating the actual materialised table data — not mocked data or schema metadata.
 
 You can also run tests for a specific model only:
 
