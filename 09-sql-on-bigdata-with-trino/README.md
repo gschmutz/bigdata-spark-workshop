@@ -483,9 +483,9 @@ Using the `CASE` expression from the [Conditional expression](https://trino.io/d
 SELECT arrDelay, origin, destination,
     CASE
          WHEN arrDelay > 360 THEN 'Very Long Delays'
-         WHEN arrDelay > 120 AND arrDelay < 360 THEN 'Long Delays'
-         WHEN arrDelay > 60 AND arrDelay < 120 THEN 'Short Delays'
-         WHEN arrDelay > 0 and arrDelay < 60 THEN 'Tolerable Delays'
+         WHEN arrDelay > 120 AND arrDelay <= 360 THEN 'Long Delays'
+         WHEN arrDelay > 60 AND arrDelay <= 120 THEN 'Short Delays'
+         WHEN arrDelay > 0 and arrDelay <= 60 THEN 'Tolerable Delays'
          WHEN arrDelay = 0 THEN 'No Delays'
          ELSE 'Early'
     END AS flight_delay
@@ -531,9 +531,9 @@ WITH
     RETURNS varchar
 	 RETURN CASE
 		         WHEN delay > 360 THEN 'Very Long Delays'
-		         WHEN delay > 120 AND delay < 360 THEN 'Long Delays'
-		         WHEN delay > 60 AND delay < 120 THEN 'Short Delays'
-		         WHEN delay > 0 and delay < 60 THEN 'Tolerable Delays'
+		         WHEN delay > 120 AND delay <= 360 THEN 'Long Delays'
+		         WHEN delay > 60 AND delay <= 120 THEN 'Short Delays'
+		         WHEN delay > 0 and delay <= 60 THEN 'Tolerable Delays'
 		         WHEN delay = 0 THEN 'No Delays'
 		         ELSE 'Early'
            END
@@ -549,9 +549,9 @@ trino:flight_db> WITH
               ->     RETURNS varchar
               ->     RETURN CASE
               ->                 WHEN delay > 360 THEN 'Very Long Delays'
-              ->                 WHEN delay > 120 AND delay < 360 THEN 'Long Delays'
-              ->                 WHEN delay > 60 AND delay < 120 THEN 'Short Delays'
-              ->                 WHEN delay > 0 and delay < 60 THEN 'Tolerable Delays'
+              ->                 WHEN delay > 120 AND delay <= 360 THEN 'Long Delays'
+              ->                 WHEN delay > 60 AND delay <= 120 THEN 'Short Delays'
+              ->                 WHEN delay > 0 and delay <= 60 THEN 'Tolerable Delays'
               ->                 WHEN delay = 0 THEN 'No Delays'
               ->                 ELSE 'Early'
               ->            END
@@ -581,9 +581,9 @@ CREATE OR REPLACE FUNCTION hive.flight_db.classify_delay(delay int)
   BEGIN
 	 RETURN CASE
 		         WHEN delay > 360 THEN 'Very Long Delays'
-		         WHEN delay > 120 AND delay < 360 THEN 'Long Delays'
-		         WHEN delay > 60 AND delay < 120 THEN 'Short Delays'
-		         WHEN delay > 0 and delay < 60 THEN 'Tolerable Delays'
+		         WHEN delay > 120 AND delay <= 360 THEN 'Long Delays'
+		         WHEN delay > 60 AND delay <= 120 THEN 'Short Delays'
+		         WHEN delay > 0 and delay <= 60 THEN 'Tolerable Delays'
 		         WHEN delay = 0 THEN 'No Delays'
 		         ELSE 'Early'
            END;
