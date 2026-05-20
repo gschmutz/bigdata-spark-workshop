@@ -88,12 +88,6 @@ spark = (
         .config("spark.sql.catalog.hive_iceberg.type", "hive")
         .config("spark.sql.catalog.hive_iceberg.uri", "thrift://hive-metastore:9083")
         .config("spark.sql.catalog.hive_iceberg.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
-
-        # ==== REQUIRED FOR RUSTFS WITH ICEBERG AWS SDK ===
-        .config("spark.sql.catalog.hiverest.s3.endpoint", "http://rustfs-1:9000")
-        .config("spark.sql.catalog.hiverest.s3.path-style-access", "true")
-        .config("spark.sql.catalog.hiverest.s3.access-key-id", accessKey)
-        .config("spark.sql.catalog.hiverest.s3.secret-access-key", secretKey)
     
         # use "hive_iceberg" as the default catalog
         .config("spark.sql.defaultCatalog", "hive_iceberg")
