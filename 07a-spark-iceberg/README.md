@@ -6,7 +6,7 @@ In this workshop we will work with [Apache Iceberg](https://iceberg.apache.org/)
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
-- [Prepare the data, if no longer available](#prepare-the-data-if-no-longer-available)
+- [Upload the data, if no longer available](#upload-the-data-if-no-longer-available)
 - [Working with Spark and Iceberg table](#working-with-spark-and-iceberg-table)
 - [Read the airport data and store it as an Iceberg Table](#read-the-airport-data-and-store-it-as-an-iceberg-table)
 - [Update the Iceberg Table](#update-the-iceberg-table)
@@ -31,7 +31,7 @@ In this workshop we will work with [Apache Iceberg](https://iceberg.apache.org/)
 
 ## Upload the data, if no longer available
 
-The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
+The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](../01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
 Create the flight bucket:
 
