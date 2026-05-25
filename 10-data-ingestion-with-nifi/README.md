@@ -29,8 +29,10 @@ In this workshop we will see how we can use [Apache NiFi](http://nifi.apache.org
 For this workshop we will use a new bucket, separate from the other workshops. Use the following command to create the `flight-nifi-bucket`.
 
 ```bash
-docker exec -ti minio-mc mc mb minio-1/flight-nifi-bucket
+docker exec -ti awscli s3cmd mb s3://flight-nifi-bucket
 ```
+
+The data will be uploaded by Apache NiFi below.
 
 ## Make sure that sub-folders below `data-transfer` belong to your local user (`$USER`)
 
