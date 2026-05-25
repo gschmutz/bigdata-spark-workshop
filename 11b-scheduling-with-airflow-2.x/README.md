@@ -1,4 +1,4 @@
-# Job Scheduling with Airflow 2.x
+# Job Scheduling with Airflow 2.x (does not work with setup)
 
 This workshop **will not work** with the dataplatform which is part of this course, as it runs with Airflow 3.x. See [Job Scheduling with Airflow 3.x](../11a-scheduling-with-airflow-3.x/README.md) for the same workshop covering Airflow 3.x.
 
