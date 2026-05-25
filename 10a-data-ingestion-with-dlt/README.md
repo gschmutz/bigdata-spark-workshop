@@ -13,22 +13,11 @@ In this workshop we will use [dlt](https://dlthub.com/) (data load tool) to inge
 - [Configure Credentials](#configure-credentials)
 - [Create the Landing Zone](#create-the-landing-zone)
 - [Create the dlt Pipeline](#create-the-dlt-pipeline)
-  - [Key concepts in this script](#key-concepts-in-this-script)
 - [Run the Pipeline](#run-the-pipeline)
 - [Verify the Data in Object Storage](#verify-the-data-in-object-storage)
 - [Incremental Loading — Run Again with New Files](#incremental-loading--run-again-with-new-files)
 - [Inspect the dlt State and Metadata](#inspect-the-dlt-state-and-metadata)
-  - [View the pipeline state locally](#view-the-pipeline-state-locally)
-  - [View load history](#view-load-history)
-  - [Inspect the state stored in MinIO](#inspect-the-state-stored-in-minio)
-  - [Read a loaded Parquet file with Spark](#read-a-loaded-parquet-file-with-spark)
 - [Integrating dlt with Airflow](#integrating-dlt-with-airflow)
-  - [Install the Airflow provider](#install-the-airflow-provider)
-  - [Create the Airflow DAG](#create-the-airflow-dag)
-  - [How it works](#how-it-works)
-  - [Make Python dlt script available](#make-python-dlt-script-available)
-  - [Make TOML files available](#make-toml-files-available)
-  - [Run the Airflow DAG](#run-the-airflow-dag)
 
 ## What you will learn
 
