@@ -561,7 +561,7 @@ services:
       AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: s3://admin-bucket/airflow-logs
       AIRFLOW_CONN_LOG_S3_CONN: >
         { "conn_type": "aws", 
-          "host": "minio-1", 
+          "host": "rustfs-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
           "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
@@ -636,7 +636,7 @@ services:
       AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: s3://admin-bucket/airflow-logs
       AIRFLOW_CONN_LOG_S3_CONN: >
         { "conn_type": "aws", 
-          "host": "minio-1", 
+          "host": "rustfs-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
           "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
@@ -711,7 +711,7 @@ services:
       AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: s3://admin-bucket/airflow-logs
       AIRFLOW_CONN_LOG_S3_CONN: >
         { "conn_type": "aws", 
-          "host": "minio-1", 
+          "host": "rustfs-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
           "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
@@ -896,7 +896,7 @@ services:
       AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: s3://admin-bucket/airflow-logs
       AIRFLOW_CONN_LOG_S3_CONN: >
         { "conn_type": "aws", 
-          "host": "minio-1", 
+          "host": "rustfs-1", 
           "login": "${PLATYS_AWS_ACCESS_KEY:-admin}", 
           "password": "${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}", 
           "schema": "", 
