@@ -1345,6 +1345,7 @@ services:
       - |
         mkdir -p /tmp/.aws
         eval "echo \"$$(cat /tmp/credentials.templ)\"" >> /tmp/.aws/credentials
+        rm /tmp/.aws/credentials
         sleep 30
     restart: no
 volumes:
