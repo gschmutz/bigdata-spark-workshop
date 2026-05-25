@@ -579,7 +579,7 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - ./container-volume/spark/logs/:/var/log/spark/logs
-      - aws-credentials-vol:/home/airflow/.aws:RO
+    #  - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
@@ -654,7 +654,7 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - ./container-volume/spark/logs/:/var/log/spark/logs
-      - aws-credentials-vol:/home/airflow/.aws:RO
+    #  - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
@@ -729,7 +729,7 @@ services:
       - spark-3-5-3-vol:/opt/bitnami/spark:RO
       - spark-3-5-3-java-vol:/opt/bitnami/java:RO
       - ./container-volume/spark/logs/:/var/log/spark/logs
-      - aws-credentials-vol:/home/airflow/.aws:RO
+    #  - aws-credentials-vol:/home/airflow/.aws:RO
     user: ${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}
     restart: unless-stopped
     healthcheck:
@@ -1345,7 +1345,6 @@ services:
       - |
         mkdir -p /tmp/.aws
         eval "echo \"$$(cat /tmp/credentials.templ)\"" >> /tmp/.aws/credentials
-        rm /tmp/.aws/credentials
         sleep 30
     restart: no
 volumes:
