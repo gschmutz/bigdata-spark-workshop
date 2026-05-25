@@ -14,8 +14,15 @@ def main(s3_bucket: str, s3_raw_path: str, s3_refined_path: str):
     s3_refined_uri = f"s3a://{s3_bucket}/{s3_refined_path}" 
     print(f"Reading data from raw {s3_raw_uri} and writing to refined {s3_refined_uri}")
     
+    airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
+        `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
+        `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
+        `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
+        `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
+        `wikipedia_link` STRING, `keywords` STRING"
+
     airportsRawDF = spark.read.csv(f"{s3_raw_uri}/airports", \
-    			sep=",", inferSchema="true", header="true")
+    			sep=",", inferSchema="false", header="true", schema=airportSchema)
     airportsRawDF.write.mode("overwrite").json(f"{s3_refined_uri}/airports")
 
     flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOfWeek` INTEGER, `depTime` INTEGER, `crsDepTime` INTEGER, `arrTime` INTEGER, `crsArrTime` INTEGER, `uniqueCarrier` STRING, `flightNum` STRING, `tailNum` STRING, `actualElapsedTime` INTEGER,\
@@ -43,4 +50,4 @@ if __name__ == "__main__":
     parser.add_argument("--s3-refined-path", required=True, help="Path in the S3 bucket to the refined data")
     args = parser.parse_args()
 
-    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path)    
+    main(args.s3_bucket, args.s3_raw_path, args.s3_refined_path) 
