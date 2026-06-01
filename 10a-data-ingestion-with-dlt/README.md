@@ -458,6 +458,9 @@ default_args = {
     "retries": 1,
 }
 
+dlt.config["runtime.log_level"] = "INFO"
+dlt.config["runtime.progress"] = "log"
+
 with DAG(
     dag_id="dlt_flight_ingestion",
     default_args=default_args,
@@ -489,6 +492,7 @@ with DAG(
         retries=0,
         loader_file_format="parquet",
     )
+
 ```
 
 Save with `Ctrl-O` and exit with `Ctrl-X`.
