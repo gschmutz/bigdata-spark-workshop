@@ -183,6 +183,10 @@ SELECT * FROM lakefs.main.flights.airports LIMIT 20
 
 You should see 81,193 rows.
 
+> **What you should see:** 81,193 rows — the full airports dataset. The `lakefs.main.flights.airports` table address follows the pattern `<catalog>.<branch>.<namespace>.<table>`, where `lakefs` is the Iceberg catalog backed by lakeFS and `main` is the branch name.
+
+> **What just happened?** `writeTo("lakefs.main.flights.airports").createOrReplace()` wrote the DataFrame as an Iceberg table on the `main` branch. lakeFS intercepts the S3A writes at the storage layer — when Spark writes Parquet files to `s3a://demo/main/...`, lakeFS stores them in MinIO but associates them with the `main` branch ref. At this point the data is uncommitted: it is visible on `main` but not yet part of lakeFS's version history until `branchMain.commit()` is called.
+
 ### Inspect the Iceberg metadata in MinIO
 
 After writing, you can browse the raw Iceberg metadata files in the MinIO Console at <http://dataplatform:9010>. Navigate to the `lakefs-demo-bucket` bucket. You will see the typical Iceberg directory layout:
@@ -251,6 +255,10 @@ SELECT COUNT(*) FROM lakefs.dev.flights.airports
 SELECT COUNT(*) FROM lakefs.main.flights.airports
 ```
 
+> **What you should see:** `0` on the dev branch, but `81193` on the main branch. The DELETE only affected the `dev` branch — main is completely isolated and unaffected.
+
+> **What just happened?** lakeFS implements branch isolation at the storage layer. When the DELETE ran on `lakefs.dev.flights.airports`, Iceberg wrote a deletion record to the dev branch's metadata path. The main branch's metadata files were never touched. This is the core lakeFS guarantee: changes on one branch are invisible to all other branches until explicitly merged, making it safe to run destructive experiments on dev without risking production data.
+
 ### View uncommitted changes
 
 ```python
@@ -272,6 +280,10 @@ Confirm recovery (should return 81,193 again):
 %%sql
 SELECT COUNT(*) FROM lakefs.dev.flights.airports
 ```
+
+> **What you should see:** `81193` — the full row count has been restored on the dev branch.
+
+> **What just happened?** `branchDev.reset_changes()` discarded all uncommitted changes on the dev branch by reverting its state pointer back to the most recent commit. Because lakeFS and Iceberg never delete immutable data files until explicitly garbage-collected, "reverting" is an instant metadata operation — no data is copied or restored. The Iceberg snapshot written by the DELETE is simply abandoned (no longer referenced by any branch pointer).
 
 ---
 
@@ -362,6 +374,10 @@ ORDER BY removed_airports DESC
 LIMIT 20
 ```
 
+> **What you should see:** Rows with `lakefs_change = '-'` representing airports removed from the dev branch (all non-US airports), grouped by country code with their counts. US airports do not appear in the diff because they exist identically on both branches.
+
+> **What just happened?** `refs_data_diff()` is a lakeFS Spark extension that compares the Iceberg snapshot referenced by `main` against the snapshot referenced by `dev`, producing a row-level diff. Under the hood it reads the Iceberg manifest files for both branches, identifies which Parquet data files differ, and reads only those files to produce the row-level delta. The `lakefs_change` column (`+` = added to `dev`, `-` = removed from `dev` relative to `main`) gives you a Git-style diff at the data row level.
+
 ---
 
 ## Step 9 — Create a Partitioned Table on Dev
@@ -424,6 +440,10 @@ SELECT COUNT(*) FROM lakefs.main.flights.airports
 ```
 
 You can also inspect the commit history and merged objects in the lakeFS UI at <http://dataplatform:28220>.
+
+> **What you should see:** The count on `lakefs.main.flights.airports` now matches the dev branch count — only US airports remain. The lakeFS UI shows the full commit history including the initial load commit on main, the dev branch commits, and the merge commit.
+
+> **What just happened?** `branchDev.merge_into(branchMain)` applied all commits from `dev` onto `main` by updating main's branch pointer to reference the dev branch's latest snapshot. Because Iceberg's snapshot model and lakeFS's ref model are both metadata-only, this merge was an instant operation — no Parquet files were copied. Both branches now point to the same physical data files for their shared content, with lakeFS tracking the ref-to-snapshot mapping that determines what each branch "sees".
 
 ---
 

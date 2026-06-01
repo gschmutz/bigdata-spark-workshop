@@ -26,5 +26,4 @@ All the workshops can be done on a container-based infrastructure using Docker C
 | 11a | [Job Scheduling with Airflow 3.x](./11a-scheduling-with-airflow-3.x) | Author an Airflow 3.x DAG that uploads raw data to MinIO and submits a Spark job using the SparkSubmitOperator, then monitor and trigger the pipeline from the Airflow UI. |
 | 11b | [Job Scheduling with Airflow 2.x](./11b-scheduling-with-airflow-2.x) | Same pipeline as 11a adapted for Airflow 2.x syntax and operators. Note: the current data platform runs Airflow 3.x — use this workshop only with a dedicated Airflow 2.x environment. |
 | 12 | [Working with dbt and Spark](./12-dbt-spark) | Build a layered dbt project (raw → prepared → refined) on top of Spark, covering models, materialization strategies, generic tests, incremental models, documentation, and the MetricFlow semantic layer. |
-| 13 | [Working with lakeFS Data Versioning and Apache Iceberg](./13-lakefs) | Apply Git-like branching, commits, diffs, and merges to Apache Iceberg tables using lakeFS and Spark — including accidental-delete recovery, cross-branch data diff, and merge-to-production workflows. |
 
