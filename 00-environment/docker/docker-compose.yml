@@ -545,7 +545,7 @@ services:
       AIRFLOW__API_AUTH__JWT_SECRET: ${PLATYS_AIRFLOW_JWT_SECRET:-jUnJ/Vt17d04x0UqHRMRGg==}
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: true
       AIRFLOW__CORE__LOAD_EXAMPLES: false
-      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark
+      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark dlt[airflow] dlt[s3] pyarrow
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
       AIRFLOW__CORE__TEST_CONNECTION: Disabled
       AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
@@ -620,7 +620,7 @@ services:
       AIRFLOW__API_AUTH__JWT_SECRET: ${PLATYS_AIRFLOW_JWT_SECRET:-jUnJ/Vt17d04x0UqHRMRGg==}
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: true
       AIRFLOW__CORE__LOAD_EXAMPLES: false
-      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark
+      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark dlt[airflow] dlt[s3] pyarrow
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
       AIRFLOW__CORE__TEST_CONNECTION: Disabled
       AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
@@ -695,7 +695,7 @@ services:
       AIRFLOW__API_AUTH__JWT_SECRET: ${PLATYS_AIRFLOW_JWT_SECRET:-jUnJ/Vt17d04x0UqHRMRGg==}
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: true
       AIRFLOW__CORE__LOAD_EXAMPLES: false
-      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark
+      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark dlt[airflow] dlt[s3] pyarrow
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
       AIRFLOW__CORE__TEST_CONNECTION: Disabled
       AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
@@ -880,7 +880,7 @@ services:
       AIRFLOW__API_AUTH__JWT_SECRET: ${PLATYS_AIRFLOW_JWT_SECRET:-jUnJ/Vt17d04x0UqHRMRGg==}
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: true
       AIRFLOW__CORE__LOAD_EXAMPLES: false
-      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark
+      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow[amazon] apache-airflow-providers-apache-spark dlt[airflow] dlt[s3] pyarrow
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
       AIRFLOW__CORE__TEST_CONNECTION: Disabled
       AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
@@ -1141,7 +1141,8 @@ services:
       - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
       - RUSTFS_ACCESS_KEY=${PLATYS_AWS_ACCESS_KEY:-admin}
       - RUSTFS_SECRET_KEY=${PLATYS_AWS_SECRET_ACCESS_KEY:-abc123abc123!}
-      - RUSTFS_OBS_LOGGER_LEVEL=info
+      - RUSTFS_OBS_LOGGER_LEVEL=debug
+      - RUSTFS_OBS_LOCAL_LOGGING_ENABLED=true  
       # Keep strict disk topology checks enabled by default.
       # For local testing only, set `RUSTFS_UNSAFE_BYPASS_DISK_CHECK=true` explicitly.      
       - RUSTFS_UNSAFE_BYPASS_DISK_CHECK=true
@@ -1218,6 +1219,7 @@ services:
     environment:
       - FB_BASEURL=/filebrowser
       - FB_USERNAME=admin
+      - FB_PASSWORD=${PLATYS_FILEBROWSER_PASSWORD_HASH10:-$2a$10$7KnADVChwzf33IThd7cYhOb.w6yxW2/V1pg1XBqQBY8b2tJfiz9ri}
     volumes:
       # we map the data-transfer folder to /data so that Filebrowser "sits on top" of the data-transfer folder
       - ./data-transfer:/data
