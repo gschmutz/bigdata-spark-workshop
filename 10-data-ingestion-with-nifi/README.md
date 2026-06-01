@@ -9,6 +9,7 @@ In this workshop we will see how we can use [Apache NiFi](http://nifi.apache.org
 - [Create the Bucket in S3](#create-the-bucket-in-s3)
 - [Make sure that sub-folders below `data-transfer` belong to your local user (`$USER`)](#make-sure-that-sub-folders-below-data-transfer-belong-to-your-local-user-user)
 - [Create the NiFi data flow](#create-the-nifi-data-flow)
+- [Running the NiFi Data Flow](#running-the-nifi-data-flow)
 
 ## What you will learn
 
@@ -21,8 +22,6 @@ In this workshop we will see how we can use [Apache NiFi](http://nifi.apache.org
 ## Prerequisites
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
-- The `flight-nifi-bucket` bucket will be created as part of this workshop
-- Write access to the `data-transfer/landing-zone` folder on the host machine
 
 ## Create the Bucket in S3
 
@@ -227,7 +226,7 @@ Click **Apply** to save the settings.
 
 Now our data flow is ready, so let's run it. 
 
-### Starting the Data Flow 
+## Running the NiFi Data Flow 
 
 Select all 3 processors (press Ctrl-A) and navigate to the start arrow and click on it.
 
@@ -282,7 +281,37 @@ rustfs-1/flight-nifi-bucket/
 
 We can see that the file has been loaded into a folder with the timestamp of the file ingestion.
 
-### Additional steps
+### Stop one of the processors and inspect the FlowFile in the queue
 
- * Stop one of the processors and check the flow file in the buffer.
- * Check that the new file is uploaded under a different folder (ingestion timestamp).
+This part shows how to pause a running flow mid-stream and inspect the data that is waiting between two processors.
+
+First, right-click on the **UpdateAttribute** processor and select **Stop**. 
+
+Then, copy `airports.csv` into the landing zone again so NiFi has something to process. 
+
+Because `GetFile` is still running, it will pick up the file and send the resulting FlowFile into the connection queue between `GetFile` and `UpdateAttribute`. `UpdateAttribute` is stopped, so the FlowFile sits there waiting.
+
+![Alt Image Text](./images/nifi-queue.png "Show queue")
+
+Right-click on the connection (the arrow) between `GetFile` and `UpdateAttribute` and select **List queue**.
+
+![Alt Image Text](./images/nifi-list-queue.png "List queue")
+
+You will see one entry — the FlowFile for `airports.csv`. Click on **3 dots** on the right of the row and click **View details** to open the **FlowFile** panel. Here you can inspect:
+
+- **Details** — click **View** to see the raw file content (the CSV rows).
+- **Attributes** — the filename, path, file size, and any attributes already set by upstream processors.
+
+This is a powerful debugging technique: you can pause any processor in a live flow and examine exactly what data is in transit without losing it.
+
+Once you have finished inspecting, close the dialog and right-click on **UpdateAttribute** and select **Start** to resume the flow. The queued FlowFile will be processed immediately and the file will appear in MinIO as before.
+
+### Check that a second run creates a new timestamped folder
+
+Copy `airports.csv` into the landing zone a second time and let the flow run to completion. Then run:
+
+```bash
+docker exec -ti rustfs-mc mc tree --files rustfs-1/flight-nifi-bucket/
+```
+
+You should see two separate timestamped folders under `raw/airport/`, each containing `airports.csv`. This confirms that the `ingestionTime` attribute is evaluated fresh on every run.
