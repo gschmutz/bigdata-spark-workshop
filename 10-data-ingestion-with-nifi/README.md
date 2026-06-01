@@ -106,7 +106,7 @@ This will give us a dialog that allows us to choose which Processor we want to a
 
 ![Alt Image Text](./images/nifi-add-processor.png "Schema Registry UI")
 
-Enter **GetF** into the search field and the list will be reduced to two processors, the **GetFTP** and the **GetFile** processor. As the name implies, the first one can be used to get files from a FTP server, whereas the second one can be used to read local files. We will use the latter here. Navigate to the **GetFile** and click **ADD**.
+Enter **GetF** into the search field and the list will be reduced to two processors, the **GetFTP** and the **GetFile** processor. As the name implies, the first one can be used to get files from a FTP server, whereas the second one can be used to read local files. We will use the latter here. Navigate to the **GetFile** and click **Add**.
 
 ![Alt Image Text](./images/nifi-add-processor-search.png "Schema Registry UI")
 
@@ -154,13 +154,14 @@ Click on **Add** to add it to the canvas as well. The canvas should now look lik
 Let's configure the new processor. Double-click on the `PutS3Object` and navigate to **Properties**. Enter the following values:
 
   * **Bucket**: `flight-nifi-bucket`
-  * **Object Key**: `/raw/airport/${ingestionTime}/${filename}`
+  * **Object Key**: `raw/airport/${ingestionTime}/${filename}` (a leading / would currently produce an Invalid Argument error in RustFS)
   * **Region**: `US East (N. Virginia)`
-  * **Endpoint Override URL**: `http://minio-1:9000`
+  * **Endpoint Override URL**: `http://rustfs-1:9000`
   * **Use Path Style Access**: `true`
-  * **AWS Credentials Provider Service**: click on the 3 dots and select **Create new service** and click **Add** to add a new service of type **AWSCredentialsProviderControllerService**. Click again on the 3 dots and select **Go To Service** and confirm with **Yes**. On the **Controller Services** pop-up page, click on the 3 dots right to the ` AWSCredentialsProviderControllerService` and select **Edit**. Navigate to the **Properties** tab and enter these values and click **Apply** and **Back to Processor**
-  	* **Access Key ID**: `admin`
-	* **Secret Access Key**: `bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza`
+  * **AWS Credentials Provider Service**: click on the 3 dots and select **Create new service** and click **Add** to add a new service of type **AWSCredentialsProviderControllerService**. Click again on the 3 dots and select **Go To Service** and confirm with **Yes**. On the **Controller Services** pop-up page, click on the 3 dots right to the ` AWSCredentialsProviderControllerService` and select **Edit**. Navigate to the **Properties** tab and enter these values:
+
+  * **Access Key ID**: `admin`
+	* **Secret Access Key**: `abc123abc123!`
 
 The **Configure Processor** should look as shown below. 
 
@@ -168,7 +169,9 @@ The **Configure Processor** should look as shown below.
 
 **Note**: NiFi does not display username and password values, they are instead shown as `Sensitive value set` when they hold a value.
 
-Because we already saved the settings, we can click **Cancel** to close the pop-up window. 
+Click **Apply** and **Back to Processor**
+
+Because we already saved the settings, we can click **Cancel** to close the **Edit Processor** window. 
 
 We also use a variable `ingestionTime` in the **Object Key** expression above, which we need to set to the current timestamp when a file is processed. We will do that now by adding an additional **UpdateAttribute** processor.
 
@@ -238,7 +241,7 @@ This will run the 3 processors. All three processors now show the green "started
 
 Now let's copy a file to be uploaded into the `/data-transfer/landing-zone` folder. You can either use a terminal window to do that or the file browser UI, as shown here. 
 
-Navigate to <http://dataplatform:28178> and log in with `admin` for the **Username** and also `admin` for the **Password**.
+Navigate to <http://dataplatform:28178> and log in with `admin` for the **Username** and `abc123!` for the **Password**.
 
 ![Alt Image Text](./images/file-browser-home.png "Schema Registry UI")
 
@@ -259,14 +262,14 @@ Let's see if our NiFi data flow has done its work!
 In a terminal, use the `mc tree` command to  view the `flight-nifi-bucket`
 
 ```bash
-docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
+docker exec -ti rustfs-mc mc tree --files rustfs-1/flight-nifi-bucket/
 ```
 
 It should show an output similar to the one below
 
 ```bash
-ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer$ docker exec -ti minio-mc mc tree --files minio-1/flight-nifi-bucket/
-minio-1/flight-nifi-bucket/
+ubuntu@ip-172-26-9-12:~/bigdata-spark-workshop/00-environment/docker/data-transfer$ docker exec -ti rustfs-mc mc tree --files rustfs-1/flight-nifi-bucket/
+rustfs-1/flight-nifi-bucket/
 └─ raw
    └─ airport
       └─ 2025-05-29T21:03:52
