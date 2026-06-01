@@ -583,7 +583,7 @@
       AIRFLOW_fernet_key: 'E4H9MUpUWhztG-eO3UTz1YdZt9fRSq5R10eUTPSt8AE='
       AIRFLOW_secret_key: '037223d1eda59bb91822f6ea04e892f0'
       AIRFLOW_jwt_secret: 'jUnJ/Vt17d04x0UqHRMRGg=='
-      AIRFLOW_additional_requirements: 'apache-airflow[amazon] apache-airflow-providers-apache-spark'
+      AIRFLOW_additional_requirements: 'apache-airflow[amazon] apache-airflow-providers-apache-spark dlt[airflow] dlt[s3] pyarrow '
       # valid only for Airflow 2.x
       AIRFLOW_auth_backends: 'airflow.api.auth.backend.session'
       # valid only for Airflow 3.x
@@ -601,6 +601,10 @@
       # be aware: needs to be a string to prevent the ending 0 from being trimed away
       AIRFLOW_python_version: '3.10'
       AIRFLOW_use_slim_image: false
+      AIRFLOW_variables: ''
+      # comma separated list of connections in URI Format: https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html#uri-format. Use > to  use multiple lines.
+      AIRFLOW_connections: ''
+      AIRFLOW_openlineage_enabled: false
  
       #
       # ===== Zeppelin ========
@@ -1271,7 +1275,10 @@
       # ===== File Browser ========
       #
       FILE_BROWSER_enable: true
-      #
+      FILE_BROWSER_volume_map_data: false
+      FILE_BROWSER_user: admin
+      # must be bcrypt encrypted: 'docker run -ti hurlenko/filebrowser hash <password>' to encrypt, replace all $ by $$
+      FILE_BROWSER_password: $2a$10$7KnADVChwzf33IThd7cYhOb.w6yxW2/V1pg1XBqQBY8b2tJfiz9ri
       # ===== Vault ========
       #
       VAULT_enable: false
