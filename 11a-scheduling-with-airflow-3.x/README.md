@@ -129,6 +129,10 @@ cd $DATAPLATFORM_HOME/scripts/airflow/dags
 nano spark_airport_and_flight_refined.py
 ```
 
+Either use the Airflow 2.x or 3.x code shown below
+
+### Airflow 2.x code
+
 Copy/paste the following Python script into the editor window
 
 ```python
@@ -229,6 +233,127 @@ with DAG(
     )    
 
     delete_raw_folder_task >> delete_refined_folder_task >> upload_airports_local_to_s3_task >> upload_flights_local_folder_to_s3_task >> spark_submit_task
+```
+
+Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.
+
+### Airflow 3.x code
+
+Copy/paste the following Python script into the editor window
+
+```python
+"""
+Airflow 3.x DAG using TaskFlow API to submit Apache Spark applications.
+Replaces explicit operator chaining with @task decorators and dependency inference.
+"""
+
+import os
+from datetime import datetime, timedelta
+
+from airflow.decorators import dag, task
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
+from airflow.providers.amazon.aws.operators.s3 import S3DeleteObjectsOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
+
+# ── DAG definition ────────────────────────────────────────────────────────────
+
+@dag(
+    dag_id="spark_airport_and_flight_refined",
+    start_date=datetime(2024, 1, 1),          # fixed date; never use datetime.now()
+    schedule="@daily",
+    catchup=False,
+    default_args={
+        "owner": "airflow",
+        "depends_on_past": False,
+        "retries": 1,
+        "retry_delay": timedelta(minutes=1),
+    },
+    tags=["cas-dataengineering"],
+)
+def spark_airport_and_flight_refined():
+
+    # ── Step 1 & 2: clean S3 landing zones ───────────────────────────────────
+
+    delete_raw = S3DeleteObjectsOperator(
+        task_id="delete_raw_folder",
+        bucket="flight-bucket",
+        prefix="raw/",
+        aws_conn_id="aws-s3",
+    )
+
+    delete_refined = S3DeleteObjectsOperator(
+        task_id="delete_refined_folder",
+        bucket="flight-bucket",
+        prefix="refined/",
+        aws_conn_id="aws-s3",
+    )
+
+    # ── Step 3: upload single airports file ──────────────────────────────────
+
+    upload_airports = LocalFilesystemToS3Operator(
+        task_id="upload_airports_local_to_s3_job",
+        filename="/data-transfer/airport-data/airports.csv",
+        dest_key="raw/airports/airports.csv",
+        dest_bucket="flight-bucket",
+        aws_conn_id="aws-s3",
+        replace=True,
+    )
+
+    # ── Step 4: upload flights folder  (pure Python → @task) ─────────────────
+
+    @task()
+    def upload_flights_local_folder_to_s3(
+        local_folder: str,
+        s3_bucket: str,
+        s3_prefix: str,
+        aws_conn_id: str,
+    ) -> None:
+        """Walk a local directory and push every file to S3."""
+        hook = S3Hook(aws_conn_id=aws_conn_id)
+        for root, _dirs, files in os.walk(local_folder):
+            for file in files:
+                local_path = os.path.join(root, file)
+                relative = os.path.relpath(local_path, local_folder)
+                s3_key = os.path.join(s3_prefix, relative)
+                hook.load_file(
+                    filename=local_path,
+                    key=s3_key,
+                    bucket_name=s3_bucket,
+                    replace=True,
+                )
+
+    upload_flights = upload_flights_local_folder_to_s3(
+        local_folder="/data-transfer/flight-data/flights-small/",
+        s3_bucket="flight-bucket",
+        s3_prefix="raw/flights/",
+        aws_conn_id="aws-s3",
+    )
+
+    # ── Step 5: Spark refinement job ──────────────────────────────────────────
+
+    spark_submit = SparkSubmitOperator(
+        task_id="spark_submit_task",
+        conn_id="spark-cluster",
+        application="s3a://flight-bucket/app/prep_refined.py",
+        name="Airports and Flight Refinement application",
+        application_args=[
+            "--s3-bucket", "flight-bucket",
+            "--s3-raw-path", "raw",
+            "--s3-refined-path", "refined",
+        ],
+    )
+
+    # ── Dependency chain ──────────────────────────────────────────────────────
+    # TaskFlow tasks (upload_flights) and classic operators mix fine in Airflow 3.
+    # The >> operator works across both styles.
+
+    delete_raw >> delete_refined >> upload_airports >> upload_flights >> spark_submit
+
+
+# Instantiate the DAG
+spark_airport_and_flight_refined()
 ```
 
 Save it by hitting `Ctrl-O` and exit by hitting `Ctrl-X`.

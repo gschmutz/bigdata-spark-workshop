@@ -323,7 +323,7 @@ rustfs-1/flight-dlt-bucket/
 
 dlt writes data as **Parquet files** (via `loader_file_format="parquet"` in `pipeline.run()`), stored as `raw/<resource_name>/<load_id>.<hash>.parquet`. Alongside the data, dlt stores its own metadata in `_dlt_loads` and `_dlt_pipeline_state`.
 
-You can also browse the bucket in the MinIO Console at <http://dataplatform:9010>.
+You can also browse the bucket in the Object Storage Console at <http://dataplatform:9014>.
 
 ---
 
@@ -399,7 +399,7 @@ for load in pipeline.list_completed_load_packages():
 EOF
 ```
 
-### Inspect the state stored in MinIO
+### Inspect the state stored in Object Storage
 
 dlt also persists its state inside the destination bucket so the pipeline can resume correctly even if run from a different machine:
 
@@ -524,6 +524,7 @@ The DAGs folder is mounted into all Airflow containers at `/opt/airflow/dags`, s
 The `.dlt/config.toml` and `.dlt/secrets.toml` files on the host are not visible inside the Airflow worker containers. dlt supports two alternatives:
 
 - **Volume mount:** Add `- ~/workspace/dlt-ingestion/.dlt:/home/airflow/.dlt:ro` to the volumes of each Airflow service in `docker-compose.override.yml`.
+
 - **Environment variables (recommended):** dlt translates every config and secret key into an environment variable using double-underscore separators for nested sections. This avoids mounting files and works cleanly in any containerised deployment.
 
 A ready-made `docker-compose.override.yml` is provided at `$DATAPLATFORM_HOME/docker-compose.override.yml`. Docker Compose merges it automatically with `docker-compose.yml` on every `docker compose up` — no extra flags needed.
