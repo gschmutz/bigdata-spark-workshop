@@ -158,10 +158,11 @@ from airflow.providers.amazon.aws.operators.s3 import S3DeleteObjectsOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 default_args = {
- 'owner': 'airflow',
- 'depends_on_past': False,
- 'retries':1,
- 'retry_delay': timedelta(minutes=1),    
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'catchup': False,
+    'retries':1,
+    'retry_delay': timedelta(minutes=1),    
 }
 
 def upload_local_folder_to_s3(local_folder, s3_bucket, s3_prefix, aws_conn_id):
@@ -179,12 +180,11 @@ def upload_local_folder_to_s3(local_folder, s3_bucket, s3_prefix, aws_conn_id):
             )
 
 with DAG(
- dag_id='spark_airport_and_flight_refined',
- default_args=default_args,
- start_date=datetime(2024,1,1),
- schedule='@daily',
- catchup=False,
- tags=['cas-dataengineering'],
+    dag_id='spark_airport_and_flight_refined',
+    default_args=default_args,
+    start_date=datetime(2024,1,1),
+    schedule='@daily',
+    tags=['cas-dataengineering'],
 ) as dag:
 
     delete_raw_folder_task = S3DeleteObjectsOperator(
