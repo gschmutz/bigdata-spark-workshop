@@ -24,7 +24,7 @@ In this workshop we will see how we can use [Apache Airflow](http://airflow.apac
 ## Prerequisites
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
-- Workshop 5 ([Creating and running a self-contained Spark Application](../05-spark-application)) completed — the `prep_refined.py` Spark script is reused here
+- Understanding of Workshop 5 ([Creating and running a self-contained Spark Application](../05-spark-application)) — we will reuse the `prep_refined.py` Spark script in the steps below
 
 ## Create the S3 bucket, if not available
 
@@ -261,7 +261,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 @dag(
     dag_id="spark_airport_and_flight_refined",
-    start_date=datetime(2024, 1, 1),          # fixed date; never use datetime.now()
+    #start_date=datetime(2024, 1, 1),          # fixed date; never use datetime.now(), uncomment and the DAG will start automatically
     schedule="@daily",
     catchup=False,
     default_args={
