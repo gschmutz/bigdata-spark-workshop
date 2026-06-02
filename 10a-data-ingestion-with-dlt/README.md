@@ -604,7 +604,11 @@ The `.dlt/config.toml` and `.dlt/secrets.toml` files on the host are not visible
 
 - **Environment variables (recommended):** dlt translates every config and secret key into an environment variable using double-underscore separators for nested sections. This avoids mounting files and works cleanly in any containerised deployment.
 
-A ready-made `docker-compose.override.yml` is provided at `$DATAPLATFORM_HOME/docker-compose.override.yml`. Docker Compose merges it automatically with `docker-compose.yml` on every `docker compose up` — no extra flags needed.
+A ready-made `docker-compose.override.yml` is provided at `$DATAPLATFORM_HOME/../docker-compose.override.yml`. Copy it into the `$DATAPLATFORM_HOME` folder:
+
+```bash
+cp $DATAPLATFORM_HOME/../docker-compose.override.yml $DATAPLATFORM_HOME/
+```
 
 The file defines the variables once using a YAML anchor and merges them into all four Airflow services:
 
@@ -632,6 +636,8 @@ services:
       <<: *dlt-env
 ```
 
+Docker Compose merges it automatically with `docker-compose.yml` on every `docker compose up` — no extra flags needed.
+
 Note the endpoint URL uses `rustfs-1:9000` (the internal Docker network address), not `localhost:9005`.
 
 Apply the override by restarting the Airflow services:
@@ -647,7 +653,7 @@ Wait for the Airflow services to be restarted and in healthy status:
 docker ps --format "table {{.Names}}\t{{.Status}}" | grep airflow
 ```
 
-it should show this when ready
+and you should see this when they are ready
 
 ```bash
 airflow-processor         Up 3 minutes (healthy)
