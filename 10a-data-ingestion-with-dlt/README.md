@@ -531,7 +531,6 @@ from flight_ingestion import landing_zone
 
 default_args = {
     "owner": "airflow",
-    "start_date": datetime(2025, 1, 1),
     "retries": 1,
 }
 
@@ -541,6 +540,7 @@ dlt.config["runtime.progress"] = "log"
 with DAG(
     dag_id="dlt_flight_ingestion",
     default_args=default_args,
+    start_date=datetime(2025, 1, 1),
     schedule="@daily",
     catchup=False,
     tags=["dlt", "flights"],
@@ -639,6 +639,22 @@ Apply the override by restarting the Airflow services:
 ```bash
 cd $DATAPLATFORM_HOME
 docker compose up -d
+```
+
+Wait for the Airflow services to be restarted and in healthy status:
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}" | grep airflow
+```
+
+it should show this when ready
+
+```bash
+airflow-processor         Up 3 minutes (healthy)
+airflow-apiserver         Up 3 minutes (healthy)
+airflow-scheduler         Up 3 minutes (healthy)
+airflow-statsd-exporter   Up 6 hours (healthy)
+airflow-db                Up 6 hours (healthy)
 ```
 
 ### Run the Airflow DAG
