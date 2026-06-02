@@ -35,8 +35,6 @@ In this workshop we will use [dlt](https://dlthub.com/) (data load tool) to inge
 - Python 3.9 or later available on the machine running the pipeline (the host, not inside Docker)
 - Write access to the `data-transfer/landing-zone` folder on the host machine
 
----
-
 ## Create the S3 bucket, if not available
 
 For this workshop we will use a new bucket, separate from the other workshops. Use the following command to create the `flight-dlt-bucket`.
@@ -46,8 +44,6 @@ docker exec -ti awscli s3cmd mb s3://flight-dlt-bucket
 ```
 
 The data will be uploaded by dlt below.
-
----
 
 ## Install dlt
 
@@ -69,8 +65,6 @@ Verify the installation:
 ```bash
 dlt --version
 ```
-
----
 
 ## Configure Credentials
 
@@ -112,8 +106,6 @@ region_name           = "us-east-1"
 
 > **Note:** `localhost:9005` is the RustFS port exposed on the host machine. Inside Docker containers RustFS is reachable as `rustfs-1:9000`, but the dlt pipeline runs on the host.
 
----
-
 ## Create the Landing Zone
 
 Create the local folder that acts as the ingestion landing zone:
@@ -127,8 +119,6 @@ Make sure the folder is writable by your user:
 ```bash
 sudo chown $USER:$USER $DATAPLATFORM_HOME/data-transfer/landing-zone
 ```
-
----
 
 ## Create the dlt Pipeline
 
@@ -259,7 +249,58 @@ if __name__ == "__main__":
 | `destination="filesystem"` | Writes output to the Object Storage bucket configured in `.dlt/` |
 | `dataset_name="raw"` | Top-level folder inside the bucket |
 
----
+### How the pipeline works
+
+The script has three building blocks.
+
+#### 1. Two `@dlt.resource` generator functions
+
+Each one reads CSV files from the local landing zone and yields rows one at a time.
+
+**`landing_zone_airports()`** looks for `airports*.csv` files. It reads the persisted resource state to get `last_file` — the last file successfully ingested in a previous run — and skips any file whose name is alphabetically `<=` that high-water mark. For new files it opens the CSV with `csv.DictReader` (using the header row for column names), adds the two metadata columns, and yields each row. After finishing a file it advances `state["last_file"]` so the next run skips it.
+
+**`landing_zone_flights()`** follows the same pattern for `flights*.csv` files. Because the flights CSV has no header row, the column names are supplied explicitly via the `fieldnames=` argument to `csv.DictReader`.
+
+The delta-loading mechanism is identical in both resources:
+
+```python
+state = dlt.current.resource_state()
+last_file = state.get("last_file", "")
+...
+if filename <= last_file:
+    continue              # already ingested — skip
+...
+state["last_file"] = filename   # advance the high-water mark
+```
+
+dlt persists this state inside the destination bucket itself (under `_dlt_pipeline_state/`), so it survives process restarts and works correctly even when the pipeline is run from a different machine.
+
+#### 2. The `@dlt.source` wrapper
+
+```python
+@dlt.source
+def landing_zone():
+    return [landing_zone_airports(), landing_zone_flights()]
+```
+
+This groups both resources into a single source so the pipeline can run them together with one call. Each resource keeps its own independent state, so airports and flights track their high-water marks separately.
+
+#### 3. The pipeline runner
+
+```python
+pipeline = dlt.pipeline(
+    pipeline_name="flight_ingestion",
+    destination="filesystem",
+    dataset_name="raw",
+)
+load_info = pipeline.run(landing_zone(), loader_file_format="parquet")
+```
+
+- `destination="filesystem"` writes to the S3-compatible bucket configured in `.dlt/config.toml`
+- `dataset_name="raw"` sets the top-level folder inside the bucket
+- `loader_file_format="parquet"` tells dlt to infer the schema and write Parquet files instead of the default JSONL
+
+The output lands at `s3://flight-dlt-bucket/raw/airports/<load_id>.<hash>.parquet` and `raw/flights/...`.
 
 ## Run the Pipeline
 
@@ -290,8 +331,6 @@ Load package 1779733291.084564 is LOADED and contains no failed jobs
 > **What you should see:** A log line confirming the file was ingested, followed by a load summary showing the load package ID and destination. The run completes in a few seconds for a single CSV file.
 
 > **What just happened?** dlt ran both resource generators (`landing_zone_airports` and `landing_zone_flights`). Since this was the first run, `last_file` was the empty string for both resources, so every file passed the skip check. The airports rows were yielded, dlt applied schema inference from the CSV headers, and the data was written as a Parquet file to `s3://flight-dlt-bucket/raw/airports/` with the load ID and a content hash embedded in the filename (Parquet is used because `loader_file_format="parquet"` is passed to `pipeline.run()` and `pyarrow` is installed; without this, dlt defaults to JSONL). After the file was fully yielded, the resource set `state["last_file"] = "airports.csv"` via `dlt.current.resource_state()`. dlt persists each resource's state to its pipeline store so the next run knows where to resume. No flights files were in the landing zone yet, so `landing_zone_flights` yielded nothing.
-
----
 
 ## Verify the Data in Object Storage
 
@@ -324,8 +363,6 @@ rustfs-1/flight-dlt-bucket/
 dlt writes data as **Parquet files** (via `loader_file_format="parquet"` in `pipeline.run()`), stored as `raw/<resource_name>/<load_id>.<hash>.parquet`. Alongside the data, dlt stores its own metadata in `_dlt_loads` and `_dlt_pipeline_state`.
 
 You can also browse the bucket in the Object Storage Console at <http://dataplatform:9014>.
-
----
 
 ## Incremental Loading — Run Again with New Files
 
@@ -372,8 +409,6 @@ python flight_ingestion.py
 
 This is the **delta loading** behaviour: dlt persists the high-water mark in `state["last_file"]` via `dlt.current.resource_state()`, so repeated runs never re-process already-loaded files — equivalent to NiFi's `GetFile` processor which deletes or moves files after pickup.
 
----
-
 ## Inspect the dlt State and Metadata
 
 ### View the pipeline state locally
@@ -381,9 +416,53 @@ This is the **delta loading** behaviour: dlt persists the high-water mark in `st
 ```bash
 python - <<'EOF'
 import dlt
+import json
 pipeline = dlt.attach(pipeline_name="flight_ingestion")
-print(pipeline.state)
+print(json.dumps(pipeline.state, indent=2, default=str))
 EOF
+```
+
+and you should see an output similar to
+
+```
+{
+  "_state_version": 3,
+  "_state_engine_version": 4,
+  "_local": {
+    "first_run": false,
+    "_dev_mode": false,
+    "initial_cwd": "/Users/guido.schmutz/workspace/dlt-ingestion",
+    "last_run_context": {
+      "settings_dir": "/Users/guido.schmutz/workspace/dlt-ingestion/.dlt",
+      "local_dir": "/Users/guido.schmutz/workspace/dlt-ingestion",
+      "run_dir": "/Users/guido.schmutz/workspace/dlt-ingestion",
+      "uri": "file:///Users/guido.schmutz/workspace/dlt-ingestion"
+    },
+    "_last_extracted_at": "2026-06-02 15:02:01.010911+00:00",
+    "_last_extracted_hash": "pE2S0vZsHRAlj207G1ZaJWyTXYdQ8ExY78kEeMliP0c="
+  },
+  "dataset_name": "raw",
+  "pipeline_name": "flight_ingestion",
+  "default_schema_name": "landing_zone",
+  "schema_names": [
+    "landing_zone"
+  ],
+  "destination_type": "dlt.destinations.filesystem",
+  "destination_name": null,
+  "_version_hash": "pE2S0vZsHRAlj207G1ZaJWyTXYdQ8ExY78kEeMliP0c=",
+  "sources": {
+    "landing_zone": {
+      "resources": {
+        "airports": {
+          "last_file": "airports.csv"
+        },
+        "flights": {
+          "last_file": "flights_2008_4_2.csv"
+        }
+      }
+    }
+  }
+}
 ```
 
 This shows the resource state dlt has persisted for each resource, including the `last_file` high-water mark.
@@ -415,8 +494,6 @@ Since the data is stored as Parquet in Object Storage, it can immediately be que
 airportsDF = spark.read.parquet("s3a://flight-dlt-bucket/raw/airports/")
 airportsDF.show(5)
 ```
-
----
 
 ## Integrating dlt with Airflow
 
