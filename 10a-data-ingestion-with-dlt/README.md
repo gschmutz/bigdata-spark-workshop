@@ -613,27 +613,39 @@ cp $DATAPLATFORM_HOME/../docker-compose.override.yml $DATAPLATFORM_HOME/
 The file defines the variables once using a YAML anchor and merges them into all four Airflow services:
 
 ```yaml
-x-dlt-env: &dlt-env
-  DESTINATION__FILESYSTEM__BUCKET_URL: "s3://flight-dlt-bucket"
-  RUNTIME__LOG_LEVEL: "INFO"
-  DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID: "admin"
-  DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY: "abc123abc123!"
-  DESTINATION__FILESYSTEM__CREDENTIALS__ENDPOINT_URL: "http://rustfs-1:9000"
-  DESTINATION__FILESYSTEM__CREDENTIALS__REGION_NAME: "us-east-1"
-
 services:
   airflow-apiserver:
     environment:
-      <<: *dlt-env
+      DESTINATION__FILESYSTEM__BUCKET_URL: "s3://flight-dlt-bucket"
+      RUNTIME__LOG_LEVEL: "INFO"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID: "admin"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY: "abc123abc123!"
+      DESTINATION__FILESYSTEM__CREDENTIALS__ENDPOINT_URL: "http://rustfs-1:9000"
+      DESTINATION__FILESYSTEM__CREDENTIALS__REGION_NAME: "us-east-1"
   airflow-dag-processor:
     environment:
-      <<: *dlt-env
+      DESTINATION__FILESYSTEM__BUCKET_URL: "s3://flight-dlt-bucket"
+      RUNTIME__LOG_LEVEL: "INFO"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID: "admin"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY: "abc123abc123!"
+      DESTINATION__FILESYSTEM__CREDENTIALS__ENDPOINT_URL: "http://rustfs-1:9000"
+      DESTINATION__FILESYSTEM__CREDENTIALS__REGION_NAME: "us-east-1"
   airflow-scheduler:
     environment:
-      <<: *dlt-env
+      DESTINATION__FILESYSTEM__BUCKET_URL: "s3://flight-dlt-bucket"
+      RUNTIME__LOG_LEVEL: "INFO"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID: "admin"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY: "abc123abc123!"
+      DESTINATION__FILESYSTEM__CREDENTIALS__ENDPOINT_URL: "http://rustfs-1:9000"
+      DESTINATION__FILESYSTEM__CREDENTIALS__REGION_NAME: "us-east-1"
   airflow-init:
     environment:
-      <<: *dlt-env
+      DESTINATION__FILESYSTEM__BUCKET_URL: "s3://flight-dlt-bucket"
+      RUNTIME__LOG_LEVEL: "INFO"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID: "admin"
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY: "abc123abc123!"
+      DESTINATION__FILESYSTEM__CREDENTIALS__ENDPOINT_URL: "http://rustfs-1:9000"
+      DESTINATION__FILESYSTEM__CREDENTIALS__REGION_NAME: "us-east-1"
 ```
 
 Docker Compose merges it automatically with `docker-compose.yml` on every `docker compose up` — no extra flags needed.
