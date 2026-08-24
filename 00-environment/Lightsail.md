@@ -23,6 +23,7 @@ Optionally change the password from the default value of `abc123!` to a more sec
 ```
 export GITHUB_PROJECT=bigdata-spark-workshop
 export GITHUB_OWNER=gschmutz
+export BRANCH_NAME=spark-4.1
 export PLATYS_VERSION=2.4.0
 export NETWORK_NAME=ens5
 export USERNAME=ubuntu
@@ -78,7 +79,7 @@ sudo sysctl -w vm.max_map_count=262144
 
 # Get the project
 cd /home/${USERNAME} 
-git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
+git -b ${BRANCH_NAME} clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
 chown -R ${USERNAME}:${USERNAME} ${GITHUB_PROJECT}
 
 cd /home/${USERNAME}/${GITHUB_PROJECT}/00-environment/docker

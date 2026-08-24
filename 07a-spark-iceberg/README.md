@@ -72,12 +72,15 @@ spark = (
         .appName("Jupyter")
         .master("spark://spark-master:7077")
 
+        # .config("spark.jars.repositories", "http://admin:abc123!abc123!@nexus:8081/repository/maven-public")
         .config("spark.jars.packages",
-                "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.10.1,"
-                "org.apache.iceberg:iceberg-aws-bundle:1.10.1")
-
+                "org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0,"
+                "org.apache.iceberg:iceberg-aws-bundle:1.11.0,"
+               "org.apache.hadoop:hadoop-aws:3.3.4,"
+            "com.amazonaws:aws-java-sdk-bundle:1.12.262")
+        
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
+        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
         .config("spark.hadoop.fs.s3a.access.key", accessKey)
         .config("spark.hadoop.fs.s3a.secret.key", secretKey)
