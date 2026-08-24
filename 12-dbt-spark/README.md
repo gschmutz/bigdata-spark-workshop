@@ -204,11 +204,11 @@ nano requirements.txt
 and add the following lines to install `dbt-core` and `dbt-spark`
 
 ```bash
-# dbt Core 1.11
-dbt-core>=1.11.7
+# dbt Core 1.12.3
+dbt-core>=1.12.3
 
 # spark adapter
-dbt-spark>=1.10.1
+dbt-spark>=1.10.4
 
 dbt-spark[PyHive]
 ```
@@ -233,11 +233,11 @@ which should return
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt-spark$ dbt --version
 WARNING:thrift.transport.sslcompat:using legacy validation callback
 Core:
-  - installed: 1.11.10
-  - latest:    1.11.10 - Up to date!
+  - installed: 1.12.3
+  - latest:    1.12.3 - Up to date!
 
 Plugins:
-  - spark: 1.10.1 - Up to date!
+  - spark: 1.11.0 - Up to date!
 ```
 
 You now have successfully installed `dbt-core` with `dbt-spark` on your machine.	

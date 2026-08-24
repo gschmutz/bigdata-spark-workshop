@@ -79,7 +79,7 @@ sudo sysctl -w vm.max_map_count=262144
 
 # Get the project
 cd /home/${USERNAME} 
-git -b ${BRANCH_NAME} clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
+git clone -b ${BRANCH_NAME} https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
 chown -R ${USERNAME}:${USERNAME} ${GITHUB_PROJECT}
 
 cd /home/${USERNAME}/${GITHUB_PROJECT}/00-environment/docker

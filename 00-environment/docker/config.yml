@@ -351,7 +351,7 @@
       # ===== Apache Hive Metastore ========
       #
       HIVE_METASTORE_enable: true
-      HIVE_METASTORE_major_version: 3
+      HIVE_METASTORE_major_version: 4
       HIVE_METASTORE_use_standalone_edition: false      
       HIVE_METASTORE_transactional_event_listener_enabled: false
       HIVE_METASTORE_transactional_event_listeners: 'org.apache.hive.hcatalog.listener.DbNotificationListener'
@@ -629,9 +629,9 @@
       JUPYTER_enable: true
       # one of 'minimal', 'r', 'scipy', 'tensorflow', 'datascience', 'pyspark', 'all-spark'
       JUPYTER_edition: 'all-spark'
-      JUPYTER_spark_base_version: 3.5
+      JUPYTER_spark_base_version: 4.1
       JUPYTER_volume_map_data: false
-      JUPYTER_python_packages: 'pyspark==3.5.3 numpy graphframes-py typing_extensions jupysql pandas arrow pyarrow grpcio-status boto3'
+      JUPYTER_python_packages: 'pyspark==4.1.1 numpy graphframes-py typing_extensions jupysql zstandard>=0.25.0 pandas arrow pyarrow grpcio-status boto3'
       JUPYTER_spark_jars_packages: ''
       JUPYTER_tokenless: false
       JUPYTER_token: 'abc123!'
@@ -640,8 +640,8 @@
       JUPYTER_notebook_args: ''
       # one of 'lab', 'notebook', 'nbclassic', 'server'
       JUPYTER_startup_cmd: 'lab'
-      # this is for Spark 3.5.2      
-      JUPYTER_download_jars: 'com.amazonaws:aws-java-sdk-bundle:1.12.262,org.apache.hadoop:hadoop-aws:3.3.4,com.google.guava:guava:27.0-jre'
+      # this is for Spark 4.1.1
+      JUPYTER_download_jars: 'software.amazon.awssdk:bundle:2.35.4,org.apache.hadoop:hadoop-aws:3.4.2'    # spark 4.1.1
       JUPYTER_volume_map_docker_daemon: false
       #
       # ===== RStudio ========

@@ -86,14 +86,17 @@ spark = (
         .config("spark.hadoop.fs.s3a.secret.key", secretKey)
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 
-        # ==== Iceberg catalog (Hive Metastore) ===
-        .config("spark.sql.catalog.hive_iceberg", "org.apache.iceberg.spark.SparkCatalog")
-        .config("spark.sql.catalog.hive_iceberg.type", "hive")
-        .config("spark.sql.catalog.hive_iceberg.uri", "thrift://hive-metastore:9083")
-        .config("spark.sql.catalog.hive_iceberg.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
+        # ==== Iceberg catalog (Hive Metastore Iceberg REST API) ===
+        .config("spark.sql.catalog.hive_iceberg_rest", "org.apache.iceberg.spark.SparkCatalog")
+        .config("spark.sql.catalog.hive_iceberg_rest.type", "rest")
+        .config("spark.sql.catalog.hive_iceberg_rest.uri", "http://hive-metastore:9084/iceberg")
+        .config("spark.sql.catalog.hive_iceberg_rest.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
+        .config("spark.sql.catalog.hive_iceberg_rest.io-impl", "org.apache.iceberg.aws.s3.S3FileIO")
+        .config("spark.sql.catalog.hive_iceberg_rest.s3.endpoint", "http://minio-1:9000")
+        .config("spark.sql.catalog.hive_iceberg_rest.s3.path-style-access", "true")
     
-        # use "hive_iceberg" as the default catalog
-        .config("spark.sql.defaultCatalog", "hive_iceberg")
+        # use "hive_iceberg_rest" as the default catalog
+        .config("spark.sql.defaultCatalog", "hive_iceberg_rest")
 
         .config(
             "spark.sql.extensions",
@@ -180,28 +183,28 @@ Now let's write the data as an Iceberg table. We use the `hive_iceberg` catalog 
 you can either do it using `spark.sql()` to execute the Spark SQL statement
 
 ```python
-spark.sql("CREATE NAMESPACE IF NOT EXISTS hive_iceberg.flight_iceberg_db LOCATION 's3a://flight-bucket/iceberg/'")
+spark.sql("CREATE NAMESPACE IF NOT EXISTS hive_iceberg_rest.flight_iceberg_db LOCATION 's3a://flight-bucket/iceberg/'")
 ```
 
 or execute it directly using the `%sql` directive (or `%%sql` if using Jupyter)
 
 ```sql
 %sql
-CREATE  NAMESPACE IF NOT EXISTS hive_iceberg.flight_iceberg_db 
+CREATE  NAMESPACE IF NOT EXISTS hive_iceberg_rest.flight_iceberg_db 
 LOCATION 's3a://flight-bucket/iceberg/'
 ```
 
 and write the data as an Iceberg table
 
 ```python
-airportsRawDF.writeTo("hive_iceberg.flight_iceberg_db.airports").create()
+airportsRawDF.writeTo("hive_iceberg_rest.flight_iceberg_db.airports").create()
 ```
 
 we can always check which table exists in a given catalog and database.
 
 ```
 %sql
-show tables in hive_iceberg.flight_iceberg_db
+show tables in hive_iceberg_rest.flight_iceberg_db
 ```
 
 Let's view the resulting objects using the `s3cmd` command line tool
@@ -450,13 +453,13 @@ Iceberg also provides convenient metadata tables that you can query directly wit
 Select either using `spark.sql()` in pyspark 
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots").show(truncate=False)
 ```
 
 or diretly using the SQL with a `%sql` directive (`%%sql` in Jupyter)
 
 ```
-%sql SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots
+%sql SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots
 ```
 
 you should get a result with one row, similar to shown below
@@ -474,11 +477,11 @@ you should get a result with one row, similar to shown below
 > **What just happened?** Iceberg stores all table history as an append-only sequence of snapshots. The `.snapshots` suffix on the table name is an Iceberg metadata table — a special virtual table that Iceberg exposes so you can query table history using plain SQL, without downloading and parsing raw Avro files. Every write operation to an Iceberg table creates a new snapshot, and the metadata tables give you a SQL interface to inspect them.
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.history").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.history").show(truncate=False)
 ```
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.files").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.files").show(truncate=False)
 ```
 
 ## Update the Iceberg Table
