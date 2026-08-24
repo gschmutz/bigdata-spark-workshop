@@ -349,34 +349,33 @@ And you should see an output similar to the one shown below.
 
 ```bash
 (venv) ubuntu@ip-172-26-6-70:~/workspace/dbt/spark_flight$ dbt debug
-18:23:01  Running with dbt=1.9.6
-18:23:01  dbt version: 1.9.6
-18:23:01  python version: 3.12.3
-18:23:01  python path: /home/ubuntu/workspace/dbt/venv/bin/python3
-18:23:01  os info: Linux-6.8.0-1018-aws-x86_64-with-glibc2.39
-WARNING:thrift.transport.sslcompat:using legacy validation callback
-18:23:01  Using profiles dir at /home/ubuntu/.dbt
-18:23:01  Using profiles.yml file at /home/ubuntu/.dbt/profiles.yml
-18:23:01  Using dbt_project.yml file at /home/ubuntu/workspace/dbt/spark_flight/dbt_project.yml
-18:23:01  adapter type: spark
-18:23:01  adapter version: 1.9.2
-18:23:01  Configuration:
-18:23:01    profiles.yml file [OK found and valid]
-18:23:01    dbt_project.yml file [OK found and valid]
-18:23:01  Required dependencies:
-18:23:02   - git [OK found]
+20:08:32  Running with dbt=1.12.3
+20:08:32  dbt version: 1.12.3
+20:08:32  python version: 3.13.5
+20:08:32  python path: /Users/guido.schmutz/workspace/dbt-spark-flight/venv/bin/python3
+20:08:32  os info: macOS-26.5.2-arm64-arm-64bit-Mach-O
+20:08:33  Using profiles dir at /Users/guido.schmutz/.dbt
+20:08:33  Using profiles.yml file at /Users/guido.schmutz/.dbt/profiles.yml
+20:08:33  Using dbt_project.yml file at /Users/guido.schmutz/workspace/dbt-spark-flight/spark_flight/dbt_project.yml
+20:08:33  adapter type: spark
+20:08:33  adapter version: 1.11.0
+20:08:33  Configuration:
+20:08:33    profiles.yml file [OK found and valid]
+20:08:33    dbt_project.yml file [OK found and valid]
+20:08:33  Required dependencies:
+20:08:34   - git [OK found]
 
-18:23:02  Connection:
-18:23:02    host: 18.158.72.138
-18:23:02    port: 28118
-18:23:02    cluster: None
-18:23:02    endpoint: None
-18:23:02    schema: flight
-18:23:02    organization: 0
-18:23:02  Registered adapter: spark=1.9.2
-18:23:02    Connection test: [OK connection ok]
+20:08:34  Connection:
+20:08:34    host: 192.168.1.112
+20:08:34    port: 28118
+20:08:34    cluster: None
+20:08:34    endpoint: None
+20:08:34    schema: flight_db
+20:08:34    organization: 0
+20:08:34  Registered adapter: spark=1.11.0
+20:08:35    Connection test: [OK connection ok]
 
-18:23:02  All checks passed!
+20:08:35  All checks passed!
 ```
 
 If it shows `All checks passed!` then we are ready to work with dbt. 
