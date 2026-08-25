@@ -75,13 +75,6 @@ services:
       SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==4.1.0
       SPARK_DEFAULTS_CONF_spark_jars: /opt/spark/jars/iceberg-spark-runtime-4.1_2.13-1.11.0.jar,/opt/spark/jars/delta-spark_2.13-4.1.0.jar,/opt/spark/jars/delta-storage-3.3.2.jar
       MAVEN_DOWNLOAD_REPO: central
-      MAVEN_DOWNLOAD_REPO_NEXUS: http://nexus:8081/repository/maven-public
-      MAVEN_DOWNLOAD_REPO_NEXUS_USER: admin
-      MAVEN_DOWNLOAD_REPO_NEXUS_PASSWORD: ${PLATYS_NEXUS_ADMIN_PASSWORD:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_jars_ivy: /opt/ivy-cache
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
-      PIP_INDEX_URL: http://nexus:8081/repository/pypi-proxy/simple/
-      PIP_TRUSTED_HOST: nexus
     volumes:
       - ./data-transfer:/data-transfer
       # the 3 conf files are mapped to conf.default folder, they are copied with env variable interpolation into conf upon start of container
@@ -165,13 +158,6 @@ services:
       SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==4.1.0
       SPARK_DEFAULTS_CONF_spark_jars: /opt/spark/jars/iceberg-spark-runtime-4.1_2.13-1.11.0.jar,/opt/spark/jars/delta-spark_2.13-4.1.0.jar,/opt/spark/jars/delta-storage-3.3.2.jar
       MAVEN_DOWNLOAD_REPO: central
-      MAVEN_DOWNLOAD_REPO_NEXUS: http://nexus:8081/repository/maven-public
-      MAVEN_DOWNLOAD_REPO_NEXUS_USER: admin
-      MAVEN_DOWNLOAD_REPO_NEXUS_PASSWORD: ${PLATYS_NEXUS_ADMIN_PASSWORD:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_jars_ivy: /opt/ivy-cache
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
-      PIP_INDEX_URL: http://nexus:8081/repository/pypi-proxy/simple/
-      PIP_TRUSTED_HOST: nexus
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/spark/hive-site.xml:/opt/spark/conf.default/hive-site.xml
@@ -250,13 +236,6 @@ services:
       SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==4.1.0
       SPARK_DEFAULTS_CONF_spark_jars: /opt/spark/jars/iceberg-spark-runtime-4.1_2.13-1.11.0.jar,/opt/spark/jars/delta-spark_2.13-4.1.0.jar,/opt/spark/jars/delta-storage-3.3.2.jar
       MAVEN_DOWNLOAD_REPO: central
-      MAVEN_DOWNLOAD_REPO_NEXUS: http://nexus:8081/repository/maven-public
-      MAVEN_DOWNLOAD_REPO_NEXUS_USER: admin
-      MAVEN_DOWNLOAD_REPO_NEXUS_PASSWORD: ${PLATYS_NEXUS_ADMIN_PASSWORD:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_jars_ivy: /opt/ivy-cache
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
-      PIP_INDEX_URL: http://nexus:8081/repository/pypi-proxy/simple/
-      PIP_TRUSTED_HOST: nexus
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/spark/hive-site.xml:/opt/spark/conf.default/hive-site.xml
@@ -337,13 +316,6 @@ services:
       SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==4.1.0
       SPARK_DEFAULTS_CONF_spark_jars: /opt/spark/jars/iceberg-spark-runtime-4.1_2.13-1.11.0.jar,/opt/spark/jars/delta-spark_2.13-4.1.0.jar,/opt/spark/jars/delta-storage-3.3.2.jar
       MAVEN_DOWNLOAD_REPO: central
-      MAVEN_DOWNLOAD_REPO_NEXUS: http://nexus:8081/repository/maven-public
-      MAVEN_DOWNLOAD_REPO_NEXUS_USER: admin
-      MAVEN_DOWNLOAD_REPO_NEXUS_PASSWORD: ${PLATYS_NEXUS_ADMIN_PASSWORD:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_jars_ivy: /opt/ivy-cache
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
-      PIP_INDEX_URL: http://nexus:8081/repository/pypi-proxy/simple/
-      PIP_TRUSTED_HOST: nexus
     volumes:
       - ./data-transfer:/data-transfer
       # the 3 conf files are mapped to conf.default folder, they are copied with env variable interpolation into conf upon start of container
@@ -415,13 +387,6 @@ services:
       SPARK_INSTALL_PYTHON_PACKAGES: numpy graphframes-py typing_extensions delta-spark==4.1.0
       SPARK_DEFAULTS_CONF_spark_jars: /opt/spark/jars/iceberg-spark-runtime-4.1_2.13-1.11.0.jar,/opt/spark/jars/delta-spark_2.13-4.1.0.jar,/opt/spark/jars/delta-storage-3.3.2.jar
       MAVEN_DOWNLOAD_REPO: central
-      MAVEN_DOWNLOAD_REPO_NEXUS: http://nexus:8081/repository/maven-public
-      MAVEN_DOWNLOAD_REPO_NEXUS_USER: admin
-      MAVEN_DOWNLOAD_REPO_NEXUS_PASSWORD: ${PLATYS_NEXUS_ADMIN_PASSWORD:-abc123!abc123!}
-      SPARK_DEFAULTS_CONF_spark_jars_ivy: /opt/ivy-cache
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
-      PIP_INDEX_URL: http://nexus:8081/repository/pypi-proxy/simple/
-      PIP_TRUSTED_HOST: nexus
     volumes:
       - ./data-transfer:/data-transfer
       # the 3 conf files are mapped to conf.default folder, they are copied with env variable interpolation into conf upon start of container
