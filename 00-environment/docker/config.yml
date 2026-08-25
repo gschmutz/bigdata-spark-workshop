@@ -297,7 +297,7 @@
       SPARK_worker_opts: '-Dspark.worker.cleanup.enabled=true'
       SPARK_jars_repositories: ''
       # spark graphframes dependency taken from here: https://mvnrepository.com/artifact/io.graphframes/graphframes-spark3
-      SPARK_jars_packages: 'org.apache.spark:spark-avro_2.13:2.4.3,io.delta:delta-spark_2.13:4.1.0,io.delta:delta-storage:4.1.0,io.graphframes:graphframes-spark4_2.13:0.12.1,io.graphframes:graphframes-graphx-spark4_2.13:0.12.1'
+      SPARK_jars_packages: 'org.apache.spark:spark-avro_2.13:4.1.1,io.delta:delta-spark_2.13:4.1.0,io.delta:delta-storage:4.1.0,io.graphframes:graphframes-spark4_2.13:0.12.1,io.graphframes:graphframes-graphx-spark4_2.13:0.12.1'
       SPARK_jars_excludes: ''
       SPARK_jars: ''
       SPARK_jars_ivySettings: ''
@@ -621,7 +621,7 @@
       ZEPPELIN_notebook_cron_enable: true
       ZEPPELIN_spark_submit_options: ""
       ZEPPELIN_use_local_spark: false
-      ZEPPELIN_python_packages: 'pyspark==3.5.3 numpy graphframes-py typing_extensions boto3'
+      ZEPPELIN_python_packages: 'pyspark[pipelines]==4.1.1 numpy graphframes-py typing_extensions boto3'
       ZEPPELIN_pyspark_driver_python_path: "/opt/conda/envs/py312/bin/python3"
       #
       # ===== Jupyter ========
@@ -631,7 +631,7 @@
       JUPYTER_edition: 'all-spark'
       JUPYTER_spark_base_version: 4.1
       JUPYTER_volume_map_data: false
-      JUPYTER_python_packages: 'pyspark==4.1.1 numpy graphframes-py typing_extensions jupysql zstandard>=0.25.0 pandas arrow pyarrow grpcio-status boto3'
+      JUPYTER_python_packages: 'pyspark[pipelines]==4.1.1 numpy graphframes-py typing_extensions jupysql zstandard>=0.25.0 pandas arrow pyarrow grpcio-status boto3'
       JUPYTER_spark_jars_packages: ''
       JUPYTER_tokenless: false
       JUPYTER_token: 'abc123!'
