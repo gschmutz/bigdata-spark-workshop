@@ -10,15 +10,14 @@ We assume that the **Data platform** described [here](../00-environment) is runn
 - [Prerequisites](#prerequisites)
 - [Accessing Spark](#accessing-spark)
   - [Using the Python API through PySpark](#using-the-python-api-through-pyspark)
-  - [Using Apache Zeppelin (used for this workshop)](#using-apache-zeppelin-used-for-this-workshop)
-  - [Using Jupyter (Alternative to Zeppelin)](#using-jupyter-alternative-to-zeppelin)
+  - [Using Jupyter](#using-jupyter)
 - [Load Source Data to Object Storage](#load-source-data-to-object-storage)
 - [Working with Spark Resilient Distributed Datasets (RDDs)](#working-with-spark-resilient-distributed-datasets-rdds)
 - [Working with Spark DataFrames](#working-with-spark-dataframes)
 
 ## What you will learn
 
-- How to access Apache Spark through PySpark (CLI), Apache Zeppelin, and Jupyter Notebook
+- How to access Apache Spark through PySpark (CLI) and Jupyter Notebook
 - How Spark's Resilient Distributed Datasets (RDDs) work and when to use them
 - How to implement a word count using the RDD API (`flatMap`, `map`, `reduceByKey`)
 - How to read and write data from/to object storage using the `s3a://` scheme
@@ -44,9 +43,8 @@ You can run batch application such as MapReduce types jobs or iterative algorith
 
 There are various ways for accessing Spark
 
- * **PySpark** - accessing Hive from the command line
- * **Apache Zeppelin** - a browser based GUI for working with various tools of the Big Data ecosystem
- * **Jupyter** - a browser based GUI for working with a Python and Spark
+ * **PySpark** - accessing Spark from the command line
+ * **Jupyter** - a browser based GUI for working with Python and Spark
 
 There is also the option to use **Thrift Server** to execute Spark SQL from any tool supporting SQL. But this is not covered in this workshop.
 
@@ -58,6 +56,8 @@ In our environment, PySpark is accessible inside the `spark-master` container.
 
 
 Now to start PySpark use the `pyspark` command. 
+
+In a terminal window (uising `wetty`)
 
 ```bash
 docker exec -ti spark-master pyspark
@@ -108,13 +108,13 @@ Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 3.5.3
+   /__ / .__/\_,_/_/ /_/\_\   version 4.1.1
       /_/
 
-Using Python version 3.12.8 (main, Dec  4 2024 00:26:17)
-Spark context Web UI available at http://3.79.56.105:4040
-Spark context available as 'sc' (master = local[*], app id = local-1747565056739).
-SparkSession available as 'spark'.
+Using Python version 3.10.12 (main, Nov  4 2025 08:48:33)
+Spark context Web UI available at http://3.71.39.194:4040
+Spark context available as 'sc' (master = local[*], app id = local-1787861021643).
+SparkSession available as 'spark'
 >>> 
 ```
 
@@ -130,47 +130,14 @@ and we should get the version back
 
 ```bash
 >>> spark.version
-'3.5.3'
+'4.1.1'
 ```
 
-> **What you should see:** The string `'3.5.3'` (or whichever Spark version is installed), confirming the session is live and responding.
+> **What you should see:** The string `'4.1.1.'` (or whichever Spark version is installed), confirming the session is live and responding.
 
-You can use `pyspark` for this workshop. But there are also two other, browser-based tools which are much more comfortable to use and which additionally allow to store the different steps as a notebook for later re-use. 
+You can use `pyspark` for this workshop. But there is also a browser-based tool which is much more comfortable to use and which additionally allows to store the different steps as a notebook for later re-use. 
 
-### Using Apache Zeppelin (used for this workshop)
-
-[Apache Zeppelin](https://zeppelin.apache.org/) is a Web-based notebook that enables data-driven,
-interactive data analytics and collaborative documents with SQL, Scala, Python, R and more. It is installed as part of the dataplatform.  
-
-In a browser window, navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin login page. 
-
-![Alt Image Text](./images/zeppelin-login.png "Zeppelin Login page")
-
-Enter `admin` into the **User Name** field and `abc123!` into the **Password** and click on **Login**. 
-
-![Alt Image Text](./images/zeppelin-welcome.png "Zeppelin Execute Shell")
-
-> **What you should see:** The Zeppelin home page showing the list of existing notes and the **Create new Note** link.
-
-Let's create a new Notebook to perform some Spark actions by clicking on the **Create new Note** link. 
-
-Enter `HelloSpark` into the **Create** field and leave the **Default Interpreter** set to **spark** and click **Create**. 
-
-An empty notebook with an empty paragraph should be shown. Again let's use the `spark.version` command by adding it to the empty cell and hit **Shift** + **Enter** to execute the statement. It will take some time to execute it, while waiting it is shown in the **PENDING** and **RUNNING** status.
-
-![Alt Image Text](./images/zeppelin-spark-execute-cell.png "Zeppelin Execute Shell")
-
-> **What you should see:** The cell transitions from **PENDING** → **RUNNING** → **FINISHED** and displays the Spark version string below the cell. The first execution takes longer as Spark initialises its executors.
-
-By default the Spark Zeppelin interpreter will be using the Scala API. To switch to the Python API, specify the directive `%pyspark` in the first line of each cell. This will be the new default for the interpreter
-
-![Alt Image Text](./images/zeppelin-spark-execute-python.png "Zeppelin Execute Shell")
-
-Zeppelin allows for mixing different interpreters in one and the same Notebook, whereas one interpreter always being the default (the one chosen when creating the notebook, **spark** in our case). 
-
-You can **use Apache Zeppelin** to perform the workshop below. An other option is to use **Jupyter**. 
-
-### Using Jupyter (Alternative to Zeppelin)
+### Using Jupyter
 
 In a browser window, navigate to <http://dataplatform:28888>. 
 
@@ -184,7 +151,7 @@ You should be forwarded to the **Jupyter** homepage. Click on the **Python 3.12.
   
 You will be forwarded to an empty notebook with a first empty cell. 
 
-Here you can enter your commands. Different to **Apache Zeppelin**, we don't have an active Spark Session at hand. We first have to create one, which is also more realistic, as we have to do that in "real-life" as well. 
+Here you can enter your commands. We first have to create a Spark Session, which is also more realistic, as we have to do that in "real-life" as well. 
 
 Add the following code to the first cell
 
@@ -247,7 +214,7 @@ Also execute a python command `print ("hello")` just to see that you are executi
 
 > **What you should see:** No visible output — the SQL magic extension loads silently. After this cell, you can use `%%sql` at the top of any cell to run SQL directly against Spark. We will use this in a later workshop.
 
-You are now setup to use **Jupyter** for performing the workshop. 
+You are now set up to use **Jupyter** for performing the workshop. 
 
 ## Load Source Data to Object Storage
 
@@ -289,30 +256,13 @@ We will be using the 2nd method in this workshop.
 
 In this section we will see how Word Count can be implemented using the Spark Python API.
 
-You can use either one of the three different ways described above to access the Spark Python environment. 
+You can paste the commands into the **PySpark** command line or into a cell in **Jupyter**. In Jupyter, make sure to first create an active Spark session using the script shown above.
 
-Just copy and paste the commands either into the **PySpark** command line or into a paragraphs in **Zeppelin** or **Jupyter**. In Zeppelin you have to switch to Python interpreter by using the following directive `%pyspark` on each paragraph.
-
-In **Jupyter** make sure to first get an active Spark session using the script shown before.
-
-To start, let's read the data into an RDD. Copy the following line into the empty cell (i.e. paragraph)
-
-if using **pyspark** and **jupyter**
+To start, let's read the data into an RDD. Copy the following line into the empty cell and press **Shift-Enter** to execute:
 
 ```python
 lines = sc.textFile("s3a://wordcount-bucket/raw-data/book/big.txt")
 ```
-
-if using **zeppelin** you need to add the additional `%pyspark` directive to switch to the pyspark executor
-
-```python
-%pyspark
-lines = sc.textFile("s3a://wordcount-bucket/raw-data/book/big.txt")
-```
-
-Click on **Shift-Enter** to execute the cell.
-
-![](./images/zeppelin-rdd-1.png)
 
 > **What you should see:** No output — `textFile` is a transformation that records where to find the data but does not read it yet. Spark is lazy: no work happens until an action is called.
 
@@ -380,9 +330,7 @@ Next let's do a wordcount using Spark DataFrames.
 
 The data needed here has been uploaded to Object Storage at the beginning. 
 
-You can use one of the three different options described above (**PySpark**, **Apache Zeppelin** or **Jupyter**) to access the Spark environment. Don't forget to add the `%pyspark` directive when using **Apache Zeppelin**.
-
-In Zeppelin or Jupyter, create a new notebook, as we have learned before. In Jupyter, create the Spark context the same way as before. 
+You can use either **PySpark** from the command line or **Jupyter** for the following steps. In Jupyter, create the Spark context the same way as before.
 
 First let's see the `spark.read` method, which is part of the `DataFrameReader`. The following statement shows that:
 
@@ -397,10 +345,6 @@ dir (spark.read)
 ```
 
 > **What you should see:** A list of method names available on the `DataFrameReader`, including `csv`, `json`, `parquet`, `text`, `orc`, and many others.
-
-and you see the method shown below the cell
-
-![Alt Image Text](./images/zeppelin-dataframe-1.png "Jupyter Execute cell")
 
 In this workshop we will be using the `text()` operation. 
 
@@ -439,8 +383,6 @@ bookDF.show()
 ```
 
 If used without any parameters, by default a maximum of 20 rows is shown. 
-
-![Alt Image Text](./images/zeppelin-dataframe-2.png "Jupyter Execute cell")
 
 > **What you should see:** The first 20 lines of `big.txt` displayed as a table with a single `value` column. This is the first action that triggers Spark to actually read the file from Object Storage.
 
