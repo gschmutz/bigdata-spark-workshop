@@ -83,7 +83,7 @@ spark = (
                 "com.amazonaws:aws-java-sdk-bundle:1.12.262")
         
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.endpoint", "http://minio-1:9000")
+        .config("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
         .config("spark.hadoop.fs.s3a.access.key", accessKey)
         .config("spark.hadoop.fs.s3a.secret.key", secretKey)
@@ -95,7 +95,7 @@ spark = (
         .config("spark.sql.catalog.hive_iceberg_rest.uri", "http://hive-metastore:9084/iceberg")
         .config("spark.sql.catalog.hive_iceberg_rest.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
         .config("spark.sql.catalog.hive_iceberg_rest.io-impl", "org.apache.iceberg.aws.s3.S3FileIO")
-        .config("spark.sql.catalog.hive_iceberg_rest.s3.endpoint", "http://minio-1:9000")
+        .config("spark.sql.catalog.hive_iceberg_rest.s3.endpoint", "http://rustfs-1:9000")
         .config("spark.sql.catalog.hive_iceberg_rest.s3.path-style-access", "true")
     
         # use "hive_iceberg_rest" as the default catalog
@@ -108,6 +108,21 @@ spark = (
 
         .getOrCreate()
 )
+```
+
+Alternatively connection over the `spark-connect` service
+
+```
+import os
+# get the accessKey and secretKey from Environment
+accessKey = os.environ['AWS_ACCESS_KEY_ID']
+secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .remote("sc://spark-connect:15002") \
+    .getOrCreate()
 ```
 
 Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
