@@ -30,7 +30,7 @@ With Spark Connect the Python script runs entirely on your local machine (or ins
 
 ## Upload the data, if no longer available
 
-The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](../01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage.
+The data needed here has been uploaded in workshop 1 — [Working with MinIO Object Storage](../01a-minio-object-storage) or [Working with RustFS Object Storage](../01b-rustfs-object-storage). You can skip this section if you still have the data available in Object Storage.
 
 Create the flight bucket:
 
@@ -50,7 +50,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/plane-data.csv s3://
 # Carriers
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/carriers.json s3://flight-bucket/raw/carriers/carriers.json
 
- #Flights
+# Flights
 docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_1.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_4_2.csv s3://flight-bucket/raw/flights/ &&
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_1.csv s3://flight-bucket/raw/flights/ &&
@@ -72,7 +72,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 
 ## Create the Spark Connect application
 
-First create a folder for the application script:
+In a terminal window, first create a folder for the application script:
 
 ```bash
 cd $DATAPLATFORM_HOME
@@ -104,15 +104,15 @@ def main(s3_bucket: str, s3_raw_path: str, s3_refined_path: str):
     s3_refined_uri = f"s3a://{s3_bucket}/{s3_refined_path}"
     print(f"Reading data from raw {s3_raw_uri} and writing to refined {s3_refined_uri}")
 
-    airportSchema = "`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING, \
-        `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER, \
-        `continent` STRING, `iso_country` STRING, `iso_region` STRING, \
-        `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING, \
-        `iata_code` STRING, `local_code` STRING, `home_link` STRING, \
-        `wikipedia_link` STRING, `keywords` STRING"
+    airportSchema = """`id` INTEGER, `ident` STRING, `type` STRING, `name` STRING,
+        `latitude_deg` DOUBLE, `longitude_deg` DOUBLE, `elevation_ft` INTEGER,
+        `continent` STRING, `iso_country` STRING, `iso_region` STRING,
+        `municipality` STRING, `scheduled_service` STRING, `gps_code` STRING,
+        `iata_code` STRING, `local_code` STRING, `home_link` STRING,
+        `wikipedia_link` STRING, `keywords` STRING"""
 
     airportsRawDF = spark.read.csv(f"{s3_raw_uri}/airports",
-                sep=",", inferSchema="false", header="true", schema=airportSchema)
+                sep=",", header="true", schema=airportSchema)
     airportsRawDF.write.mode("overwrite").json(f"{s3_refined_uri}/airports")
 
     flightSchema = """`year` INTEGER, `month` INTEGER, `dayOfMonth` INTEGER,  `dayOfWeek` INTEGER, `depTime` INTEGER, `crsDepTime` INTEGER, `arrTime` INTEGER, `crsArrTime` INTEGER, `uniqueCarrier` STRING, `flightNum` STRING, `tailNum` STRING, `actualElapsedTime` INTEGER,\
@@ -170,7 +170,7 @@ python /home/jovyan/data-transfer/app-connect/prep_refined.py \
 
 > **Note:** Inside Jupyter the `/home/jovyan/data-transfer/` path maps to the same `data-transfer/` volume mounted on the host.
 
-**Option B — Run from the host machine** (requires `pyspark` installed locally and `spark-connect` reachable on `dataplatform:15002`):
+**Option B — Run from the host machine** (requires `pyspark` installed locally and `spark-connect` to be reachable on `dataplatform:15002`. In the Python application, in the `remote` call replace `spark-connect` with `dataplatform` or the IP address of the machine the data platform is running on):
 
 ```bash
 python ./data-transfer/app-connect/prep_refined.py \
@@ -187,7 +187,7 @@ Reading data from raw s3a://flight-bucket/raw and writing to refined s3a://fligh
 
 followed by Spark progress lines as the jobs execute. The script finishes in a few seconds once both write operations complete.
 
-> **What just happened?** The Python process on your machine connected to the `spark-connect` service over gRPC (port 15002). The service translated the DataFrame operations into Spark jobs and executed them on the cluster — reading from RustFS and writing Parquet/JSON back to RustFS. Your local process never touched the data directly.
+> **What just happened?** The Python process on your machine connected to the `spark-connect` service over gRPC (port 15002). The service translated the DataFrame operations into Spark jobs and executed them on the cluster — reading from Object Storage and writing Parquet/JSON back to Object Storage. Your local process never touched the data directly.
 
 ## Verify the output in Object Storage
 
