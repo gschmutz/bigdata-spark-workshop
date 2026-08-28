@@ -6,14 +6,14 @@ We assume that the **Data Platform** described [here](../00-environment) is runn
 
 The same flight and airport data as in the [Object Storage Workshop](../02-object-storage/README.md) will be used. We will show later how to re-upload the files, if you no longer have them available.
 
-We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from either `pyspark`, Apache Zeppelin or Jupyter Notebook. 
+We assume that you have done Workshop 3 **Getting Started using Spark RDD and DataFrames**, where you have learnt how to use Spark from either `pyspark` or Jupyter Notebook. 
 
 ## Table of Contents
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
 - [Load the data, if no longer available](#prepare-the-data-if-no-longer-available)
-- [Create a new Zeppelin notebook](#create-a-new-zeppelin-notebook)
+- [Create a new Jupyter notebook](#create-a-new-jupyter-notebook)
 - [Working with the Airport Data](#working-with-the-airport-data)
 - [Working with Carriers Data](#working-with-carriers-data)
 - [Working with Flights Data](#working-with-flights-data)
@@ -70,19 +70,7 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
-## Create a new Zeppelin or Jupyter notebook
-
-**Using Apache Zeppelin**
-
-Navigate to <http://dataplatform:28080> and you should see the Apache Zeppelin login page. Login with `admin` as the **User Name** and `abc123!` as the **Password** and click on **Login**. 
-
-Now create a new notebook by clicking on the **Create new note** link and set the **Note Name** to `SparkDataFrame` and set the **Default Interpreter** to `spark`. 
-
-Click on **Create Note** and a new Notebook is created with one cell which is empty. 
-
-> **What you should see:** An empty notebook named `SparkDataFrame` with a single empty paragraph ready for input.
-
-**Using Jupyter**
+## Create a new Jupyter notebook
 
 Navigate to <http://dataplatform:28888> and on the Jupyter login page enter `abc123!` for the **Password or token** and click on **Log in**. 
 
@@ -137,45 +125,27 @@ Also enable sql magic by executing the following commands in a new cell (this wi
 
 ### Add some Markdown first
 
-Navigate to the first cell and start with a title. 
+Navigate to the first cell and start with a title. Change the drop-down in the menu bar from **Code** to **Markdown** and enter:
 
-In **Zeppelin**, by using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
 ```
-%md 
 # Spark DataFrame sample with flights data
 ```
 
-Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
-
-> **What you should see:** The markdown source is replaced by a rendered **Heading 1** title: *Spark DataFrame sample with flights data*.
-
-In **Jupyter**, you can do the same by changing the drop-down in the menu bar from **Code** to **Markdown**.
+Press **Shift** + **Enter** to render. The markdown code should now be rendered as a Heading-1 title.
 
 ![Alt Image Text](./images/jupyter-markdown.png "Jupyter Markdown cell")
 
-The markdown code should now be rendered as a Heading-1 title.
-
 ## Working with the Airport Data
-
-First add another title, this time as a Heading-2.
-
-```
-%md 
-## Working with the Airport data
-```
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`. 
 
-First we have to import the spark python API. In Zeppelin, use the `%pyspark` directive to switch to the PySpark interpreter.
+First we have to import the Spark Python API.
 
 ```python
-%pyspark
 from pyspark.sql.types import *
 ```
 
 > **What you should see:** No output — the import executes silently. The PySpark type classes are now available in subsequent cells.
-
-We will no longer show the `%pyspark` directive in the following statements.
 
 Next let's import the flights data into a DataFrame and show the first 5 rows. We use `header=true` to use the header line for naming the columns and specify to infer the schema
  
@@ -207,8 +177,6 @@ airportsRawDF.show(5)
 ```
 
 The output will show the header line followed by the 5 data lines.
-
-![Alt Image Text](./images/zeppelin-show-airports-raw.png "Zeppelin Welcome Screen")
 
 Now let's display the schema, which in that case matches of course the schema we defined before:
 
@@ -265,13 +233,6 @@ airportsRawDF.write.json("s3a://flight-bucket/refined/airports")
 Check that the file has been written to Object Storage using either one of the techniques seen before. 
 
 ## Working with Carriers Data
-
-First add a heading cell.
-
-```
-%md 
-## Working with the Carriers data
-```
 
 Now let's work with the Carriers data, which we have uploaded to `s3://flight-bucket/raw/carriers/`.
 
@@ -333,17 +294,8 @@ carriersRawDF.count()
 
 ## Working with Flights Data
 
-First add another title, this time as a Heading-2.
-
-```python
-%md 
-## Working with the Flights data
-```
-
 Let's now start working with the Flights data, which we have uploaded with the various files within the `s3://flight-bucket/raw/flights/`.
 
-Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
- 
 Let's see the data in the `flight-bucket` bucket in Object Storage. In a terminal window execute the following `s3cmd` 
 
 ```
@@ -386,8 +338,6 @@ flightsRawDF.show(5)
 ```
 	
 The output will show the header line followed by the 5 data lines.
-
-![Alt Image Text](./images/zeppelin-show-flights-raw.png "Zeppelin Welcome Screen")
 
 > **What you should see:** A table with 5 rows of flight data with 29 columns — year, month, day, departure/arrival times, carrier, flight number, origin, destination, distance, and delay fields.
 
@@ -528,21 +478,17 @@ and you will see part of the data as a table
 only showing top 20 rows
 ```
 
-> **What you should see:** The first 20 rows of the airports table with all 18 columns. The wide table will likely wrap in the terminal — use the `%sql` directive in Zeppelin for a cleaner view.
+> **What you should see:** The first 20 rows of the airports table with all 18 columns. The wide table will likely wrap in the terminal.
 
-But in Zeppelin and Jupyter testing such a statement is even easier. You can use the `%sql` directive (`%%sql` in Jupyter) to directly perform an SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit. 
+You can use the `%%sql` cell magic in Jupyter to directly perform a SQL statement without having to wrap it in a `spark.sql()` statement. This simplifies ad-hoc testing quite a bit.
 
 ```sql
-%sql
+%%sql
 SELECT * 
 FROM airports
 ```
 
-and you see the result as a nicely formatted table (replace `%sql` by `%%sql` if using Jupyter)
-
-![Alt Image Text](./images/zeppelin-sql-result.png "Zeppelin Welcome Screen")
-
-> **What you should see:** A paginated, scrollable table in the Zeppelin UI showing all airport columns with proper alignment — much more readable than the raw `show()` output.
+> **What you should see:** A paginated, scrollable table showing all airport columns with proper alignment — much more readable than the raw `show()` output.
 
 Let's see some other SQL statement in action, first with a `GROUP BY`
 
@@ -565,7 +511,7 @@ GROUP BY iso_country,  iso_region
 
 > **What you should see:** Rows for US regions only (e.g. `US-CA`, `US-TX`, `US-FL`, ...) with their airport counts, filtered down from the full global result.
 
-Once a SQL statement is producing the right result, you can wrap it in a `spark.sql()` using the convenient tripe double quotes. In Zepplin, make sure to use the `%pyspark` directive, because it is a pyspark statement.
+Once a SQL statement is producing the right result, you can wrap it in a `spark.sql()` using the convenient triple double quotes.
 
 ```sql
 usAirportsByStateDF = spark.sql("""
@@ -584,7 +530,7 @@ You can now use the data frame and persist it to S3 if you wish. We will see tha
 **Note**: If you perform a SELECT on the flights table using one or more of the partition columns, the query will prune the non-used partitions and only read the necessary files for the needed partitions
 
 ```sql
-%sql
+%%sql
 SELECT * 
 FROM flights
 WHERE year = 2008 
@@ -613,10 +559,10 @@ airportsRawDF.select(airportsRawDF['iso_country'], airportsRawDF['iso_region']) 
 
 Last but not least let's use the `airports` table to enrich the values returned by the `flights` table so we have more information on the origin and destination airport. 
 
-If we know SQL, we know that this can be done using a JOIN between two tables. The same syntax is also valid in Spark SQL. Following the techniques learned above, let's first test it using the handy %sql directive. 
+If we know SQL, we know that this can be done using a JOIN between two tables. The same syntax is also valid in Spark SQL. Following the techniques learned above, let's first test it using the `%%sql` cell magic.
 
 ```sql
-%sql
+%%sql
 SELECT ao.name AS origin_airport
 		, ao.type AS origin_type
 		, ao.municipality AS orign_municipality
@@ -697,7 +643,7 @@ flightsRefinedDF.alias("f") \
 Let's see the the 10 longest flights in descending order with `origin` and `destination`
 
 ```sql
-%sql
+%%sql
 SELECT origin, destination, distance 
 FROM (SELECT origin, destination, MAX(distance) distance
       FROM flights
@@ -711,7 +657,7 @@ LIMIT 10
 Let's categorize the various delays
 
 ```sql
-%sql
+%%sql
 SELECT arrDelay, origin, destination,
     CASE
          WHEN arrDelay > 360 THEN 'Very Long Delays'
@@ -729,7 +675,7 @@ FROM flights
 and with that get an overview of the 
 
 ```sql
-%sql
+%%sql
 SELECT year, month, flight_delay, count(*) AS count
 FROM (
     SELECT year, month, arrDelay, origin, destination,
@@ -755,7 +701,7 @@ So far we have only worked with temporary views, which are only visible while th
 But we can also create permanent tables which will survive a Spark session. First we have to create a database 
 
 ```sql
-%sql
+%%sql
 CREATE DATABASE IF NOT EXISTS flight_db;
 ```
 
@@ -764,7 +710,7 @@ CREATE DATABASE IF NOT EXISTS flight_db;
 and then we create the table within that database
 
 ```sql
-%sql
+%%sql
 CREATE TABLE flight_db.count_delaygroups_t
 AS
 SELECT year, month, flight_delay, count(*) AS count
@@ -790,13 +736,9 @@ GROUP BY year, month, flight_delay
 If we execute a `show tables` command
 
 ```sql
-%sql
+%%sql
 show tables from flight_db;
 ```
-
-we can see the two temporary tables with the additional permanent table just created:
-
-![](./images/zeppelin-show-tables.png)
 
 > **What you should see:** Three entries — `airports` and `flights` as temporary views (isTemporary=true) and `count_delaygroups_t` as a permanent table (isTemporary=false).
 
@@ -819,7 +761,7 @@ Time taken: 3.358 seconds, Fetched 2 row(s)
 spark-sql>
 ```
 
-> **What you should see:** Two databases listed — `default` and `flight_db` — confirming the database created in Zeppelin is visible from the CLI as well (both share the same metastore).
+> **What you should see:** Two databases listed — `default` and `flight_db` — confirming the database created in Jupyter is visible from the CLI as well (both share the same metastore).
 
 switch to the database and 
 
