@@ -153,7 +153,22 @@ You will be forwarded to an empty notebook with a first empty cell.
 
 Here you can enter your commands. We first have to create a Spark Session, which is also more realistic, as we have to do that in "real-life" as well. 
 
-Add the following code to the first cell
+We can either do that via Spark Connect (modern way since Spark 3.5) or creating a Spark Session in the more traditional way. Spark Connect is available on our platform, so that is the preferred option in general. But if you want to work with RDDs (the first section below), then you need a Spark Context and that is not supported by Spark Connect. Spark Connect only supports working with the more modern DataFrames. So if this is the case, then use the 2nd option to connect from Jupyter to spark.
+
+Add one of the following code blocks into the first cell
+
+ * for **Spark Connect**
+
+```
+from pyspark.sql import SparkSession:
+
+spark = SparkSession.builder \
+    .remote("sc://spark-connect:15002") \
+    .appName("Jupyter") \
+    .getOrCreate()
+```
+
+ * for the **traditional Spark Session** option:
 
 ```python
 import os
@@ -251,8 +266,6 @@ There are three methods for creating a RDD:
  3. Create a RDD by transforming an existing RDD to create a new RDD.
 
 We will be using the 2nd method in this workshop.
-
-### Implementing Wordcount using Spark Python API
 
 In this section we will see how Word Count can be implemented using the Spark Python API.
 

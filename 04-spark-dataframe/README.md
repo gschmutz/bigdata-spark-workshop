@@ -44,7 +44,7 @@ We assume that you have done Workshop 3 **Getting Started using Spark RDD and Da
 
 The data needed here has been uploaded in workshop 2 - [Working with RustFS Object Storage](01b-rustfs-object-storage). You can skip this section, if you still have the data available in Object Storage. We show both `s3cmd` and the `mc` version of the commands:
 
-Create the flight bucket:
+Create the flight bucket by executing the following command in a terminal window (i.e. wetty):
 
 ```bash
 docker exec -ti awscli s3cmd mb s3://flight-bucket
@@ -76,7 +76,24 @@ Navigate to <http://dataplatform:28888> and on the Jupyter login page enter `abc
 
 Create a new notebook by clicking on the **Python 3.12.8 (ipykernel)** icon.
 
-To connect to Spark, execute the following block in the 1st cell.
+To connect to Spark, execute one of the following 2 block in the 1st cell.
+
+We can either do that via Spark Connect (modern way since Spark 3.5) or creating a Spark Session in the more traditional way. Spark Connect is available, so that is the preferred option
+
+Add one of the following code blocks into the first cell
+
+ 1. for **Spark Connect**
+
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .remote("sc://spark-connect:15002") \
+    .appName("Jupyter") \
+    .getOrCreate()
+```
+
+ 2. for the **traditional Spark Session** option:
 
 ```python
 import os
@@ -108,11 +125,9 @@ conf.set("spark.hadoop.hive.metastore.uris", "thrift://hive-metastore:9083")
 
 spark = SparkSession.builder.appName('Jupyter').config(conf=conf).getOrCreate()
 spark.sparkContext.setLogLevel("INFO")
-
-sc = spark.sparkContext
 ```
 
-Also enable sql magic by executing the following commands in a new cell (this will enable the `%%sql` directive to execute plain SQL statements)
+Now enable sql magic on the Spark connection by executing the following commands in a new cell (this will enable the `%%sql` directive to execute plain SQL statements)
 
 ```python
 %load_ext sql
