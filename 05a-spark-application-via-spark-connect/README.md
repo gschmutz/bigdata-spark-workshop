@@ -187,7 +187,7 @@ Reading data from raw s3a://flight-bucket/raw and writing to refined s3a://fligh
 
 followed by Spark progress lines as the jobs execute. The script finishes in a few seconds once both write operations complete.
 
-> **What just happened?** The Python process on your machine connected to the `spark-connect` service over gRPC (port 15002). The service translated the DataFrame operations into Spark jobs and executed them on the cluster — reading from Object Storage and writing Parquet/JSON back to Object Storage. Your local process never touched the data directly.
+> **What just happened?** The Python process on your machine connected to the `spark-connect` service over gRPC (port 15002). The service translated the DataFrame operations into Spark jobs and executed them on the cluster — reading from RustFS and writing Parquet/JSON back to RustFS. Your local process never touched the data directly.
 
 ## Verify the output in Object Storage
 
