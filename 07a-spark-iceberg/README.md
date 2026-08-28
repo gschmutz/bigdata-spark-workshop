@@ -47,18 +47,29 @@ docker exec -ti awscli s3cmd put /data-transfer/airport-data/airports.csv s3://f
 
 ## Working with Spark and Iceberg table
 
-In a browser window, navigate to 
+Navigate to <http://dataplatform:28888> and on the Jupyter login page enter `abc123!` for the **Password or token** and click on **Log in**.
 
-  * for Zeppelin:  <http://dataplatform:28080>
-  * for Jupyter: <http://dataplatform:28888>
+Create a new notebook by clicking on the **Python 3.12.8 (ipykernel)** icon and name it `SparkIceberg`.
 
-Now let's create a new notebook and name it `SparkIceberg`. 
+To connect to Spark, execute one of the following 2 blocks in the 1st cell.
 
-For **Jupyter**, perform the next paragraph, for **Apache Zeppelin**, this is not necessary and the Spark context is pre-configured.
+We can either do that via Spark Connect (available since Spark 3.4) or by creating a Spark Session in the more traditional way. Spark Connect is available and pre-configured with the Iceberg catalog, so that is the preferred option for most cells.
 
-### If you are using Jupyter
+> **Note:** If you use the traditional Spark Session option you have full control over the Iceberg catalog configuration but need to provide more settings (see option 2 below).
 
-You have to create the Spark context with additional configuration settings in the init script:
+Add one of the following code blocks into the first cell.
+
+ 1. for **Spark Connect** (preferred):
+
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .remote("sc://spark-connect:15002") \
+    .getOrCreate()
+```
+
+ 2. for the **traditional Spark Session** option (with explicit Iceberg catalog config):
 
 ```python
 import os
@@ -74,14 +85,13 @@ spark = (
 
         # Limit total cores across all executors
         .config("spark.cores.max", "2")
-        
-        # .config("spark.jars.repositories", "http://admin:abc123!abc123!@nexus:8081/repository/maven-public")
+
         .config("spark.jars.packages",
                 "org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0,"
                 "org.apache.iceberg:iceberg-aws-bundle:1.11.0,"
                 "org.apache.hadoop:hadoop-aws:3.3.4,"
                 "com.amazonaws:aws-java-sdk-bundle:1.12.262")
-        
+
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         .config("spark.hadoop.fs.s3a.endpoint", "http://rustfs-1:9000")
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
@@ -97,7 +107,7 @@ spark = (
         .config("spark.sql.catalog.hive_iceberg_rest.io-impl", "org.apache.iceberg.aws.s3.S3FileIO")
         .config("spark.sql.catalog.hive_iceberg_rest.s3.endpoint", "http://rustfs-1:9000")
         .config("spark.sql.catalog.hive_iceberg_rest.s3.path-style-access", "true")
-    
+
         # use "hive_iceberg_rest" as the default catalog
         .config("spark.sql.defaultCatalog", "hive_iceberg_rest")
 
@@ -108,21 +118,6 @@ spark = (
 
         .getOrCreate()
 )
-```
-
-Alternatively connection over the `spark-connect` service
-
-```
-import os
-# get the accessKey and secretKey from Environment
-accessKey = os.environ['AWS_ACCESS_KEY_ID']
-secretKey = os.environ['AWS_SECRET_ACCESS_KEY']
-
-from pyspark.sql import SparkSession
-
-spark = SparkSession.builder \
-    .remote("sc://spark-connect:15002") \
-    .getOrCreate()
 ```
 
 Also enable sql magic in Jupyter (this will enable the `%%sql` directive to execute plain SQL statements)
@@ -138,29 +133,19 @@ Also enable sql magic in Jupyter (this will enable the `%%sql` directive to exec
 
 ### Add some Markdown first
 
-Navigate to the first cell and start with a title. By using the `%md` directive we can switch to the Markdown interpreter, which can be used for displaying static text.
+Navigate to the first cell and start with a title. Change the drop-down in the menu bar from **Code** to **Markdown** and enter:
 
 ```
-%md 
 # Spark Iceberg sample with airport data
 ```
 
-Click on the **>** symbol on the right or enter **Shift** + **Enter** to run the paragraph.
-
-The markdown code should now be rendered as a Heading-1 title.
+Press **Shift** + **Enter** to render. The markdown code should now be rendered as a Heading-1 title.
 
 ## Read the airport data and store it as an Iceberg Table
-
-First add another title, this time as a Heading-2.
-
-```
-%md 
-## Read the airport data and store it as an Iceberg Table
-```
 
 Now let's work with the Airports data, which we have uploaded to `s3://flight-bucket/raw/airports/`.
 
-First import the required Spark Python API. Don't forget to add the `%pyspark` directive in Zeppelin:
+First import the required Spark Python API.
 
 ```python
 from pyspark.sql.types import *
@@ -204,10 +189,10 @@ you can either do it using `spark.sql()` to execute the Spark SQL statement
 spark.sql("CREATE NAMESPACE IF NOT EXISTS hive_iceberg_rest.flight_iceberg_db LOCATION 's3a://flight-bucket/iceberg/'")
 ```
 
-or execute it directly using the `%sql` directive (or `%%sql` if using Jupyter)
+or execute it directly using the `%%sql` cell magic in Jupyter
 
 ```sql
-%sql
+%%sql
 CREATE  NAMESPACE IF NOT EXISTS hive_iceberg_rest.flight_iceberg_db 
 LOCATION 's3a://flight-bucket/iceberg/'
 ```
@@ -220,8 +205,8 @@ airportsRawDF.writeTo("hive_iceberg_rest.flight_iceberg_db.airports").create()
 
 we can always check which table exists in a given catalog and database.
 
-```
-%sql
+```sql
+%%sql
 show tables in hive_iceberg_rest.flight_iceberg_db
 ```
 
@@ -474,10 +459,11 @@ Select either using `spark.sql()` in pyspark
 spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots").show(truncate=False)
 ```
 
-or diretly using the SQL with a `%sql` directive (`%%sql` in Jupyter)
+or directly using the `%%sql` cell magic in Jupyter
 
-```
-%sql SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots
+```sql
+%%sql
+SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots
 ```
 
 you should get a result with one row, similar to shown below
@@ -596,10 +582,10 @@ spark.sql("""
 	WHERE ident IN ('00A','ADD')
 """).show()
 ```
-or the `%sql` directive (again `%%sql` if using Jupyter)
+or the `%%sql` cell magic in Jupyter
 
 ```sql
-%sql
+%%sql
 SELECT * 
 FROM hive_iceberg_rest.flight_iceberg_db.airports
 WHERE ident IN ('00A','ADD')

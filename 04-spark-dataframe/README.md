@@ -76,9 +76,11 @@ Navigate to <http://dataplatform:28888> and on the Jupyter login page enter `abc
 
 Create a new notebook by clicking on the **Python 3.12.8 (ipykernel)** icon.
 
-To connect to Spark, execute one of the following 2 block in the 1st cell.
+To connect to Spark, execute one of the following 2 blocks in the 1st cell.
 
-We can either do that via Spark Connect (modern way since Spark 3.5) or creating a Spark Session in the more traditional way. Spark Connect is available, so that is the preferred option
+We can either do that via Spark Connect (available since Spark 3.4) or by creating a Spark Session in the more traditional way. Spark Connect is available, so that is the preferred option for most cells.
+
+> **Note:** The sections on permanent tables (`CREATE DATABASE`, `CREATE TABLE`) require a Hive metastore connection. In our setup this is the case, the Spark Connect server is configured with a Hive metastore. When using the **traditional Spark Session** option instead, you have all of that under control, but need to provide more configurations.
 
 Add one of the following code blocks into the first cell
 
