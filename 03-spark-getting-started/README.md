@@ -159,8 +159,8 @@ Add one of the following code blocks into the first cell
 
  * for **Spark Connect**
 
-```
-from pyspark.sql import SparkSession:
+```python
+from pyspark.sql import SparkSession
 
 spark = SparkSession.builder \
     .remote("sc://spark-connect:15002") \
