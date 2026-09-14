@@ -838,7 +838,7 @@ We can test the JDBC/ODBC server easily using the Beeline CLI.
 In a terminal window perform
 
 ```bash 
-docker exec -ti spark-thriftserver /opt/bitnami/spark/bin/beeline
+docker exec -ti spark-thriftserver /opt/spark/bin/beeline
 ```
 
 and connect to Spark Thrift Server 
