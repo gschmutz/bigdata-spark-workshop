@@ -1,0 +1,6 @@
+pyspark
+pandas
+pyarrow
+zstandard
+grpcio
+grpcio-status

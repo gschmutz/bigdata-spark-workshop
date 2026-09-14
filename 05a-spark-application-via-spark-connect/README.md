@@ -25,7 +25,6 @@ With Spark Connect the Python script runs entirely on your local machine (or ins
 
 - The **Data Platform** described [here](../00-environment) is running and accessible, including the `spark-connect` service
 - Workshop 4 ([Data Reading and Writing using DataFrames](../04-spark-dataframe)) completed
-- `pyspark` installed locally (`pip install pyspark`) **or** the script run from the Jupyter terminal
 - Airport and flight data uploaded to Object Storage (instructions provided if needed)
 
 ## Upload the data, if no longer available
@@ -96,7 +95,7 @@ from pyspark.sql.types import *
 def main(s3_bucket: str, s3_raw_path: str, s3_refined_path: str):
 
     spark = SparkSession.builder \
-        .remote("sc://spark-connect:15002") \
+        .remote("sc://dataplatform:15002") \
         .appName("FlightTransform") \
         .getOrCreate()
 
@@ -149,6 +148,41 @@ Save with `Ctrl-O` and exit with `Ctrl-X`.
 > 2. The script is a plain Python file — it does not need to be copied into the Spark container.
 > 3. `spark.sparkContext` is not used anywhere, which is correct: Spark Connect does not expose the low-level `SparkContext` API to the client.
 
+
+## Create virtual environment and install dependencies
+
+Before running the script locally, create an isolated Python environment so the packages don't interfere with your system Python:
+
+```bash
+python -m venv venv
+```
+
+Activate the environment (you'll see `(venv)` in your prompt afterwards):
+
+```bash
+source venv/bin/activate
+```
+
+A `requirements.txt` is provided in this folder. It lists all packages needed to run a Spark Connect client:
+
+| Package | Purpose |
+|---------|---------|
+| `pyspark` | PySpark library — provides `SparkSession`, DataFrame API, etc. |
+| `pandas` | Used internally by Spark Connect to transfer small result sets back to the client |
+| `pyarrow` | Arrow is the wire format between the Spark Connect client and server (required for serialization) |
+| `zstandard` | Compression codec used by Spark Connect's gRPC transport |
+| `grpcio` | gRPC runtime — Spark Connect communicates over gRPC, so this is the actual transport layer |
+| `grpcio-status` | Adds structured error status codes to gRPC responses so Spark Connect can report meaningful exceptions |
+
+> **Why so many packages?** When running PySpark via `spark-submit` inside the cluster, the gRPC and Arrow stack is bundled on the JVM side. As a standalone Spark Connect client you need them as Python packages.
+
+Install all dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+
 ## Execute the application
 
 Before running, clear the `refined` folder so there are no conflicts with existing data:
@@ -156,19 +190,6 @@ Before running, clear the `refined` folder so there are no conflicts with existi
 ```bash
 docker exec -ti awscli s3cmd del --recursive s3://flight-bucket/refined
 ```
-
-**Option A — Run from the Jupyter terminal** (recommended, no local Python setup needed):
-
-Navigate to <http://dataplatform:28888>, open a **Terminal** from the Launcher, and run:
-
-```bash
-python /home/jovyan/data-transfer/app-connect/prep_refined.py \
-  --s3-bucket flight-bucket \
-  --s3-raw-path raw \
-  --s3-refined-path refined
-```
-
-> **Note:** Inside Jupyter the `/home/jovyan/data-transfer/` path maps to the same `data-transfer/` volume mounted on the host.
 
 **Option B — Run from the host machine** (requires `pyspark` installed locally and `spark-connect` to be reachable on `dataplatform:15002`. In the Python application, in the `remote` call replace `spark-connect` with `dataplatform` or the IP address of the machine the data platform is running on):
 
