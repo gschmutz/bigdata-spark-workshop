@@ -472,7 +472,7 @@ airportsRawDF.createOrReplaceTempView("airports")
 We can always display the registered tables by using the following statement:
 
 ```python
-spark.sql("show tables").show()
+spark.sql("show tables in spark_catalog.default").show()
 ```
 
 > **What you should see:** A table listing `airports` and `flights` as temporary views (with `isTemporary = true`).
