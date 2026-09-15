@@ -510,6 +510,7 @@ FROM airports
 Let's see some other SQL statement in action, first with a `GROUP BY`
 
 ```sql
+%%sql
 SELECT iso_country, iso_region, count(*)
 FROM airports
 GROUP BY iso_country,  iso_region
@@ -520,6 +521,7 @@ GROUP BY iso_country,  iso_region
 If we only want to see the ones for the USA, we add a `WHERE` clause
 
 ```sql
+%%sql
 SELECT iso_country, iso_region, count(*)
 FROM airports
 WHERE iso_country = 'US'
