@@ -509,9 +509,7 @@ newAirportsData = [(999, "ADD", "small_airport", "This is a new airport", 0.0, 0
 Let's create a DataFrame from it:
 
 ```python
-newAirportsRDD = spark.sparkContext.parallelize(newAirportsData)
-
-newAirportsDF = spark.createDataFrame(newAirportsRDD, airportsRawDF.schema)
+newAirportsDF = spark.createDataFrame(newAirportsData, airportsRawDF.schema)
 newAirportsDF.show()
 ```
 
@@ -679,7 +677,7 @@ print ("Redcover to timestamp: " + commitedAt)
 spark.sql(f"""
     SELECT *
     FROM hive_iceberg.flight_iceberg_db.airports
-    TIMESTAMP AS OF '{timestamp}'
+    TIMESTAMP AS OF '{commitedAt}'
     WHERE ident IN ('00A','ADD')
 """).show()
 ```
