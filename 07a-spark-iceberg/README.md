@@ -99,6 +99,15 @@ spark = (
         .config("spark.hadoop.fs.s3a.secret.key", secretKey)
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
 
+        # ==== Iceberg catalog (Hive Metastore Iceberg Thrift) ===
+        .config("spark.sql.catalog.hive_iceberg", "org.apache.iceberg.spark.SparkCatalog")
+        .config("spark.sql.catalog.hive_iceberg.type", "hive")
+        .config("spark.sql.catalog.hive_iceberg.uri", "thrift://hive-metastore:9083")
+        .config("spark.sql.catalog.hive_iceberg.warehouse.dir", "s3a://admin-bucket/iceberg/warehouse")
+        .config("spark.sql.catalog.hive_iceberg.io-impl", "org.apache.iceberg.aws.s3.S3FileIO")
+        .config("spark.sql.catalog.hive_iceberg.s3.endpoint", "http://rustfs-1:9000")
+        .config("spark.sql.catalog.hive_iceberg.s3.path-style-access", "true")
+
         # ==== Iceberg catalog (Hive Metastore Iceberg REST API) ===
         .config("spark.sql.catalog.hive_iceberg_rest", "org.apache.iceberg.spark.SparkCatalog")
         .config("spark.sql.catalog.hive_iceberg_rest.type", "rest")
@@ -109,7 +118,7 @@ spark = (
         .config("spark.sql.catalog.hive_iceberg_rest.s3.path-style-access", "true")
 
         # use "hive_iceberg_rest" as the default catalog
-        .config("spark.sql.defaultCatalog", "hive_iceberg_rest")
+        .config("spark.sql.defaultCatalog", "hive_iceberg")
 
         .config(
             "spark.sql.extensions",
@@ -169,7 +178,7 @@ airportsRawDF.show(5)
 The output will show the header line followed by the 5 data lines.
 
 ```
-+------+-----+-------------+--------------------+-----------------+------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------+--------+
++------+-----+-------------+--------------------+-----------------+------------------+------------+---------+-----------+----------+------------+----------------+--------+---------+----------+--------------------+--------------+--------+
 |    id|ident|         type|                name|     latitude_deg|     longitude_deg|elevation_ft|continent|iso_country|iso_region|municipality|scheduled_service|gps_code|iata_code|local_code|           home_link|wikipedia_link|keywords|
 +------+-----+-------------+--------------------+-----------------+------------------+------------+---------+-----------+----------+------------+-----------------+--------+---------+----------+--------------------+--------------+--------+
 |  6523|  00A|     heliport|   Total RF Heliport|        40.070985|        -74.933689|          11|       NA|         US|     US-PA|    Bensalem|               no|    K00A|     NULL|       00A|https://www.pennd...|          NULL|    NULL|
@@ -186,28 +195,28 @@ Now let's write the data as an Iceberg table. We use the `hive_iceberg` catalog 
 you can either do it using `spark.sql()` to execute the Spark SQL statement
 
 ```python
-spark.sql("CREATE NAMESPACE IF NOT EXISTS hive_iceberg_rest.flight_iceberg_db LOCATION 's3a://flight-bucket/iceberg/'")
+spark.sql("CREATE NAMESPACE IF NOT EXISTS hive_iceberg.flight_iceberg_db LOCATION 's3a://flight-bucket/iceberg/'")
 ```
 
 or execute it directly using the `%%sql` cell magic in Jupyter
 
 ```sql
 %%sql
-CREATE  NAMESPACE IF NOT EXISTS hive_iceberg_rest.flight_iceberg_db 
+CREATE  NAMESPACE IF NOT EXISTS hive_iceberg.flight_iceberg_db 
 LOCATION 's3a://flight-bucket/iceberg/'
 ```
 
 and write the data as an Iceberg table
 
 ```python
-airportsRawDF.writeTo("hive_iceberg_rest.flight_iceberg_db.airports").create()
+airportsRawDF.writeTo("hive_iceberg.flight_iceberg_db.airports").create()
 ```
 
 we can always check which table exists in a given catalog and database.
 
 ```sql
 %%sql
-show tables in hive_iceberg_rest.flight_iceberg_db
+show tables in hive_iceberg.flight_iceberg_db
 ```
 
 Let's view the resulting objects using the `s3cmd` command line tool
@@ -456,14 +465,14 @@ Iceberg also provides convenient metadata tables that you can query directly wit
 Select either using `spark.sql()` in pyspark 
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots").show(truncate=False)
 ```
 
 or directly using the `%%sql` cell magic in Jupyter
 
 ```sql
 %%sql
-SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots
+SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots
 ```
 
 you should get a result with one row, similar to shown below
@@ -481,11 +490,11 @@ you should get a result with one row, similar to shown below
 > **What just happened?** Iceberg stores all table history as an append-only sequence of snapshots. The `.snapshots` suffix on the table name is an Iceberg metadata table — a special virtual table that Iceberg exposes so you can query table history using plain SQL, without downloading and parsing raw Avro files. Every write operation to an Iceberg table creates a new snapshot, and the metadata tables give you a SQL interface to inspect them.
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.history").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.history").show(truncate=False)
 ```
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.files").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.files").show(truncate=False)
 ```
 
 ## Update the Iceberg Table
@@ -518,7 +527,7 @@ Now perform the merge using Iceberg's SQL MERGE INTO statement:
 
 ```python
 spark.sql("""
-    MERGE INTO hive_iceberg_rest.flight_iceberg_db.airports AS target
+    MERGE INTO hive_iceberg.flight_iceberg_db.airports AS target
     USING newAirports AS source
     ON target.ident = source.ident
     WHEN MATCHED THEN UPDATE SET *
@@ -555,7 +564,7 @@ We can also alternatively use the RustFS console to see the data
 or by querying the `snapshots` Iceberg metadata table
 
 ```python
-spark.sql("SELECT * FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots").show(truncate=False)
+spark.sql("SELECT * FROM hive_iceberg.flight_iceberg_db.airports.snapshots").show(truncate=False)
 ```
 
 You should now see two snapshots — the initial `append` and a new `overwrite` from the merge:
@@ -578,7 +587,7 @@ Let's use SQL to query the Iceberg table either using `spark.sql()`
 ```python
 spark.sql("""
 	SELECT * 
-	FROM hive_iceberg_rest.flight_iceberg_db.airports
+	FROM hive_iceberg.flight_iceberg_db.airports
 	WHERE ident IN ('00A','ADD')
 """).show()
 ```
@@ -587,7 +596,7 @@ or the `%%sql` cell magic in Jupyter
 ```sql
 %%sql
 SELECT * 
-FROM hive_iceberg_rest.flight_iceberg_db.airports
+FROM hive_iceberg.flight_iceberg_db.airports
 WHERE ident IN ('00A','ADD')
 ```
 and you should see two rows in the result — the updated record and the newly inserted one.
@@ -598,7 +607,7 @@ Iceberg can improve the speed of read queries by rewriting small data files into
 
 ```python
 spark.sql("""
-    CALL hive_iceberg_rest.system.rewrite_data_files(
+    CALL hive_iceberg.system.rewrite_data_files(
         table => 'flight_iceberg_db.airports',
         options => map('target-file-size-bytes', '134217728')
     )
@@ -628,7 +637,7 @@ First, let's retrieve the snapshot IDs so we know which version to travel to:
 ```python
 snapshots = spark.sql("""
 	SELECT snapshot_id, committed_at, operation 
-	FROM hive_iceberg_rest.flight_iceberg_db.airports.snapshots
+	FROM hive_iceberg.flight_iceberg_db.airports.snapshots
 	""").collect()
 for s in snapshots:
     print(s)
@@ -642,7 +651,7 @@ print ("Redcover to snapshot: " + firstSnapshotId)
 
 spark.sql(f"""
     SELECT *
-    FROM hive_iceberg_rest.flight_iceberg_db.airports
+    FROM hive_iceberg.flight_iceberg_db.airports
     VERSION AS OF {firstSnapshotId}
 """).show()
 ```
@@ -655,7 +664,7 @@ print ("Redcover to snapshot: " + firstSnapshotId)
 
 spark.sql(f"""
     SELECT *
-    FROM hive_iceberg_rest.flight_iceberg_db.airports
+    FROM hive_iceberg.flight_iceberg_db.airports
     VERSION AS OF {firstSnapshotId}
     WHERE ident IN ('00A','ADD')
 """).show()
@@ -669,7 +678,7 @@ print ("Redcover to timestamp: " + commitedAt)
 
 spark.sql(f"""
     SELECT *
-    FROM hive_iceberg_rest.flight_iceberg_db.airports
+    FROM hive_iceberg.flight_iceberg_db.airports
     TIMESTAMP AS OF '{timestamp}'
     WHERE ident IN ('00A','ADD')
 """).show()
@@ -689,7 +698,7 @@ expire_before = datetime.now() - timedelta(days=7)
 expire_before_ms = int(expire_before.timestamp() * 1000)
 
 spark.sql(f"""
-    CALL hive_iceberg_rest.system.expire_snapshots(
+    CALL hive_iceberg.system.expire_snapshots(
         table => 'flight_iceberg_db.airports',
         older_than => TIMESTAMP '{expire_before.strftime('%Y-%m-%d %H:%M:%S')}'
     )
@@ -714,7 +723,7 @@ You can also remove orphan files (data files not referenced by any snapshot) usi
 
 ```python
 spark.sql("""
-    CALL hive_iceberg_rest.system.remove_orphan_files(table => 'flight_iceberg_db.airports')
+    CALL hive_iceberg.system.remove_orphan_files(table => 'flight_iceberg_db.airports')
 """).show()
 ```
 
