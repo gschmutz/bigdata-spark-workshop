@@ -8,18 +8,18 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 
 - [What you will learn](#what-you-will-learn)
 - [Prerequisites](#prerequisites)
-- [Upload the raw data, if no longer available](#upload-the-raw-data-if-no-longer-available)
-- [Register tables for Raw data](#register-tables-for-raw-data)
-- [Install dbt](#install-dbt)
-- [Create the dbt project](#create-the-dbt-project)
+- [Upload the data, if no longer available](#upload-the-data-if-no-longer-available)
+- [Upload iceberg tables as Raw data](#upload-iceberg-tables-as-raw-data)
+- [Install `dbt`](#install-dbt)
+- [Create the `dbt` project](#create-the-dbt-project)
 - [Create models](#create-models)
 - [Per-layer Materialization](#per-layer-materialization)
-- [Targeted Runs with --select](#targeted-runs-with---select)
+- [Targeted Runs with `--select`](#targeted-runs-with---select)
 - [dbt Tests](#dbt-tests)
 - [Incremental Models](#incremental-models)
 - [dbt Documentation](#dbt-documentation)
 - [Query the Results from Trino](#query-the-results-from-trino)
-- [Semantic Models and Metrics](#semantic-models-and-metrics-does-not-work-yet---spark-is-not-supported)
+- [Semantic Models and Metrics (Does not work yet -> Spark is not supported)](#semantic-models-and-metrics-does-not-work-yet---spark-is-not-supported)
 
 ## What you will learn
 
@@ -74,107 +74,103 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
    docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flights_2008_5_3.csv s3://flight-bucket/raw/flights/
 ```
 
-## Register tables for Raw data
+## Upload iceberg tables as Raw data
 
-In order to access data in Object Storage using `dbt`, we have to create a table in the Hive metastore. Note that the location `s3a://flight-bucket/raw/..` points to the data we have uploaded before.
+Before dbt can model data, the raw CSV files in Object Storage need to be loaded into Iceberg tables that Polaris can serve. We do this using a short PySpark script run from a Jupyter terminal or the host machine.
 
-Connect to Hive Metastore CLI
+Navigate to Jupyter <http://dataplatform:38888> and create a new notebook using Python 3.10.12 kernel.
 
-```bash
-docker exec -ti hive-metastore hive
+Create a Spark session using Spark Connect. All operations are sent over gRPC to the `spark-connect` service — no cluster configuration is needed on the client side:
+
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .remote("sc://spark-connect:15002") \
+    .getOrCreate()
 ```
 
-and on the command prompt first create a new database `flight_db` 
+Create the namespace `flight_db` inside the Polaris catalog if it does not already exist:
 
-```sql
-CREATE DATABASE flight_db
-LOCATION 's3a://flight-bucket/warehouse';
+```python
+spark.sql("CREATE NAMESPACE IF NOT EXISTS polaris.flight_db")
 ```
 
-switch into that database
+> **What just happened?** Polaris acts as an Iceberg REST catalog. The namespace `polaris.flight_db` maps to a logical database inside that catalog. Any Iceberg tables we create will be registered here and will be visible to dbt.
 
-```sql
-USE flight_db;
+**Load the airport raw table**
+
+Read the airports CSV from Object Storage and write it as an Iceberg table using a CREATE TABLE AS SELECT (CTAS):
+
+```python
+df_csv = spark.read \
+    .option("header", "true") \
+    .option("sep", ",") \
+    .option("quote", '"') \
+    .option("escape", '"') \
+    .option("multiLine", "true") \
+    .csv("s3a://flight-bucket/raw/airports/")
+
+df_csv.createOrReplaceTempView("airport_csv_stage")
+
+spark.sql("""
+    CREATE TABLE polaris.flight_db.airport_raw
+    USING iceberg
+    TBLPROPERTIES (
+        'write.format.default'            = 'parquet',
+        'write.parquet.compression-codec' = 'snappy'
+    )
+    AS SELECT * FROM airport_csv_stage
+""")
 ```
 
-and register the airport data as table `airport_raw_t `
+> **What just happened?** The CSV is read with schema inference (header row present), registered as a temporary view, then written to a permanent Iceberg table using CTAS. Spark stores the data as Snappy-compressed Parquet files and registers the table metadata with the Polaris catalog so it is queryable by name.
 
-```
-DROP TABLE IF EXISTS airport_raw_t;
-CREATE EXTERNAL TABLE airport_raw_t 
-   (id string
-   , ident string
-   , type string
-   , name string
-   , latitude_deg string
-   , longitude_deg string
-   , elevation_ft string
-   , continent string
-   , iso_country string
-   , iso_region string
-   , municipality string
-   , scheduled_service string
-   , gps_code string
-   , iata_code string
-   , local_code string
-   , home_link string
-   , wikipedia_link string
-   , keywords string)
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-WITH SERDEPROPERTIES (
-   "skip.header.line.count" = "1",
-   "separatorChar" = ","
-)
-STORED AS TEXTFILE
-LOCATION 's3a://flight-bucket/raw/airports';
+**Load the flights raw table**
+
+The flights CSV has no header row, so an explicit schema is provided. All columns are read as `STRING` to preserve the raw values exactly as they appear in the source:
+
+```python
+df_csv = spark.read \
+    .option("header", "false") \
+    .option("sep", ",") \
+    .option("quote", '"') \
+    .option("escape", '"') \
+    .option("nullValue", "") \
+    .schema("""
+        year STRING, month STRING, dayOfMonth STRING, dayOfWeek STRING,
+        depTime STRING, crsDepTime STRING, arrTime STRING, crsArrTime STRING,
+        uniqueCarrier STRING, flightNum STRING, tailNum STRING,
+        actualElapsedTime STRING, crsElapsedTime STRING, airTime STRING,
+        arrDelay STRING, depDelay STRING,
+        origin STRING, destination STRING, distance STRING,
+        taxiIn STRING, taxiOut STRING,
+        cancelled STRING, cancellationCode STRING, diverted STRING,
+        carrierDelay STRING, weatherDelay STRING, nasDelay STRING,
+        securityDelay STRING, lateAircraftDelay STRING
+    """) \
+    .csv("s3a://flight-bucket/raw/flights/")
+
+df_csv.createOrReplaceTempView("flight_csv_stage")
+
+spark.sql("""
+    CREATE TABLE polaris.flight_db.flight_raw
+    USING iceberg
+    TBLPROPERTIES (
+        'write.format.default'            = 'parquet',
+        'write.parquet.compression-codec' = 'snappy'
+    )
+    AS SELECT * FROM flight_csv_stage
+""")
 ```
 
-We use `string` as the datatype for all columns in the raw layer. We will later cast to the correct datatypes when creating the data in the prepared layer.
-
-Register the flights data as table `flight_raw_t`
-
-```
-DROP TABLE IF EXISTS flight_raw_t;
-CREATE EXTERNAL TABLE flight_raw_t 
-   (year integer,
-   month integer,
-   dayOfMonth integer,
-   dayOfWeek integer,
-   depTime integer,
-   crsDepTime integer,
-   arrTime integer,
-   crsArrTime integer,
-   uniqueCarrier string,
-   flightNum string,
-   tailNum string,
-   actualElapsedTime integer,
-   crsElapsedTime integer,
-   airTime integer,
-   arrDelay integer,
-   depDelay integer,
-   origin string,
-   destination string,
-   distance integer,
-   taxiIn integer,
-   taxiOut integer,
-   cancelled string,
-   cancellationCode string,
-   diverted string,
-   carrierDelay string,
-   weatherDelay string,
-   nasDelay string,
-   securityDelay string,
-   lateAircraftDelay string
-   )
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-LOCATION 's3a://flight-bucket/raw/flights';
-```
+> **What just happened?** Keeping all columns as `STRING` at the raw layer is intentional — dbt will handle type casting and validation in the prepared and refined layers. The table is stored in Iceberg format with Parquet/Snappy encoding and registered in the Polaris catalog as `polaris.flight_db.flight_raw`.
 
 These two tables provide the base infrastructure to run dbt on top.
 
 ## Install `dbt`
 
-Let's install `dbt` in virtual environment. You can perfom the steps in this workshop either on the cloud Linux VM (e.g. AWS Lightsail) or on your local workstation (you need to have Python 3.x available and you might need to adapt the Linux shell commands to Windows). In a terminal window.
+Let's install `dbt` in virtual environment. You can perfrom the steps in this workshop either on the cloud Linux VM (e.g. AWS Lightsail) or on your local workstation (you need to have Python 3.x available and you might need to adapt the Linux shell commands to Windows). In a terminal window.
 
 ```bash
 mkdir -p workspace/dbt-spark-flight
