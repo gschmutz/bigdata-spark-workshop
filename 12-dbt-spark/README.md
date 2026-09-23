@@ -41,7 +41,7 @@ The same raw data as in the [Object Storage Workshop](../02a-minio-object-storag
 
 - The **Data Platform** described [here](../00-environment) is running and accessible
 - Workshop 2a ([Working with MinIO Object Storage](../02a-minio-object-storage)) completed — airport and flight data must be in MinIO
-- The Hive Metastore is running and accessible (included in the data platform)
+- The **Spark Thrift Server** is running and configured with **Apache Polaris** as the default Iceberg catalog — this is what dbt connects to and what makes Iceberg tables visible without a catalog prefix in dbt SQL
 - dbt with the `dbt-spark` adapter installed (instructions provided in the workshop)
 
 ## Upload the data, if no longer available
@@ -77,6 +77,8 @@ docker exec -ti awscli s3cmd put /data-transfer/flight-data/flights-small/flight
 ## Upload iceberg tables as Raw data
 
 Before dbt can model data, the raw CSV files in Object Storage need to be loaded into Iceberg tables that Polaris can serve. We do this using a short PySpark script run from a Jupyter terminal or the host machine.
+
+> **Architecture note:** The data platform's **Spark Thrift Server** is configured to use **Apache Polaris** as its default Iceberg REST catalog. When dbt connects to the Thrift Server and runs a `SELECT` or `CREATE TABLE`, Spark resolves table names against Polaris automatically — no catalog prefix is required in dbt SQL. This is why we load the raw tables into Polaris here: anything registered in Polaris is immediately visible to dbt through the Thrift Server.
 
 Navigate to Jupyter <http://dataplatform:38888> and create a new notebook using Python 3.10.12 kernel.
 
