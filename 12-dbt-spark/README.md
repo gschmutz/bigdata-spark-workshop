@@ -116,7 +116,7 @@ df_csv = spark.read \
 df_csv.createOrReplaceTempView("airport_csv_stage")
 
 spark.sql("""
-    CREATE TABLE polaris.flight_db.airport_raw
+    CREATE TABLE polaris.flight_db.airport_raw_t
     USING iceberg
     TBLPROPERTIES (
         'write.format.default'            = 'parquet',
@@ -156,7 +156,7 @@ df_csv = spark.read \
 df_csv.createOrReplaceTempView("flight_csv_stage")
 
 spark.sql("""
-    CREATE TABLE polaris.flight_db.flight_raw
+    CREATE TABLE polaris.flight_db.flight_raw_t
     USING iceberg
     TBLPROPERTIES (
         'write.format.default'            = 'parquet',
@@ -571,6 +571,108 @@ WITH flight_prep_t AS (
 )select * 
 from flight_prep_t
 ```
+
+### Using a dbt Macro to Eliminate Repetition
+
+Look at the five delay columns in `flight_prep_t.sql` — `carrierDelay`, `weatherDelay`, `nasDelay`, `securityDelay`, and `lateAircraftDelay`. Each one repeats the identical pattern:
+
+```sql
+CASE WHEN colName IS NULL
+        THEN NULL 
+    WHEN colName = 'NA' 
+        THEN NULL
+    ELSE CAST(colName AS INT)
+END AS colName
+```
+
+A **dbt macro** lets you define this pattern once in Jinja and call it by name anywhere. Create the macros folder and a new macro file:
+
+```bash
+mkdir -p macros
+nano macros/cast_or_null.sql
+```
+
+Add the following macro definition:
+
+```sql
+{% macro cast_or_null(col, dtype='INT') %}
+    CASE
+        WHEN {{ col }} IS NULL OR {{ col }} = 'NA' THEN NULL
+        ELSE CAST({{ col }} AS {{ dtype }})
+    END
+{% endmacro %}
+```
+
+Now reopen `flight_prep_t.sql` and replace the five repeated `CASE` blocks with calls to the macro:
+
+```bash
+nano models/flight/prepared/flight_prep_t.sql
+```
+
+The delay section becomes:
+
+```sql
+        {{ cast_or_null('carrierDelay') }}     AS carrierDelay,
+        {{ cast_or_null('weatherDelay') }}     AS weatherDelay,
+        {{ cast_or_null('nasDelay') }}         AS nasDelay,
+        {{ cast_or_null('securityDelay') }}    AS securityDelay,
+        {{ cast_or_null('lateAircraftDelay') }} AS lateAircraftDelay
+```
+
+The complete updated `flight_prep_t.sql` is:
+
+```sql
+WITH flight_prep_t AS (
+   SELECT year, 
+        month,
+        TRY_CAST(dayOfMonth AS INT) AS dayOfMonth,
+        TRY_CAST(dayOfWeek AS INT) AS dayOfWeek,
+        TRY_CAST(depTime AS INT) AS depTime,
+        TRY_CAST(crsDepTime AS INT) AS crsDepTime,
+        TRY_CAST(arrTime AS INT) AS arrTime,
+        TRY_CAST(crsArrTime AS INT) AS crsArrTime,
+        uniqueCarrier,
+        flightNum,
+        tailNum,
+        TRY_CAST(actualElapsedTime AS INT) AS actualElapsedTime,
+        TRY_CAST(crsElapsedTime AS INT) AS crsElapsedTime,
+        TRY_CAST(airTime AS INT) AS airTime,
+        TRY_CAST(arrDelay AS INT) AS arrDelay,
+        TRY_CAST(depDelay AS INT) AS depDelay,
+        origin,
+        destination,
+        TRY_CAST(distance AS INT) AS distance,
+        TRY_CAST(taxiIn AS INT) AS taxiIn,
+        TRY_CAST(taxiOut AS INT) AS taxiOut, 
+        CASE WHEN cancelled IS NULL 
+                THEN 0 
+            WHEN cancelled = 'N' 
+                THEN 0
+            ELSE 1 
+        END AS cancelled,         
+        CASE WHEN cancellationCode IS NULL 
+                THEN 0 
+            WHEN cancellationCode = 'N' 
+                THEN 0
+            ELSE 1 
+        END AS cancellationCode,         
+        CASE WHEN diverted IS NULL 
+                THEN 0 
+            WHEN diverted = 'N' 
+                THEN 0
+            ELSE 1 
+        END AS diverted,         
+        {{ cast_or_null('carrierDelay') }}      AS carrierDelay,
+        {{ cast_or_null('weatherDelay') }}      AS weatherDelay,
+        {{ cast_or_null('nasDelay') }}          AS nasDelay,
+        {{ cast_or_null('securityDelay') }}     AS securityDelay,
+        {{ cast_or_null('lateAircraftDelay') }} AS lateAircraftDelay
+    from {{ source('flight_db', 'flight_raw_t') }} 
+) select * 
+from flight_prep_t
+```
+
+> **What just happened?** dbt compiles Jinja templates before sending SQL to Spark. When dbt processes `{{ cast_or_null('carrierDelay') }}`, it expands the macro inline — Spark never sees the macro call, only the generated `CASE WHEN ...` expression. The output SQL is identical to the original; the macro only improves maintainability. If the null-handling logic ever needs to change (for example, to also treat an empty string `''` as `NULL`), you update the macro in one place and every column that calls it is fixed automatically.
 
 Now with these two transformations in place, let's run dbt
 
