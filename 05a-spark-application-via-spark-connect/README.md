@@ -182,7 +182,6 @@ Install all dependencies:
 pip install -r requirements.txt
 ```
 
-
 ## Execute the application
 
 Before running, clear the `refined` folder so there are no conflicts with existing data:

@@ -202,13 +202,11 @@ nano requirements.txt
 and add the following lines to install `dbt-core` and `dbt-spark`
 
 ```bash
-# dbt Core 1.12.3
-dbt-core>=1.12.3
+# dbt Core 1.12.5
+dbt-core>=1.12.5
 
 # spark adapter
-dbt-spark>=1.10.4
-
-dbt-spark[PyHive]
+dbt-spark>=1.11.0
 ```
 
 Save by hitting `Crtl-O` and exit by hitting `Ctrl-X`.
